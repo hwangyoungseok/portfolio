@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PDU 데이터 조회 - UMS</title>
+<link rel="stylesheet" href="../../shared/common.css">
+<link rel="stylesheet" href="pdu-data.css">
+</head>
+<body data-page="data/pdu-data">
+
+<!--
+  화면: 데이터 조회 > PDU 데이터 조회
+  설명: G/W가 수집한 PDU raw 계측데이터를 기간·항목별로 그리드 조회 + 엑셀 export.
+  화면구성/액션 상세: docu/2.design/UMS_화면정의서_김진호.csv
+  시퀀스: docu/2.design/ums_sequences.md
+  ---------------------------------------------------------------------
+  작업 방법:
+   - 아래 <div class="content"> 안에 화면 본문만 작성 (사이드바/헤더/푸터는 layout.js가 자동)
+   - 공통 컴포넌트(.search-bar / .grid-wrap / .toolbar / .grid-table / .paging /
+     .modal-overlay+.modal / .form-grid / .badge / .drawer / umsToast 등)는 shared/common.css 참고
+   - 참고 구현: pages/facility/ups-list.*  (그리드+검색+모달+우측 상세패널),
+                pages/facility/location-manage.*  (좌측 트리+우측 입력영역)
+   - 완성하면 shared/layout.js 의 DONE 목록에 "data/pdu-data" 추가
+-->
+
+<div id="umsContent">
+  <div class="content">
+    <div class="placeholder-card">PDU 데이터 조회 &mdash; 작업 예정</div>
+  </div>
+</div>
+
+<script src="../../shared/layout.js"></script>
+<script src="pdu-data.js"></script>
+</body>
+</html>

@@ -52,8 +52,9 @@
     ]},
   ];
 
-  // ---- 구현 완료된 페이지 (그 외는 준비중 페이지로 링크) ----
-  const BUILT = new Set([
+  // ---- 구현 완료된 화면. 여기 없는 키는 메뉴 클릭 시 "준비 중" 토스트만 뜬다.
+  //      화면 하나 완성하면 그 키를 아래에 추가할 것. ----
+  const DONE = new Set([
     'facility/ups-list',
     'facility/location-manage',
   ]);
@@ -72,16 +73,7 @@
 
   // ---- 현재 페이지 키 ----
   function currentKey() {
-    const dp = document.body.getAttribute('data-page');
-    if (dp) return dp;
-    const m = location.search.match(/[?&]p=([^&]+)/);   // 준비중 페이지: _coming.html?p=키
-    return m ? decodeURIComponent(m[1]) : '';
-  }
-
-  function pageHref(key) {
-    return BUILT.has(key)
-      ? ROOT + 'pages/' + key + '.html'
-      : ROOT + 'pages/_coming.html?p=' + encodeURIComponent(key);
+    return document.body.getAttribute('data-page') || '';
   }
 
   // ---- 사이드바 렌더 ----
@@ -89,9 +81,11 @@
     return MENU.map(cat => {
       const kids = (cat.children || []).map(it => {
         const active = it.page === activeKey ? ' active' : '';
+        const done = DONE.has(it.page);
         return '<div class="nav-node d1">'
-          + '<a class="nav-row' + active + '" href="' + pageHref(it.page) + '">'
-          + '<span class="nav-text">' + it.label + '</span></a></div>';
+          + '<a class="nav-row' + active + (done ? '' : ' nav-todo') + '"'
+          + (done ? ' href="' + ROOT + 'pages/' + it.page + '.html"' : ' data-todo="' + it.page + '"')
+          + '><span class="nav-text">' + it.label + '</span></a></div>';
       }).join('');
       const open = (cat.children || []).some(it => it.page === activeKey);
       return '<div class="nav-node d0' + (open ? ' open' : '') + '">'
@@ -145,16 +139,12 @@
     document.body.insertBefore(sidebar, document.body.firstChild);
     document.body.insertBefore(main, sidebar.nextSibling);
 
-    // 준비중 페이지: 카드에 화면명 표시
-    if (/_coming\.html/.test(location.pathname)) {
-      const card = main.querySelector('.placeholder-card');
-      if (card) card.textContent = (meta.label || '해당') + ' 화면 (준비 중)';
-    }
-
-    // 카테고리 펼치기/접기
+    // 사이드바 클릭: 카테고리 펼치기/접기 + 미구현 화면 안내
     sidebar.querySelector('.sidebar-nav').addEventListener('click', function (e) {
-      const row = e.target.closest('.nav-node.d0 > .nav-row');
-      if (row) row.parentElement.classList.toggle('open');
+      const cat = e.target.closest('.nav-node.d0 > .nav-row');
+      if (cat) { cat.parentElement.classList.toggle('open'); return; }
+      const todo = e.target.closest('.nav-todo');
+      if (todo) { e.preventDefault(); window.umsToast && window.umsToast('준비 중입니다.'); }
     });
   }
 
