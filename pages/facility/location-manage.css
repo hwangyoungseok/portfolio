@@ -1,0 +1,28 @@
+/* 위치 관리 전용 스타일 (공통은 shared/common.css) */
+
+.loc-wrap { display: flex; gap: 12px; flex: 1; min-height: 0; }
+
+/* 좌측 트리 */
+.loc-tree { width: 340px; flex-shrink: 0; background: #fff; border: 1px solid #dde1e7; border-radius: 6px; display: flex; flex-direction: column; overflow: hidden; }
+.loc-tree-head { padding: 8px 10px 8px 12px; border-bottom: 1px solid #dde1e7; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+.loc-tree-head b { font-size: 12px; color: #444; }
+.loc-tree-body { flex: 1; overflow: auto; padding: 6px 0; }
+
+.tree-row { display: flex; align-items: center; gap: 4px; padding: 5px 12px; cursor: pointer; font-size: 12px; color: #333; white-space: nowrap; }
+.tree-row:hover { background: #f0f6ff; }
+.tree-row.active { background: #ddeeff; font-weight: bold; }
+.tree-caret { width: 14px; text-align: center; color: #8a97a5; font-size: 10px; flex-shrink: 0; }
+.tree-caret.leaf { visibility: hidden; }
+.tree-icon { flex-shrink: 0; }
+.tree-name { overflow: hidden; text-overflow: ellipsis; }
+.tree-badge { margin-left: 6px; background: #eef1f4; color: #66707a; border-radius: 9px; padding: 0 6px; font-size: 10px; font-weight: bold; flex-shrink: 0; }
+.tree-badge.zero { opacity: 0.35; }
+
+/* 우측 입력영역 */
+.loc-form { flex: 1; background: #fff; border: 1px solid #dde1e7; border-radius: 6px; padding: 16px 18px; overflow: auto; }
+.loc-form-path { background: #f7f9fb; border: 1px solid #e5e9ee; border-radius: 4px; padding: 8px 10px; font-size: 11.5px; color: #5a6b7b; margin-bottom: 16px; }
+.loc-form-path .cur { color: #1a6ed8; font-weight: bold; }
+.loc-form-actions { display: flex; gap: 8px; margin-top: 20px; padding-top: 14px; border-top: 1px solid #eee; }
+.loc-form-actions .spacer { margin-left: auto; }
+.loc-empty { color: #98a2b3; font-size: 12.5px; line-height: 1.9; padding: 24px 4px; }
+.loc-check { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #444; }

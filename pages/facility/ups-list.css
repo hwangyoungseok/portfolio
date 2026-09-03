@@ -1,0 +1,11 @@
+/* UPS 관리 전용 스타일 (공통은 shared/common.css) */
+
+#upsModal .modal { max-width: 600px; }
+
+/* UPS명 / 모델명 컬럼은 좌측정렬 + 최소폭 */
+.grid-table td:nth-child(2),
+.grid-table td:nth-child(5) { text-align: left; }
+.grid-table th:nth-child(2),
+.grid-table td:nth-child(2) { min-width: 110px; }
+.grid-table th:nth-child(5),
+.grid-table td:nth-child(5) { min-width: 150px; }

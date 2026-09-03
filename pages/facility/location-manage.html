@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>위치 관리 - UMS</title>
+<link rel="stylesheet" href="../../shared/common.css">
+<link rel="stylesheet" href="location-manage.css">
+</head>
+<body data-page="facility/location-manage">
+
+<div id="umsContent">
+  <div class="content">
+    <div class="loc-wrap">
+
+      <!-- 좌측: 위치 트리 -->
+      <div class="loc-tree">
+        <div class="loc-tree-head">
+          <b>위치 트리</b>
+          <button class="btn btn-primary" onclick="locNewRoot()">+ 최상위 노드</button>
+        </div>
+        <div class="loc-tree-body" id="locTree"></div>
+      </div>
+
+      <!-- 우측: 입력영역 -->
+      <div class="loc-form" id="locForm"></div>
+
+    </div>
+  </div>
+
+  <!-- 삭제 확인 -->
+  <div class="modal-overlay" id="locDelModal">
+    <div class="confirm-modal">
+      <p><span class="confirm-hl" id="locDelName">위치</span> 를<br>삭제하시겠습니까?</p>
+      <div class="confirm-btns">
+        <button class="btn btn-primary" onclick="locDelete()">예</button>
+        <button class="btn btn-danger" onclick="locDelClose()">아니오</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="../../shared/layout.js"></script>
+<script src="location-manage.js"></script>
+</body>
+</html>
