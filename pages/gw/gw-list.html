@@ -12,21 +12,120 @@
 <!--
   화면: GW > GW 관리
   설명: 현장 G/W(수집기) 등록·관리. 검색바 + 그리드 + 등록/수정 모달(인증키/토큰 발급, 최초 1회 노출) + 소속 설비 보기.
-  화면구성/액션 상세: docu/2.design/UMS_화면정의서_김진호.csv
-  시퀀스: docu/2.design/ums_sequences.md
-  ---------------------------------------------------------------------
-  작업 방법:
-   - 아래 <div class="content"> 안에 화면 본문만 작성 (사이드바/헤더/푸터는 layout.js가 자동)
-   - 공통 컴포넌트(.search-bar / .grid-wrap / .toolbar / .grid-table / .paging /
-     .modal-overlay+.modal / .form-grid / .badge / .drawer / umsToast 등)는 shared/common.css 참고
-   - 참고 구현: pages/facility/ups-list.*  (그리드+검색+모달+우측 상세패널),
-                pages/facility/location-manage.*  (좌측 트리+우측 입력영역)
-   - 완성하면 shared/layout.js 의 DONE 목록에 "gw/gw-list" 추가
 -->
 
 <div id="umsContent">
   <div class="content">
-    <div class="placeholder-card">GW 관리 &mdash; 작업 예정</div>
+
+    <!-- 검색조건 -->
+    <div class="search-bar">
+      <div class="search-field"><label>위치</label><select class="search-select" id="fLoc"></select></div>
+      <div class="search-field"><label>사용여부</label>
+        <select class="search-select" id="fUse">
+          <option value="">전체</option>
+          <option value="1">사용</option>
+          <option value="0">미사용</option>
+        </select>
+      </div>
+      <div class="search-field"><label>검색어</label>
+        <input class="search-input" id="q" placeholder="키워드를 입력하세요." onkeyup="if(event.key==='Enter')renderGrid()">
+      </div>
+      <div class="search-actions">
+        <button class="btn btn-primary" onclick="renderGrid()">조회</button>
+        <button class="btn" onclick="resetSearch()">초기화</button>
+      </div>
+    </div>
+
+    <!-- 그리드 -->
+    <div class="grid-wrap">
+      <div class="toolbar">
+        <span style="font-size:12px;color:#666;">총 <b id="gridCount">0</b>건</span>
+        <span class="toolbar-spacer"></span>
+        <button class="btn btn-primary" onclick="gwOpen(null)">+ 등록</button>
+      </div>
+
+      <div class="grid-scroll">
+        <table class="grid-table">
+          <thead>
+            <tr>
+              <th>No</th><th>GW명</th><th>위치</th><th>설치 PC 정보</th><th>버전</th>
+              <th>등록일</th><th>연결 UPS 대수</th><th>사용여부</th><th>기능</th>
+            </tr>
+          </thead>
+          <tbody id="gridBody"></tbody>
+        </table>
+      </div>
+
+      <div class="paging">
+        <button class="page-btn">&#9664;</button>
+        <button class="page-btn active">1</button>
+        <button class="page-btn">&#9654;</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 등록/수정 모달 -->
+  <div class="modal-overlay" id="gwModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="mTitle">GW 등록</h3>
+        <button class="modal-close" onclick="gwModalClose()">&#10005;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="form-label req">GW명</div><input class="form-input" id="m-name" placeholder="GW명을 입력하세요.">
+          <div class="form-label req">위치</div><select class="form-select" id="m-loc"></select>
+          <div class="form-label req">설치위치</div><select class="form-select" id="m-pos"></select>
+          <div class="form-label req">인증키/토큰</div>
+          <div class="form-inline">
+            <input class="form-input" id="m-token" placeholder="발급 버튼을 클릭하여 인증키/토큰을 발급받으세요." readonly style="flex:1;">
+            <button class="btn" id="m-token-btn" onclick="gwIssueToken()">발급</button>
+          </div>
+          <div class="form-label">비고</div><textarea class="form-textarea" id="m-memo" rows="2" placeholder="비고를 입력하세요."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" onclick="gwModalClose()">취소</button>
+        <button class="btn btn-primary" onclick="gwSave()">저장</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 우측 상세 패널: 소속 UPS 목록 -->
+  <div class="drawer-mask" id="gwMask" onclick="gwDetailClose()"></div>
+  <aside class="drawer" id="gwDrawer">
+    <div class="drawer-header">
+      <h3 id="dTitle">GW 상세</h3>
+      <button class="modal-close" onclick="gwDetailClose()">&#10005;</button>
+    </div>
+    <div class="drawer-body" id="dBody"></div>
+    <div class="drawer-footer">
+      <button class="btn" onclick="gwEditFromDetail()">수정</button>
+      <button class="btn btn-primary" onclick="gwDetailClose()">닫기</button>
+    </div>
+  </aside>
+
+  <!-- 삭제 확인 -->
+  <div class="modal-overlay" id="delModal">
+    <div class="confirm-modal">
+      <p>선택한 <span class="confirm-hl">GW를 삭제</span>하시겠습니까?</p>
+      <div class="confirm-btns">
+        <button class="btn btn-primary" onclick="gwDelete()">예</button>
+        <button class="btn btn-danger" onclick="delModalClose()">아니오</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 재발급 확인 -->
+  <div class="modal-overlay" id="reissueModal">
+    <div class="confirm-modal">
+      <p>인증키를 재발급하면<br><span class="confirm-hl">기존 키는 즉시 무효화</span>됩니다.<br>계속하시겠습니까?</p>
+      <div class="confirm-btns">
+        <button class="btn btn-primary" onclick="gwIssueTokenConfirmed()">예</button>
+        <button class="btn btn-danger" onclick="hide('reissueModal')">아니오</button>
+      </div>
+    </div>
   </div>
 </div>
 

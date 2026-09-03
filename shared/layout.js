@@ -108,6 +108,9 @@
   const DONE = new Set([
     'facility/ups-list',
     'facility/location-manage',
+    'gw/gw-list',
+    'gw/gw-status',
+    'gw/gw-server',
   ]);
 
   // ---- 루트 경로 계산: 이 스크립트 = <ROOT>/shared/layout.js ----
