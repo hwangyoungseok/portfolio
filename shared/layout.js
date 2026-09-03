@@ -45,6 +45,10 @@
     // ↓↓↓ 호스트(운영사) 모드 — 고객사/티켓 처리 등 운영 업무.
     //     화면이 아직 없는 항목은 page 키만 잡아두고 파일을 만들면 된다.
     host: [
+      { label: 'SaaS 관리', children: [
+        { label: '테넌트',              page: 'saas/tenant' },
+        { label: '에디션',              page: 'saas/edition' },
+      ]},
       { label: '티켓', children: [
         { label: '내 티켓',             page: 'ticket/ticket-my' },
         { label: '미할당 티켓',         page: 'ticket/ticket-unassigned' },
@@ -54,8 +58,10 @@
         { label: 'ID 관리', children: [
           { label: '조직',              page: 'admin/id-org' },
           { label: '사용자',            page: 'admin/id-user' },
+          { label: '역할',              page: 'admin/id-role' },
         ]},
-        { label: 'SaaS 관리',           page: 'admin/saas-manage' },
+        { label: '템플릿 관리',         page: 'admin/template' },
+        { label: '감사로그',            page: 'admin/audit-log' },
       ]},
     ],
 
