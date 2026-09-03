@@ -52,7 +52,8 @@
     ]},
   ];
 
-  // ---- 구현 완료된 화면. 여기 없는 키는 메뉴 클릭 시 "준비 중" 토스트만 뜬다.
+  // ---- 구현 완료된 화면. 여기 없는 키는 사이드바에서 흐리게(nav-todo) 표시된다.
+  //      (링크는 모두 동작 — 미구현 화면은 "작업 예정" 스텁 페이지가 열림)
   //      화면 하나 완성하면 그 키를 아래에 추가할 것. ----
   const DONE = new Set([
     'facility/ups-list',
@@ -84,7 +85,7 @@
         const done = DONE.has(it.page);
         return '<div class="nav-node d1">'
           + '<a class="nav-row' + active + (done ? '' : ' nav-todo') + '"'
-          + (done ? ' href="' + ROOT + 'pages/' + it.page + '.html"' : ' data-todo="' + it.page + '"')
+          + ' href="' + ROOT + 'pages/' + it.page + '.html"'
           + '><span class="nav-text">' + it.label + '</span></a></div>';
       }).join('');
       const open = (cat.children || []).some(it => it.page === activeKey);
@@ -139,12 +140,10 @@
     document.body.insertBefore(sidebar, document.body.firstChild);
     document.body.insertBefore(main, sidebar.nextSibling);
 
-    // 사이드바 클릭: 카테고리 펼치기/접기 + 미구현 화면 안내
+    // 사이드바 클릭: 카테고리 펼치기/접기 (하위 링크는 그대로 이동)
     sidebar.querySelector('.sidebar-nav').addEventListener('click', function (e) {
       const cat = e.target.closest('.nav-node.d0 > .nav-row');
-      if (cat) { cat.parentElement.classList.toggle('open'); return; }
-      const todo = e.target.closest('.nav-todo');
-      if (todo) { e.preventDefault(); window.umsToast && window.umsToast('준비 중입니다.'); }
+      if (cat) cat.parentElement.classList.toggle('open');
     });
   }
 
