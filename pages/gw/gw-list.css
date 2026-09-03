@@ -1,2 +1,21 @@
 /* GW 관리 전용 스타일 (공통은 shared/common.css)
    화면: GW > GW 관리 */
+
+#gwModal .modal { max-width: 580px; }
+
+/* GW명 컬럼은 좌측정렬 */
+.grid-table td:nth-child(2) { text-align: left; }
+.grid-table th:nth-child(2),
+.grid-table td:nth-child(2) { min-width: 110px; }
+.grid-table th:nth-child(4),
+.grid-table td:nth-child(4) { min-width: 170px; }
+
+/* 발급된 인증키 표시 */
+#m-token.issued { color: #1a6ed8; font-weight: bold; letter-spacing: 0.3px; }
+
+.token-hint { font-size: 11px; color: #b76e00; margin-top: 4px; }
+
+/* 소속 UPS 목록(드로어) 미니 테이블 */
+.dv-mini-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.dv-mini-table th { background: #f8f9fa; padding: 6px 8px; text-align: left; border-bottom: 1px solid #dde1e7; color: #555; }
+.dv-mini-table td { padding: 6px 8px; border-bottom: 1px solid #f0f0f0; }
