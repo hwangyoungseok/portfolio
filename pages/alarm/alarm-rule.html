@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>알람 룰 관리 - UMS</title>
+<title>체크 룰 관리 - UMS</title>
 <link rel="stylesheet" href="../../shared/common.css">
 <link rel="stylesheet" href="alarm-rule.css">
 </head>
 <body data-page="alarm/alarm-rule">
 
 <!--
-  화면: 알람 > 알람 룰 관리  (= 체크 룰 관리, 화면상세설계.txt)
+  화면: 알람 > 체크 룰 관리  (구 알람 룰 관리, 화면상세설계.txt. page 키는 alarm/alarm-rule 유지)
   A단계: 메인 목록 (설비 기준 1행 그리드 + 룰 개수 펼침 서브테이블)
   B: 등록 모달(레벨/조건식 빌더/Action 리스트)  C: 추가 적용 설비+중복확인  D: 수정 모달/기존 룰 복사
   참고: docu/2.design/화면상세설계.txt , ums_sequences.md #5
@@ -109,8 +109,27 @@
         <div class="cr-field">
           <div class="cr-field-label">Action</div>
           <div class="cr-actions">
-            <div id="crmActList"></div>
-            <button class="btn" type="button" onclick="crmAddAction()">+ Action 추가</button>
+            <div class="cr-act-edit">
+              <select class="form-select" id="crmActKind" onchange="crmActKindChange()" style="min-width:104px;">
+                <option value="notify">알림</option>
+                <option value="ticket">티켓생성</option>
+              </select>
+              <span class="cr-act-sub" data-sub="notify">
+                채널
+                <label><input type="checkbox" id="crmChEmail" checked> 이메일</label>
+                <label><input type="checkbox" id="crmChSms"> SMS</label>
+                <label><input type="checkbox" id="crmChKakao"> 카카오</label>
+                &nbsp; 대상
+                <select class="form-select cr-act-tg" id="crmActTargets" multiple size="3"></select>
+              </span>
+              <span class="cr-act-sub" data-sub="ticket" hidden>
+                우선순위
+                <select class="form-select" id="crmActPri"><option>낮음</option><option selected>보통</option><option>높음</option></select>
+              </span>
+              <button class="btn btn-primary" type="button" id="crmActApplyBtn" onclick="crmActApply()">+ 추가</button>
+              <button class="btn" type="button" id="crmActCancelBtn" onclick="crmActCancelEdit()" hidden>취소</button>
+            </div>
+            <div class="cr-act-list" id="crmActList"></div>
           </div>
         </div>
 
@@ -131,6 +150,29 @@
         <button class="btn" type="button" onclick="crmClose()">취소</button>
         <button class="btn btn-primary" type="button" onclick="crmSave()">저장</button>
       </div>
+    </div>
+  </div>
+
+  <!-- 기존 룰에서 복사: 선택 팝업 (등록 모달 위) -->
+  <div class="modal-overlay cr-copy-overlay" id="crCopyModal">
+    <div class="modal" style="width:88vw;max-width:900px;">
+      <div class="modal-header">
+        <h3>기존 룰에서 복사</h3>
+        <button class="modal-close" onclick="crCopyClose()">&#10005;</button>
+      </div>
+      <div class="modal-body">
+        <input class="search-input" id="crCopyQ" placeholder="설비명 / 조건식 검색" oninput="crCopyRender()" style="width:100%;margin-bottom:10px;">
+        <div class="cr-copy-list">
+          <table class="grid-table cr-copy-table">
+            <thead>
+              <tr><th style="width:120px;">설비</th><th style="width:80px;">레벨</th><th>조건식</th><th style="width:34%;">Action</th><th style="width:58px;"></th></tr>
+            </thead>
+            <tbody id="crCopyBody"></tbody>
+          </table>
+        </div>
+        <div class="hint">선택하면 아래 등록 폼의 레벨 · 조건식 · Action 이 그 룰 내용으로 채워집니다. (대상 설비는 현재 설비 그대로)</div>
+      </div>
+      <div class="modal-footer"><button class="btn" type="button" onclick="crCopyClose()">닫기</button></div>
     </div>
   </div>
 

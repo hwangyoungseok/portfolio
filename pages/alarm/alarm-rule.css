@@ -47,13 +47,19 @@
 #crmExpr { font-family: Consolas, 'Courier New', monospace; }
 
 .cr-actions, .cr-extra { padding-top: 2px; }
-.cr-act-row { border: 1px solid #e2e8ee; border-radius: 6px; padding: 10px; margin-bottom: 8px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; background: #fafbfc; }
-.cr-act-row .cr-act-kind { min-width: 110px; }
+.cr-act-edit { border: 1px solid #e2e8ee; border-radius: 6px; padding: 10px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; background: #fafbfc; }
 .cr-act-sub { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; font-size: 12px; }
 .cr-act-sub[hidden] { display: none; }
 .cr-act-sub label { display: flex; align-items: center; gap: 4px; }
-.cr-act-sub .cr-act-tg { min-width: 150px; }
-.cr-act-row .cr-act-del { margin-left: auto; }
+.cr-act-tg { min-width: 150px; }
+
+.cr-act-list { margin-top: 8px; display: flex; flex-direction: column; gap: 6px; }
+.cr-act-empty { font-size: 12px; color: #98a2b3; padding: 6px 2px; }
+.cr-act-item { display: flex; align-items: center; gap: 10px; padding: 6px 10px; border: 1px solid #e2e8ee; border-radius: 5px; font-size: 12px; }
+.cr-act-item.editing { border-color: #3366aa; background: #eef4fb; }
+.cr-act-tag { background: #eaf0f7; color: #33506e; border-radius: 10px; padding: 2px 9px; font-weight: bold; font-size: 11px; flex-shrink: 0; }
+.cr-act-desc { flex: 1; color: #333; }
+.cr-act-item-btns { display: inline-flex; gap: 6px; flex-shrink: 0; }
 
 .cr-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
 .cr-chip { display: inline-flex; align-items: center; gap: 6px; background: #eaf0f7; color: #33506e; border-radius: 12px; padding: 3px 6px 3px 10px; font-size: 11px; }
@@ -62,6 +68,16 @@
 
 .cr-footer { justify-content: flex-start; }
 .cr-footer .spacer { flex: 1; }
+
+/* 기존 룰에서 복사 팝업 */
+.cr-copy-overlay { z-index: 130; }
+.cr-copy-list { border: 1px solid #dde1e7; border-radius: 6px; max-height: 340px; overflow: auto; }
+.cr-copy-table td { font-size: 12px; text-align: left; vertical-align: middle; white-space: normal; word-break: break-word; }
+.cr-copy-table td.expr { font-family: Consolas, 'Courier New', monospace; color: #223; }
+.cr-copy-table th:last-child, .cr-copy-table td:last-child { white-space: nowrap; text-align: center; }
+.cr-copy-pick { border: 1px solid #1a6ed8; background: #fff; color: #1a6ed8; border-radius: 4px; padding: 3px 10px; font-size: 11px; font-weight: bold; cursor: pointer; }
+.cr-copy-pick:hover { background: #1a6ed8; color: #fff; }
+.cr-copy-empty { padding: 24px; text-align: center; color: #98a2b3; font-size: 12px; }
 
 /* 사용여부 토글 pill */
 .toggle-pill { display: inline-block; padding: 2px 10px; border-radius: 11px; font-size: 11px; font-weight: bold; cursor: pointer; user-select: none; }

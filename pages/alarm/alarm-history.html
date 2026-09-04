@@ -10,24 +10,118 @@
 <body data-page="alarm/alarm-history">
 
 <!--
-  화면: 알람 > 알람 이력 조회
-  설명: 발생 알람 이력 조회 + 확인(ACK)·조치 처리. 검색바 + 그리드(다중선택) + 상세(관련 계측값 그래프) + 연계 티켓 링크.
-  화면구성/액션 상세: docu/2.design/UMS_화면정의서_김진호.csv
-  시퀀스: docu/2.design/ums_sequences.md
-  ---------------------------------------------------------------------
-  작업 방법:
-   - 아래 <div class="content"> 안에 화면 본문만 작성 (사이드바/헤더/푸터는 layout.js가 자동)
-   - 공통 컴포넌트(.search-bar / .grid-wrap / .toolbar / .grid-table / .paging /
-     .modal-overlay+.modal / .form-grid / .badge / .drawer / umsToast 등)는 shared/common.css 참고
-   - 참고 구현: pages/facility/ups-list.*  (그리드+검색+모달+우측 상세패널),
-                pages/facility/location-manage.*  (좌측 트리+우측 입력영역)
-   - 완성하면 shared/layout.js 의 DONE 목록에 "alarm/alarm-history" 추가
+  화면: 알람 > 알람 이력 조회  (발생한 모든 알람, Active 포함. read-only)
+  참고: docu/2.design/UMS개발요구사항.md 1.7 , ums_sequences.md #8
+  알람 컬럼: AlarmNo·FacilityId·Source·OccurTime·Name·Description·Severity
+           ·Status(Active/Cleared)·HandleStatus(미확인/확인/조치완료)·AckBy·AckAt
+           ·TicketNo·ClearedTime·ClearType(자동/수동)·ClearedBy
 -->
 
 <div id="umsContent">
   <div class="content">
-    <div class="placeholder-card">알람 이력 조회 &mdash; 작업 예정</div>
+
+    <div class="search-bar">
+      <div class="search-field"><label>기간</label>
+        <input type="date" class="search-input" id="fFrom" style="min-width:132px;">
+        <span style="color:#999;">~</span>
+        <input type="date" class="search-input" id="fTo" style="min-width:132px;">
+        <button class="btn" type="button" onclick="ahPreset('today')">오늘</button>
+        <button class="btn" type="button" onclick="ahPreset('7d')">7일</button>
+        <button class="btn" type="button" onclick="ahPreset('30d')">30일</button>
+      </div>
+      <div class="search-field"><label>심각도</label>
+        <select class="search-select" id="fSev">
+          <option value="">전체</option>
+          <option value="warn">Warning</option><option value="minor">Minor</option>
+          <option value="major">Major</option><option value="crit">Critical</option>
+        </select>
+      </div>
+      <div class="search-field"><label>Source</label>
+        <select class="search-select" id="fSrc">
+          <option value="">전체</option>
+          <option value="RULE">RULE</option><option value="DEVICE">DEVICE</option>
+          <option value="SYSTEM">SYSTEM</option><option value="MANUAL">MANUAL</option>
+        </select>
+      </div>
+      <div class="search-field"><label>유형</label>
+        <select class="search-select" id="fType">
+          <option value="">전체</option>
+          <option>UPS</option><option>PDU</option><option>칠러</option><option>배터리</option><option>GW</option>
+        </select>
+      </div>
+      <div class="search-field"><label>위치</label><select class="search-select" id="fLoc"></select></div>
+      <div class="search-field"><label>처리상태</label>
+        <select class="search-select" id="fHstat">
+          <option value="">전체</option>
+          <option value="new">미확인</option><option value="ack">확인</option><option value="done">조치완료</option>
+        </select>
+      </div>
+      <div class="search-field"><label>상태</label>
+        <select class="search-select" id="fState">
+          <option value="">전체</option>
+          <option value="active">Active</option><option value="cleared">Cleared</option>
+        </select>
+      </div>
+      <div class="search-field"><label>검색어</label>
+        <input class="search-input" id="q" placeholder="설비명 / 알람명" onkeyup="if(event.key==='Enter')ahRender()">
+      </div>
+      <div class="search-actions">
+        <button class="btn btn-primary" onclick="ahRender()">조회</button>
+        <button class="btn" onclick="ahReset()">초기화</button>
+      </div>
+    </div>
+
+    <div class="grid-wrap">
+      <div class="toolbar">
+        <span style="font-size:12px;color:#666;">조회결과 <b id="ahCount">0</b>건</span>
+        <span class="toolbar-spacer"></span>
+        <button class="btn" onclick="umsToast('엑셀 다운로드 (목업)')">엑셀 다운로드</button>
+      </div>
+
+      <div class="grid-scroll">
+        <table class="grid-table ah-table">
+          <thead>
+            <tr>
+              <th style="width:50px;">No</th>
+              <th style="width:70px;">Source</th>
+              <th style="width:80px;">심각도</th>
+              <th style="width:148px;">발생시각</th>
+              <th style="width:148px;">해제시각</th>
+              <th style="width:78px;">상태</th>
+              <th>대상 설비</th>
+              <th style="width:70px;">유형</th>
+              <th>위치</th>
+              <th>알람명</th>
+              <th style="width:84px;">처리상태</th>
+              <th style="width:80px;">확인자</th>
+              <th style="width:92px;">연계 티켓</th>
+            </tr>
+          </thead>
+          <tbody id="ahBody"></tbody>
+        </table>
+      </div>
+
+      <div class="paging">
+        <button class="page-btn">&#9664;</button>
+        <button class="page-btn active">1</button>
+        <button class="page-btn">&#9654;</button>
+      </div>
+    </div>
+
   </div>
+
+  <!-- 우측 상세 패널 (read-only) -->
+  <div class="drawer-mask" id="ahMask" onclick="ahDetailClose()"></div>
+  <aside class="drawer" id="ahDrawer">
+    <div class="drawer-header">
+      <h3 id="ahdTitle">알람 상세</h3>
+      <button class="modal-close" onclick="ahDetailClose()">&#10005;</button>
+    </div>
+    <div class="drawer-body" id="ahdBody"></div>
+    <div class="drawer-footer" style="justify-content:flex-end;">
+      <button class="btn btn-primary" onclick="ahDetailClose()">닫기</button>
+    </div>
+  </aside>
 </div>
 
 <script src="../../shared/layout.js"></script>

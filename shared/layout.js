@@ -94,7 +94,8 @@
         { label: '배터리 실시간 모니터링', page: 'data/battery-realtime' },
       ]},
       { label: '알람', children: [
-        { label: '알람 룰 관리',        page: 'alarm/alarm-rule' },
+        { label: '체크 룰 관리',        page: 'alarm/alarm-rule' },
+        { label: '알람 관리',           page: 'alarm/alarm-manage' },
         { label: '알람 이력 조회',      page: 'alarm/alarm-history' },
       ]},
       { label: '티켓', children: [
@@ -123,6 +124,8 @@
     'facility/ups-list',
     'facility/location-manage',
     'alarm/alarm-rule',
+    'alarm/alarm-manage',
+    'alarm/alarm-history',
   ];
   const DONE_HWANG = [
     'gw/gw-list',

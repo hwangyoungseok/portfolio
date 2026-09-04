@@ -1,2 +1,31 @@
 /* 알람 이력 조회 전용 스타일 (공통은 shared/common.css)
-   화면: 알람 > 알람 이력 조회 */
+   화면: 알람 > 알람 이력 조회 (read-only) */
+
+.ah-table td { text-align: center; }
+.ah-table td.cell-l { text-align: left; }
+.ah-table tbody tr.selected td { background: #ddeeff; }
+
+/* Source 뱃지 */
+.src { display: inline-block; padding: 1px 7px; border-radius: 4px; font-size: 10px; font-weight: bold; border: 1px solid; }
+.src-RULE   { color: #33506e; background: #eef2f7; border-color: #cdd9e6; }
+.src-DEVICE { color: #7a4b16; background: #fbf1e3; border-color: #ecd7bd; }
+.src-SYSTEM { color: #4a4a4a; background: #efefef; border-color: #dcdcdc; }
+.src-MANUAL { color: #1e7a4a; background: #e7f5ec; border-color: #c3e6d1; }
+
+/* 처리상태 뱃지 */
+.st { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: bold; }
+.st-new  { background: #fdecea; color: #c62828; }
+.st-ack  { background: #e7edf7; color: #33506e; }
+.st-done { background: #e6f4ea; color: #1e7e34; }
+
+/* 활성상태 뱃지 */
+.hs { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: bold; }
+.hs-active  { background: #fdecea; color: #c62828; }
+.hs-cleared { background: #f0f0f0; color: #888; }
+
+/* 연계 티켓 링크 */
+.ah-ticket-link { color: #1a6ed8; font-weight: bold; cursor: pointer; }
+.ah-ticket-link:hover { text-decoration: underline; }
+
+/* 상세: Description 박스 */
+#ahdBody .am-desc { white-space: pre-wrap; font-family: Consolas, 'Courier New', monospace; font-size: 11.5px; line-height: 1.6; }
