@@ -113,12 +113,18 @@
 
   // ---- 구현 완료된 화면. 여기 없는 키는 사이드바에서 흐리게(nav-todo) 표시된다.
   //      (모드 공통 — 페이지 파일 단위로 관리)
-  //      화면 하나 완성하면 그 키를 아래에 추가할 것. ----
-  const DONE = new Set([
+  //      담당자별로 자기 배열에만 추가한다. 병합 순서/중복은 신경 안 써도 됨(Set).
+  //      화면 하나 완성하면 자기 목록에 그 "그룹/키" 를 추가할 것. ----
+  const DONE_OH = [
     'saas/tenant',
     'saas/edition',
+  ];
+  const DONE_KIM = [
     'facility/ups-list',
     'facility/location-manage',
+    'alarm/alarm-rule',
+  ];
+  const DONE_HWANG = [
     'gw/gw-list',
     'gw/gw-status',
     'gw/gw-server',
@@ -127,7 +133,8 @@
     'ticket/ticket-all',
     'data/ups-data',
     'data/ups-trend',
-  ]);
+  ];
+  const DONE = new Set([].concat(DONE_OH, DONE_KIM, DONE_HWANG));
 
   // ---- 루트 경로 계산: 이 스크립트 = <ROOT>/shared/layout.js ----
   const scriptSrc = (document.currentScript && document.currentScript.src) || '';
