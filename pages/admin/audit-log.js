@@ -180,6 +180,15 @@
 
   function logRow(no) { return LOGS.filter(function (r) { return r.no === no; })[0]; }
 
+  // 고객 모드에서 감춰야 하는 항목 (호스트 전용 영역)
+  const HOST_URL_PREFIX = ['/Saas/'];
+  const HOST_ENTITY = ['Tenant', 'Edition', 'Setting'];
+
+  function isHostLog(r) {
+    return HOST_URL_PREFIX.some(function (p) { return r.url.indexOf(p) === 0; });
+  }
+  function isHostChange(r) { return HOST_ENTITY.indexOf(r.entity) >= 0; }
+
   function httpReq(r) {
     return '<span class="http-req">'
       + '<span class="http-code code-' + String(r.code).charAt(0) + '">' + r.code + '</span>'
@@ -216,6 +225,7 @@
     const corr = (document.getElementById('fCorr').value || '').trim();
 
     const rows = LOGS.filter(function (r) {
+      if (!window.umsIsHost && isHostLog(r)) return false;
       const d = r.time.substring(0, 10);
       return (!kw   || r.url.indexOf(kw) >= 0 || r.user.indexOf(kw) >= 0 || r.ip.indexOf(kw) >= 0)
         && (!from || d >= from)
@@ -353,6 +363,7 @@
     const ent  = document.getElementById('eEntity').value;
 
     const rows = CHANGES.filter(function (r) {
+      if (!window.umsIsHost && isHostChange(r)) return false;
       const d = r.time.substring(0, 10);
       return (!kw   || String(r.eid).indexOf(kw) >= 0 || r.user.indexOf(kw) >= 0)
         && (!from || d >= from)
@@ -442,7 +453,8 @@
 
   // ---- 초기화 ----
   document.getElementById('eEntity').innerHTML = '<option value="">전체</option>'
-    + ENTITIES.map(function (v) { return '<option>' + v + '</option>'; }).join('');
+    + ENTITIES.filter(function (v) { return window.umsIsHost || HOST_ENTITY.indexOf(v) < 0; })
+              .map(function (v) { return '<option>' + v + '</option>'; }).join('');
   renderLog();
   renderEntity();
 

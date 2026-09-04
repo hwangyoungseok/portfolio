@@ -292,3 +292,7 @@ body[data-role="customer"] .role-switch-btn.on { background: #27ae60; }
 .nav-node.d2 > .nav-row { padding: 7px 14px 7px 38px; font-size: 11px; border-left-color: #29b6e8; }
 .nav-node.d3 > .nav-row { padding: 7px 14px 7px 52px; font-size: 11px; border-left-color: #29b6e8; }
 .nav-node.d4 > .nav-row { padding: 7px 14px 7px 66px; font-size: 11px; border-left-color: #29b6e8; }
+
+/* 고객 모드로 관리 화면을 볼 때의 범위 안내 */
+.scope-note { margin: 12px 18px 0; padding: 9px 14px; border: 1px solid #cfe3d6; border-left: 3px solid #27ae60;
+  border-radius: 4px; background: #f2faf5; color: #1e7a4a; font-size: 12px; }

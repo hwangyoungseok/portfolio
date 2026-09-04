@@ -24,9 +24,9 @@
       <!-- 좌측 카테고리 -->
       <nav class="set-nav">
         <div class="set-nav-item active" data-sec="account"  onclick="selectSec('account')">계정</div>
-        <div class="set-nav-item"        data-sec="feature"  onclick="selectSec('feature')">기능 관리</div>
+        <div class="set-nav-item host-only" data-sec="feature"  onclick="selectSec('feature')">기능 관리</div>
         <div class="set-nav-item"        data-sec="timezone" onclick="selectSec('timezone')">시간대</div>
-        <div class="set-nav-item"        data-sec="email"    onclick="selectSec('email')">이메일</div>
+        <div class="set-nav-item host-only" data-sec="email"    onclick="selectSec('email')">이메일</div>
         <div class="set-nav-item"        data-sec="identity" onclick="selectSec('identity')">ID 관리</div>
       </nav>
 
@@ -103,7 +103,7 @@
         </section>
 
         <!-- ===== 기능 관리 ===== -->
-        <section class="set-sec" id="sec-feature">
+        <section class="set-sec host-only" id="sec-feature">
           <div class="set-pane show">
             <h3 class="set-title">기능 관리</h3>
             <p class="set-desc">호스트 전역에서 켜고 끄는 기능입니다. 테넌트별 제공 범위는 [SaaS 관리 &gt; 에디션]에서 지정합니다.</p>
@@ -168,7 +168,7 @@
         </section>
 
         <!-- ===== 이메일 ===== -->
-        <section class="set-sec" id="sec-email">
+        <section class="set-sec host-only" id="sec-email">
           <div class="set-pane show">
             <h3 class="set-title">이메일 (SMTP)</h3>
             <p class="set-desc">알람·초대·리포트 메일 발송에 사용할 SMTP 서버 정보입니다.</p>
