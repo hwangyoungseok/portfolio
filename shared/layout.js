@@ -60,6 +60,7 @@
           { label: '사용자',            page: 'admin/id-user' },
           { label: '역할',              page: 'admin/id-role' },
         ]},
+        { label: '작업',                page: 'admin/job' },
         { label: '템플릿 관리',         page: 'admin/template' },
         { label: '감사로그',            page: 'admin/audit-log' },
       ]},
@@ -112,6 +113,8 @@
   //      (모드 공통 — 페이지 파일 단위로 관리)
   //      화면 하나 완성하면 그 키를 아래에 추가할 것. ----
   const DONE = new Set([
+    'saas/tenant',
+    'saas/edition',
     'facility/ups-list',
     'facility/location-manage',
     'gw/gw-list',
