@@ -135,6 +135,7 @@
     'data/battery-data',
     'data/battery-trend',
     'data/battery-realtime',
+    'facility/battery-list',
   ];
   const DONE = new Set([].concat(DONE_OH, DONE_KIM, DONE_HWANG));
 
