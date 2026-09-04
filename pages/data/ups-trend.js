@@ -181,6 +181,10 @@
   }
 
   // ---- Catmull-Rom -> Bezier 스무스 패스 ----
+  // 제어점의 y를 구간 양끝 값 사이로 clamp → 베지어 곡선은 제어점들의 convex hull
+  // 안에만 그려지므로, 급격한 지그재그에서도 실제 최대/최소 범위를 넘어 튀어나오지 않는다.
+  function clamp(v, lo, hi) { return v < lo ? lo : (v > hi ? hi : v); }
+
   function smoothPath(points) {
     if (!points.length) return '';
     if (points.length === 1) return 'M' + points[0].x + ',' + points[0].y;
@@ -190,14 +194,17 @@
       const p1 = points[i];
       const p2 = points[i + 1];
       const p3 = points[i + 2] || p2;
-      const c1x = p1.x + (p2.x - p0.x) / 6, c1y = p1.y + (p2.y - p0.y) / 6;
-      const c2x = p2.x - (p3.x - p1.x) / 6, c2y = p2.y - (p3.y - p1.y) / 6;
+      const yLo = Math.min(p1.y, p2.y), yHi = Math.max(p1.y, p2.y);
+      const c1x = p1.x + (p2.x - p0.x) / 6, c1y = clamp(p1.y + (p2.y - p0.y) / 6, yLo, yHi);
+      const c2x = p2.x - (p3.x - p1.x) / 6, c2y = clamp(p2.y - (p3.y - p1.y) / 6, yLo, yHi);
       d += ' C' + c1x + ',' + c1y + ' ' + c2x + ',' + c2y + ' ' + p2.x + ',' + p2.y;
     }
     return d;
   }
 
   // ---- 메인 렌더 ----
+  let lastDomain = null, lastSeriesList = null;
+
   function renderChart() {
     const fFrom = document.getElementById('fFrom').value;
     const fTo = document.getElementById('fTo').value;
@@ -206,6 +213,7 @@
     const built = buildSeriesList();
     if (built.truncated) umsToast('선택한 UPS·계측항목 조합이 많아 처음 ' + MAX_SERIES + '개 계열만 표시합니다.');
 
+    lastDomain = domain; lastSeriesList = built.list;
     renderLegend(built.list);
     renderSvg(domain, built.list);
     renderSummary(domain, built.list);
@@ -353,6 +361,18 @@
   renderMetricPanel();
   initZoomDrag();
   applyPreset('7d');
+
+  // chartWrap 의 실제 크기가 확정될 때마다(최초 레이아웃 포함) 다시 그린다.
+  // 최초 렌더 시점엔 getBoundingClientRect() 가 아직 최종 크기를 반영하지 못해
+  // 축 라벨이 잘리거나 사라져 보일 수 있는데, ResizeObserver 는 관찰을 시작하면
+  // 레이아웃이 실제로 끝난 뒤의 정확한 크기로 최소 한 번은 콜백을 보장해 준다
+  // (requestAnimationFrame 한 프레임만으로는 부족한 경우가 있어 이 방식으로 교체).
+  if (window.ResizeObserver) {
+    const ro = new ResizeObserver(function () {
+      if (lastDomain) renderSvg(lastDomain, lastSeriesList);
+    });
+    ro.observe(document.getElementById('chartWrap'));
+  }
 
   window.addEventListener('resize', function () { renderChart(); });
 
