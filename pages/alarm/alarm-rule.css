@@ -1,2 +1,69 @@
-/* 알람 룰 관리 전용 스타일 (공통은 shared/common.css)
+/* 알람(체크) 룰 관리 전용 스타일 (공통은 shared/common.css)
    화면: 알람 > 알람 룰 관리 */
+
+/* 심각도 뱃지 추가분 (Minor) — 나머지는 common.css .badge-* 사용 */
+.badge-minor { background: #ffe8cc; color: #b45309; }
+
+/* 메인 그리드 */
+.cr-table td { text-align: center; }
+.cr-table td.cell-l { text-align: left; }
+.cr-table tbody tr.facrow { cursor: pointer; }
+.cr-table tbody tr.facrow.open td { background: #eef4fb; }
+
+.rulecount { display: inline-flex; align-items: center; gap: 4px; padding: 2px 9px; border-radius: 11px; background: #3366aa; color: #fff; font-weight: bold; font-size: 11px; cursor: pointer; }
+.rulecount:hover { background: #2b568f; }
+.rulecount .caret { font-size: 9px; }
+.rulecount.zero { background: #f1f1f1; color: #b6bcc2; }
+.rulecount.zero:hover { background: #e9e9e9; }
+
+.cr-add { border: 1px solid #1a6ed8; background: #fff; color: #1a6ed8; border-radius: 4px; padding: 3px 9px; font-size: 11px; font-weight: bold; cursor: pointer; }
+.cr-add:hover { background: #1a6ed8; color: #fff; }
+
+/* 서브테이블 (펼침) */
+.subrow > td { padding: 0 !important; background: #f7f9fb; border-bottom: 1px solid #e2e8ee; }
+.sub-wrap { padding: 8px 10px 12px 40px; }
+.sub-table { width: 100%; border-collapse: collapse; background: #fff; border: 1px solid #e2e8ee; border-radius: 5px; overflow: hidden; }
+.sub-table th { background: #eef2f6; padding: 6px 10px; font-size: 11px; color: #55636f; text-align: left; white-space: nowrap; }
+.sub-table td { padding: 6px 10px; font-size: 12px; color: #333; border-top: 1px solid #eef1f4; vertical-align: middle; text-align: left; }
+.sub-table td.expr { font-family: Consolas, 'Courier New', monospace; color: #223; }
+.sub-empty { padding: 10px 12px; font-size: 12px; color: #98a2b3; display: flex; align-items: center; gap: 10px; }
+
+/* ===== B단계: 등록 모달 ===== */
+.cr-modal { max-width: 740px; }
+.cr-field { display: grid; grid-template-columns: 96px 1fr; gap: 12px; padding: 12px 0; border-bottom: 1px dashed #eef1f4; }
+.cr-field:last-child { border-bottom: none; }
+.cr-field-label { font-size: 12px; color: #55636f; padding-top: 6px; }
+.cr-field-label.req::before { content: '*'; color: #e53935; margin-right: 2px; }
+
+.cr-target { font-size: 12px; color: #1a1a2e; font-weight: bold; background: #f4f7fa; border: 1px solid #e2e8ee; border-radius: 5px; padding: 8px 11px; }
+
+.cr-levels { display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: center; padding-top: 4px; }
+.cr-levels label { display: flex; align-items: center; gap: 5px; font-size: 12px; cursor: pointer; }
+
+.cr-expr-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-bottom: 6px; }
+.cr-ops { display: inline-flex; flex-wrap: wrap; gap: 4px; }
+.cr-op { border: 1px solid #ccd3da; background: #fff; border-radius: 4px; padding: 3px 8px; font-size: 12px; font-family: Consolas, monospace; cursor: pointer; color: #33506e; }
+.cr-op:hover { border-color: #3366aa; color: #3366aa; }
+#crmExpr { font-family: Consolas, 'Courier New', monospace; }
+
+.cr-actions, .cr-extra { padding-top: 2px; }
+.cr-act-row { border: 1px solid #e2e8ee; border-radius: 6px; padding: 10px; margin-bottom: 8px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; background: #fafbfc; }
+.cr-act-row .cr-act-kind { min-width: 110px; }
+.cr-act-sub { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; font-size: 12px; }
+.cr-act-sub[hidden] { display: none; }
+.cr-act-sub label { display: flex; align-items: center; gap: 4px; }
+.cr-act-sub .cr-act-tg { min-width: 150px; }
+.cr-act-row .cr-act-del { margin-left: auto; }
+
+.cr-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.cr-chip { display: inline-flex; align-items: center; gap: 6px; background: #eaf0f7; color: #33506e; border-radius: 12px; padding: 3px 6px 3px 10px; font-size: 11px; }
+.cr-chip button { border: none; background: #cdd9e6; color: #33506e; width: 16px; height: 16px; border-radius: 50%; cursor: pointer; font-size: 11px; line-height: 1; }
+.cr-chip button:hover { background: #b7c6d6; }
+
+.cr-footer { justify-content: flex-start; }
+.cr-footer .spacer { flex: 1; }
+
+/* 사용여부 토글 pill */
+.toggle-pill { display: inline-block; padding: 2px 10px; border-radius: 11px; font-size: 11px; font-weight: bold; cursor: pointer; user-select: none; }
+.toggle-pill.on { background: #e6f4ea; color: #1e7e34; }
+.toggle-pill.off { background: #f2f2f2; color: #999; }
