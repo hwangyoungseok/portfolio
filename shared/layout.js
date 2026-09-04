@@ -98,6 +98,8 @@
       ]},
       { label: '티켓', children: [
         { label: '내 티켓',             page: 'ticket/ticket-my' },
+        { label: '미할당 티켓',         page: 'ticket/ticket-unassigned' },
+        { label: '전체 티켓',           page: 'ticket/ticket-all' },
       ]},
       { label: 'GW', children: [
         { label: 'GW 관리',             page: 'gw/gw-list' },
@@ -120,6 +122,8 @@
     'ticket/ticket-my',
     'ticket/ticket-unassigned',
     'ticket/ticket-all',
+    'data/ups-data',
+    'data/ups-trend',
   ]);
 
   // ---- 루트 경로 계산: 이 스크립트 = <ROOT>/shared/layout.js ----
