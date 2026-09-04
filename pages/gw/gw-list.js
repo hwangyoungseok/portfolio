@@ -232,6 +232,7 @@
   window.gwOpen        = gwOpen;
   window.gwIssueToken  = gwIssueToken;
   window.gwIssueTokenConfirmed = gwIssueTokenConfirmed;
+  window.reissueModalClose = function () { hide('reissueModal'); };
   window.gwSave        = gwSave;
   window.gwAskDelete   = gwAskDelete;
   window.gwDelete      = gwDelete;
