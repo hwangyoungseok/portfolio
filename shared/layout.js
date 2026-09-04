@@ -38,7 +38,7 @@
   const DEFAULT_ROLE = 'host';
 
   // 고객 모드가 대표하는 테넌트. 관리 화면(admin/**)은 이 테넌트 범위만 보여준다.
-  const CUSTOMER_TENANT = '한빛데이터센터';
+  const CUSTOMER_TENANT = '세종클라우드';
 
   // ---- 메뉴 트리 (모드별로 분리) --------------------------------------
   // 대메뉴 > 중메뉴. page = "그룹/키" (파일: pages/그룹/키.html)
@@ -113,6 +113,11 @@
         { label: 'GW 상태 모니터링',    page: 'gw/gw-status' },
         { label: 'GW 서버 상태 모니터링', page: 'gw/gw-server' },
       ]},
+      // 구독: 고객이 자기 에디션 정보를 보고 변경/연장을 요청하는 고객 전용 메뉴
+      { label: '구독', children: [
+        { label: '구독 현황',           page: 'subscribe/status' },
+        { label: '요청 내역',           page: 'subscribe/requests' },
+      ]},
       // 관리 메뉴는 호스트와 같은 화면을 쓰되, 작업 관리(스케줄러)는 호스트 전용이라 제외
       { label: '관리', children: [
         { label: 'ID 관리', children: [
@@ -144,6 +149,8 @@
     'admin/job',
     'admin/job-history',
     'admin/job-detail',
+    'subscribe/status',
+    'subscribe/requests',
   ];
   const DONE_KIM = [
     'facility/ups-list',

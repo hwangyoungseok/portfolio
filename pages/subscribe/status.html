@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>구독 현황 - UMS</title>
+<link rel="stylesheet" href="../../shared/common.css">
+<link rel="stylesheet" href="status.css">
+</head>
+<body data-page="subscribe/status">
+
+<!--
+  화면: 구독 > 구독 현황   (고객 모드 전용)
+  설명: 현재 구독 중인 에디션·계약 기간·사용량을 보여주고,
+        [SaaS 관리 > 에디션]에 정의된 공개 에디션 정보를 기반으로 변경/연장/해지를 요청한다.
+        요청 내용은 localStorage 에 쌓이고 [구독 > 요청 내역] 화면에서 조회된다.
+  ---------------------------------------------------------------------
+   - 공통 컴포넌트(.btn / .badge / .form-grid / .modal-overlay+.modal / umsToast 등)는
+     shared/common.css 참고
+-->
+
+<div id="umsContent">
+  <div class="content">
+
+    <!-- 현재 구독 -->
+    <div class="sub-card">
+      <div class="sub-card-head">
+        <h3>현재 구독</h3>
+        <button class="btn btn-primary" onclick="reqOpen('change')">구독 변경 요청</button>
+      </div>
+      <div class="cur-wrap">
+        <div class="cur-main">
+          <div class="cur-edition" id="curEdition">-</div>
+          <div class="cur-desc" id="curDesc">-</div>
+          <div class="cur-price" id="curPrice">-</div>
+        </div>
+        <div class="cur-facts">
+          <div class="fact"><span>테넌트</span><b id="curTenant">-</b></div>
+          <div class="fact"><span>계약 상태</span><b id="curState">-</b></div>
+          <div class="fact"><span>시작일</span><b id="curFrom">-</b></div>
+          <div class="fact"><span>만료일</span><b id="curTo">-</b></div>
+          <div class="fact"><span>결제 주기</span><b id="curCycle">-</b></div>
+          <div class="fact"><span>다음 청구</span><b id="curNext">-</b></div>
+        </div>
+      </div>
+
+      <div class="usage" id="usage"></div>
+
+      <div class="cur-actions">
+        <button class="btn" onclick="reqOpen('extend')">기간 연장 요청</button>
+        <button class="btn btn-danger" onclick="reqOpen('cancel')">해지 요청</button>
+      </div>
+    </div>
+
+    <!-- 에디션 안내 -->
+    <div class="sub-card">
+      <div class="sub-card-head">
+        <h3>에디션</h3>
+        <span class="hint">현재 이용 중인 에디션은 파란색으로 표시됩니다.</span>
+      </div>
+      <div class="ed-grid" id="edGrid"></div>
+    </div>
+
+  </div>
+
+  <!-- 구독 요청 모달 -->
+  <div class="modal-overlay" id="reqModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="rTitle">구독 변경 요청</h3>
+        <button class="modal-close" onclick="reqModalClose()">&#10005;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="form-label">테넌트</div><div class="dv-box" id="r-tenant">-</div>
+          <div class="form-label">현재 에디션</div><div class="dv-box" id="r-cur">-</div>
+          <div class="form-label req">요청 유형</div>
+          <select class="form-select" id="r-type" onchange="typeChange()">
+            <option value="change">에디션 변경</option>
+            <option value="extend">기간 연장</option>
+            <option value="cancel">해지</option>
+          </select>
+          <div class="form-label req" id="l-edition">희망 에디션</div>
+          <select class="form-select" id="r-edition" onchange="renderDiff()"></select>
+          <div class="form-label" id="l-cycle">결제 주기</div>
+          <select class="form-select" id="r-cycle" onchange="renderDiff()">
+            <option value="month">월 단위</option>
+            <option value="year">연 단위</option>
+          </select>
+          <div class="form-label" id="l-from">희망 적용일</div>
+          <input class="form-input" id="r-from" type="date">
+          <div class="form-label">담당자 연락처</div>
+          <input class="form-input" id="r-contact" placeholder="이메일 또는 전화번호">
+          <div class="form-label">요청 사유</div>
+          <textarea class="form-textarea" id="r-memo" rows="3"
+                    placeholder="예: 사이트 증설로 사용자 한도 상향이 필요합니다."></textarea>
+        </div>
+
+        <div class="diff" id="diff"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" onclick="reqModalClose()">취소</button>
+        <button class="btn btn-primary" onclick="reqSubmit()">요청 보내기</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="../../shared/layout.js"></script>
+<script src="status.js"></script>
+</body>
+</html>
