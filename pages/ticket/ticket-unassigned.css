@@ -1,2 +1,6 @@
 /* 미할당 티켓 전용 스타일 (공통은 shared/common.css)
    화면: 티켓 > 미할당 티켓 */
+
+.grid-table th:nth-child(4),
+.grid-table td:nth-child(4) { min-width: 200px; }
+.grid-table tbody tr:hover td { background: transparent; cursor: default; }

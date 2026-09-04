@@ -61,6 +61,9 @@
     'gw/gw-list',
     'gw/gw-status',
     'gw/gw-server',
+    'ticket/ticket-my',
+    'ticket/ticket-unassigned',
+    'ticket/ticket-all',
   ]);
 
   // ---- 루트 경로 계산: 이 스크립트 = <ROOT>/shared/layout.js ----

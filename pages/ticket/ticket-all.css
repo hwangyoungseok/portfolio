@@ -1,2 +1,5 @@
 /* 전체 티켓 전용 스타일 (공통은 shared/common.css)
    화면: 티켓 > 전체 티켓 */
+
+.grid-table th:nth-child(3),
+.grid-table td:nth-child(3) { min-width: 200px; }

@@ -79,6 +79,9 @@ a { color: inherit; text-decoration: none; }
 .btn-primary:hover { background: #1559b8; border-color: #1559b8; color: #fff; }
 .btn-danger { color: #e53935; }
 .btn-danger:hover { background: #fff5f5; border-color: #e53935; color: #e53935; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn:disabled:hover { background: #fff; border-color: #ccc; color: #444; }
+.btn-primary:disabled:hover { background: #1a6ed8; border-color: #1a6ed8; color: #fff; }
 
 /* ---------- 그리드 (툴바 + 테이블 + 페이징) ---------- */
 .grid-wrap { background: #fff; border: 1px solid #dde1e7; border-radius: 6px; display: flex; flex-direction: column; overflow: hidden; flex: 1 1 auto; min-height: 180px; }
@@ -105,6 +108,52 @@ a { color: inherit; text-decoration: none; }
 .badge-warn { background: #fff4e5; color: #b76e00; }
 .badge-major { background: #fdecea; color: #c62828; }
 .badge-crit { background: #c62828; color: #fff; }
+
+/* ---------- KPI 카드 ---------- */
+.kpi-row { display: flex; flex-wrap: wrap; gap: 10px; flex-shrink: 0; }
+.kpi-card { flex: 1; min-width: 120px; background: #fff; border: 1px solid #dde1e7; border-radius: 6px; padding: 14px 16px; }
+.kpi-card-label { font-size: 12px; color: #666; margin-bottom: 8px; font-weight: bold; }
+.kpi-card-value { font-size: 26px; font-weight: bold; color: #1a1a2e; }
+.kpi-card-value .unit { font-size: 13px; font-weight: normal; color: #888; margin-left: 3px; }
+
+/* 심각도 색상 카드 (알람/티켓 공용) */
+.kpi-card.sev-warning  { background: #fff6cc; border-color: #ecd166; }
+.kpi-card.sev-minor    { background: #ffddab; border-color: #e8a94f; }
+.kpi-card.sev-major    { background: #ff5c5c; border-color: #e23c3c; }
+.kpi-card.sev-critical { background: #8f1414; border-color: #6e0f0f; }
+.kpi-card.sev-warning .kpi-card-label  { color: #6b5610; }
+.kpi-card.sev-minor .kpi-card-label    { color: #6b430a; }
+.kpi-card.sev-major .kpi-card-label,
+.kpi-card.sev-critical .kpi-card-label { color: rgba(255,255,255,0.85); }
+.kpi-card.sev-warning .kpi-card-value  { color: #4a3a0d; }
+.kpi-card.sev-minor .kpi-card-value    { color: #4a2c07; }
+.kpi-card.sev-major .kpi-card-value,
+.kpi-card.sev-critical .kpi-card-value { color: #fff; }
+.kpi-card.sev-warning .kpi-card-value .unit  { color: rgba(74,58,13,0.65); }
+.kpi-card.sev-minor .kpi-card-value .unit    { color: rgba(74,44,7,0.65); }
+.kpi-card.sev-major .kpi-card-value .unit,
+.kpi-card.sev-critical .kpi-card-value .unit { color: rgba(255,255,255,0.75); }
+
+/* ---------- 티켓 우선순위 / 상태 배지 ----------
+   심각도 KPI 카드와 동일한 색상 계열로 맞춰 배지-카드 간 시각적 일관성 유지 */
+.pri-badge, .status-badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: bold; white-space: nowrap; }
+.pri-warning  { background: #fff6cc; color: #6b5610; }
+.pri-minor    { background: #ffddab; color: #6b430a; }
+.pri-major    { background: #ff5c5c; color: #fff; }
+.pri-critical { background: #8f1414; color: #fff; }
+.status-pending  { background: #eef1f4; color: #55606b; }
+.status-progress { background: #e3f0ff; color: #1a6ed8; }
+.status-done     { background: #e6f4ea; color: #1e7e34; }
+.status-overdue  { background: #fdecea; color: #c62828; margin-left: 4px; }
+
+/* 검색바 내 기간(from~to) 필드 */
+.search-daterange { display: flex; align-items: center; gap: 6px; }
+.search-daterange .search-input { min-width: 132px; }
+.search-daterange .date-sep { color: #98a2b3; }
+
+/* 그리드 내 인라인 상태 변경 셀렉트 */
+.inline-status { border: 1px solid #ccc; border-radius: 10px; padding: 2px 6px; font-size: 11px; font-weight: bold; background: #fff; color: #333; cursor: pointer; }
+.grid-table td.chk-cell { width: 34px; }
 
 /* ---------- 페이지네이션 ---------- */
 .paging { display: flex; align-items: center; justify-content: center; gap: 4px; padding: 10px; flex-shrink: 0; }
@@ -161,6 +210,22 @@ a { color: inherit; text-decoration: none; }
 .dv-box.multi { align-items: flex-start; min-height: 58px; white-space: pre-wrap; }
 .dv-box ul { margin: 0; padding-left: 16px; }
 .dv-box ul li { margin: 2px 0; }
+
+/* 티켓 상세: 처리이력 타임라인 / 댓글 (공용) */
+.tl { display: flex; flex-direction: column; gap: 8px; }
+.tl-item { display: flex; gap: 10px; font-size: 12px; }
+.tl-time { color: #98a2b3; white-space: nowrap; min-width: 118px; }
+.tl-text { color: #333; }
+
+.cmt-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px; }
+.cmt-item { border: 1px solid #eee; border-radius: 6px; padding: 8px 10px; background: #fafbfc; }
+.cmt-head { display: flex; justify-content: space-between; font-size: 11px; color: #98a2b3; margin-bottom: 4px; }
+.cmt-author { color: #1a1a2e; font-weight: bold; }
+.cmt-text { font-size: 12.5px; color: #333; white-space: pre-wrap; }
+.cmt-input { display: flex; gap: 6px; }
+.cmt-input textarea { flex: 1; }
+
+.status-change-row { display: flex; gap: 8px; align-items: center; }
 
 /* ---------- 토글 스위치 ---------- */
 .switch-field { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; color: #555; }
