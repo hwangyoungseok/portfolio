@@ -12,19 +12,163 @@
 <!--
   화면: SaaS 관리 > 에디션   (호스트 모드 전용)
   설명: SaaS 에디션(요금제) 정의 — 제공 기능/한도 구성 및 관리.
+        행마다 [작업] 드롭다운으로 편집 / 기능 설정 / 가격 설정 / 복제 / 삭제 를 제공.
   ---------------------------------------------------------------------
-  작업 방법:
-   - 아래 <div class="content"> 안에 화면 본문만 작성 (사이드바/헤더/푸터는 layout.js가 자동)
    - 공통 컴포넌트(.search-bar / .grid-wrap / .toolbar / .grid-table / .paging /
-     .modal-overlay+.modal / .form-grid / .badge / .drawer / umsToast 등)는 shared/common.css 참고
-   - 참고 구현: pages/facility/ups-list.*  (그리드+검색+모달+우측 상세패널),
-                pages/facility/location-manage.*  (좌측 트리+우측 입력영역)
-   - 완성하면 shared/layout.js 의 DONE 목록에 "saas/edition" 추가
+     .modal-overlay+.modal / .form-grid / .badge / .switch / umsToast 등)는 shared/common.css 참고
+   - 테넌트 화면(pages/saas/tenant.*)과 같은 구조 — 행 [작업] 드롭다운 포함
 -->
 
 <div id="umsContent">
   <div class="content">
-    <div class="placeholder-card">에디션 &mdash; 작업 예정</div>
+
+    <!-- 검색조건 -->
+    <div class="search-bar">
+      <div class="search-field"><label>공개 상태</label>
+        <select class="search-select" id="fPublic">
+          <option value="">전체</option>
+          <option value="on">공개</option>
+          <option value="off">비공개</option>
+        </select>
+      </div>
+      <div class="search-field"><label>평가판</label>
+        <select class="search-select" id="fTrial">
+          <option value="">전체</option>
+          <option value="y">제공</option>
+          <option value="n">미제공</option>
+        </select>
+      </div>
+      <div class="search-field"><label>검색어</label>
+        <input class="search-input" id="q" placeholder="에디션명 / 설명"
+               onkeyup="if(event.key==='Enter')renderGrid()">
+      </div>
+      <div class="search-actions">
+        <button class="btn btn-primary" onclick="renderGrid()">조회</button>
+        <button class="btn" onclick="resetSearch()">초기화</button>
+      </div>
+    </div>
+
+    <!-- 그리드 -->
+    <div class="grid-wrap">
+      <div class="toolbar">
+        <span style="font-size:12px;color:#666;">총 <b id="gridCount">0</b>건</span>
+        <span class="toolbar-spacer"></span>
+        <button class="btn" onclick="umsToast('엑셀 다운로드 (목업)')">엑셀 다운로드</button>
+        <button class="btn btn-primary" onclick="editionOpen(null)">+ 에디션 등록</button>
+      </div>
+
+      <div class="grid-scroll">
+        <table class="grid-table">
+          <thead>
+            <tr>
+              <th style="width:96px;">작업</th>
+              <th class="sortable" data-sort="name"    onclick="sortBy('name')">에디션명<span class="sort-ind"></span></th>
+              <th>설명</th>
+              <th class="sortable" data-sort="monthly" onclick="sortBy('monthly')">월 요금<span class="sort-ind"></span></th>
+              <th class="sortable" data-sort="yearly"  onclick="sortBy('yearly')">연 요금<span class="sort-ind"></span></th>
+              <th>무료 평가판</th>
+              <th>제공 기능</th>
+              <th class="sortable" data-sort="tenants" onclick="sortBy('tenants')">사용 테넌트<span class="sort-ind"></span></th>
+              <th>공개 상태</th>
+            </tr>
+          </thead>
+          <tbody id="gridBody"></tbody>
+        </table>
+      </div>
+
+      <div class="paging">
+        <button class="page-btn" onclick="umsToast('처음 페이지 (목업)')">처음</button>
+        <button class="page-btn" onclick="umsToast('이전 페이지 (목업)')">이전</button>
+        <button class="page-btn active">1</button>
+        <button class="page-btn" onclick="umsToast('다음 페이지 (목업)')">다음</button>
+        <button class="page-btn" onclick="umsToast('마지막 페이지 (목업)')">마지막</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 행 [작업] 드롭다운 (그리드 스크롤에 잘리지 않도록 body 기준 fixed) -->
+  <div id="editionMenu">
+    <div class="tmenu-item" onclick="menuAct('edit')">편집</div>
+    <div class="tmenu-item" onclick="menuAct('feature')">기능 설정</div>
+    <div class="tmenu-item" onclick="menuAct('price')">가격 설정</div>
+    <div class="tmenu-sep"></div>
+    <div class="tmenu-item" onclick="menuAct('copy')">복제</div>
+    <div class="tmenu-item" onclick="menuAct('tenants')">사용 테넌트 보기</div>
+    <div class="tmenu-sep"></div>
+    <div class="tmenu-item danger" onclick="menuAct('delete')">삭제</div>
+  </div>
+
+  <!-- 등록/수정 모달 -->
+  <div class="modal-overlay" id="editionModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="mTitle">에디션 등록</h3>
+        <button class="modal-close" onclick="editionModalClose()">&#10005;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="form-label req">에디션명</div><input class="form-input" id="m-name">
+          <div class="form-label">설명</div><input class="form-input" id="m-desc" placeholder="요금제 한 줄 설명">
+          <div class="form-label req">월 요금</div>
+          <div class="form-inline"><input class="form-input" id="m-monthly" type="number" min="0" step="10000"><span class="hint">원 / 월</span></div>
+          <div class="form-label req">연 요금</div>
+          <div class="form-inline"><input class="form-input" id="m-yearly" type="number" min="0" step="100000"><span class="hint">원 / 년</span></div>
+          <div class="form-label">무료 평가판</div>
+          <div class="form-inline"><input class="form-input" id="m-trial" type="number" min="0" style="max-width:100px;"><span class="hint">일 (0 = 미제공)</span></div>
+          <div class="form-label">공개</div>
+          <div class="switch-field">
+            <label class="switch"><input type="checkbox" id="m-public" checked><span class="switch-track"></span></label>
+            <span id="m-publicText">공개</span>
+            <span class="hint">비공개 에디션은 신규 테넌트 등록 시 선택할 수 없습니다.</span>
+          </div>
+          <div class="form-label">비고</div><textarea class="form-textarea" id="m-memo" rows="2"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" onclick="editionModalClose()">취소</button>
+        <button class="btn btn-primary" onclick="editionSave()">저장</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 기능 설정 모달 -->
+  <div class="modal-overlay" id="featModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="fTitle">기능 설정</h3>
+        <button class="modal-close" onclick="featModalClose()">&#10005;</button>
+      </div>
+      <div class="modal-body">
+        <div class="feat-section">제공 기능</div>
+        <div class="feat-list" id="featList"></div>
+
+        <div class="feat-section">사용 한도</div>
+        <div class="form-grid">
+          <div class="form-label">사이트 수</div>
+          <div class="form-inline"><input class="form-input" id="l-sites" type="number" min="0" style="max-width:120px;"><span class="hint">개 (0 = 무제한)</span></div>
+          <div class="form-label">사용자 수</div>
+          <div class="form-inline"><input class="form-input" id="l-users" type="number" min="0" style="max-width:120px;"><span class="hint">명 (0 = 무제한)</span></div>
+          <div class="form-label">데이터 보관</div>
+          <div class="form-inline"><input class="form-input" id="l-retention" type="number" min="1" style="max-width:120px;"><span class="hint">개월</span></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" onclick="featModalClose()">취소</button>
+        <button class="btn btn-primary" onclick="featSave()">저장</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 삭제 확인 -->
+  <div class="modal-overlay" id="delModal">
+    <div class="confirm-modal">
+      <p id="d-msg"></p>
+      <div class="confirm-btns">
+        <button class="btn btn-primary" id="d-yes" onclick="editionDelete()">예</button>
+        <button class="btn btn-danger" onclick="delModalClose()">아니오</button>
+      </div>
+    </div>
   </div>
 </div>
 

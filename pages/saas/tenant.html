@@ -12,19 +12,162 @@
 <!--
   화면: SaaS 관리 > 테넌트   (호스트 모드 전용)
   설명: SaaS 테넌트(고객사) 등록·수정·해지 및 에디션/계약 배정.
+        행마다 [작업] 드롭다운으로 편집 / DB 연결 문자열 / 마이그레이션 / 기능 /
+        관리자 초대 / 비밀번호 설정 / 이 테넌트로 로그인 / 삭제 를 제공.
   ---------------------------------------------------------------------
-  작업 방법:
-   - 아래 <div class="content"> 안에 화면 본문만 작성 (사이드바/헤더/푸터는 layout.js가 자동)
    - 공통 컴포넌트(.search-bar / .grid-wrap / .toolbar / .grid-table / .paging /
-     .modal-overlay+.modal / .form-grid / .badge / .drawer / umsToast 등)는 shared/common.css 참고
-   - 참고 구현: pages/facility/ups-list.*  (그리드+검색+모달+우측 상세패널),
-                pages/facility/location-manage.*  (좌측 트리+우측 입력영역)
+     .modal-overlay+.modal / .form-grid / .badge / umsToast 등)는 shared/common.css 참고
    - 완성하면 shared/layout.js 의 DONE 목록에 "saas/tenant" 추가
 -->
 
 <div id="umsContent">
   <div class="content">
-    <div class="placeholder-card">테넌트 &mdash; 작업 예정</div>
+
+    <!-- 검색조건 -->
+    <div class="search-bar">
+      <div class="search-field"><label>에디션</label><select class="search-select" id="fEdition"></select></div>
+      <div class="search-field"><label>활성화 상태</label>
+        <select class="search-select" id="fActive">
+          <option value="">전체</option>
+          <option value="on">활성</option>
+          <option value="off">비활성</option>
+        </select>
+      </div>
+      <div class="search-field"><label>만료</label>
+        <select class="search-select" id="fExpiry">
+          <option value="">전체</option>
+          <option value="soon">30일 이내 만료</option>
+          <option value="over">만료됨</option>
+          <option value="none">만료일 없음</option>
+        </select>
+      </div>
+      <div class="search-field"><label>검색어</label>
+        <input class="search-input" id="q" placeholder="테넌트명 / 도메인 / 관리자"
+               onkeyup="if(event.key==='Enter')renderGrid()">
+      </div>
+      <div class="search-actions">
+        <button class="btn btn-primary" onclick="renderGrid()">조회</button>
+        <button class="btn" onclick="resetSearch()">초기화</button>
+      </div>
+    </div>
+
+    <!-- 그리드 -->
+    <div class="grid-wrap">
+      <div class="toolbar">
+        <span style="font-size:12px;color:#666;">총 <b id="gridCount">0</b>건</span>
+        <span class="toolbar-spacer"></span>
+        <button class="btn" onclick="umsToast('엑셀 다운로드 (목업)')">엑셀 다운로드</button>
+        <button class="btn btn-primary" onclick="tenantOpen(null)">+ 테넌트 등록</button>
+      </div>
+
+      <div class="grid-scroll">
+        <table class="grid-table">
+          <thead>
+            <tr>
+              <th style="width:96px;">작업</th>
+              <th class="sortable" data-sort="name"    onclick="sortBy('name')">테넌트명<span class="sort-ind"></span></th>
+              <th class="sortable" data-sort="edition" onclick="sortBy('edition')">에디션명<span class="sort-ind"></span></th>
+              <th class="sortable" data-sort="end"     onclick="sortBy('end')">에디션 만료일(UTC)<span class="sort-ind"></span></th>
+              <th>도메인</th>
+              <th>관리자</th>
+              <th class="sortable" data-sort="active"  onclick="sortBy('active')">활성화 상태<span class="sort-ind"></span></th>
+            </tr>
+          </thead>
+          <tbody id="gridBody"></tbody>
+        </table>
+      </div>
+
+      <div class="paging">
+        <button class="page-btn" onclick="umsToast('처음 페이지 (목업)')">처음</button>
+        <button class="page-btn" onclick="umsToast('이전 페이지 (목업)')">이전</button>
+        <button class="page-btn active">1</button>
+        <button class="page-btn" onclick="umsToast('다음 페이지 (목업)')">다음</button>
+        <button class="page-btn" onclick="umsToast('마지막 페이지 (목업)')">마지막</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 행 [작업] 드롭다운 (그리드 스크롤에 잘리지 않도록 body 기준 fixed) -->
+  <div id="tenantMenu">
+    <div class="tmenu-item" onclick="menuAct('edit')">편집</div>
+    <div class="tmenu-item" onclick="menuAct('conn')">데이터베이스 연결 문자열</div>
+    <div class="tmenu-item" onclick="menuAct('migrate')">데이터베이스 마이그레이션 적용</div>
+    <div class="tmenu-item" onclick="menuAct('feature')">기능</div>
+    <div class="tmenu-sep"></div>
+    <div class="tmenu-item" onclick="menuAct('invite')">관리자 초대</div>
+    <div class="tmenu-item" onclick="menuAct('passwd')">비밀번호 설정</div>
+    <div class="tmenu-item" onclick="menuAct('login')">이 테넌트로 로그인</div>
+    <div class="tmenu-sep"></div>
+    <div class="tmenu-item danger" onclick="menuAct('delete')">삭제</div>
+  </div>
+
+  <!-- 등록/수정 모달 -->
+  <div class="modal-overlay" id="tenantModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="mTitle">테넌트 등록</h3>
+        <button class="modal-close" onclick="tenantModalClose()">&#10005;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="form-label req">테넌트명</div><input class="form-input" id="m-name">
+          <div class="form-label req">도메인</div>
+          <div class="form-inline">
+            <input class="form-input" id="m-domain" placeholder="tenant-code">
+            <span class="hint">.ums.eteverse.com</span>
+          </div>
+          <div class="form-label req">에디션</div><select class="form-select" id="m-edition"></select>
+          <div class="form-label">에디션 만료일(UTC)</div><input class="form-input" id="m-end" type="date">
+          <div class="form-label">관리자 이메일</div><input class="form-input" id="m-admin" placeholder="admin@example.com">
+          <div class="form-label">활성화</div>
+          <div class="switch-field">
+            <label class="switch"><input type="checkbox" id="m-active" checked><span class="switch-track"></span></label>
+            <span id="m-activeText">활성</span>
+          </div>
+          <div class="form-label">비고</div><textarea class="form-textarea" id="m-memo" rows="2"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" onclick="tenantModalClose()">취소</button>
+        <button class="btn btn-primary" onclick="tenantSave()">저장</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DB 연결 문자열 모달 -->
+  <div class="modal-overlay" id="connModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>데이터베이스 연결 문자열</h3>
+        <button class="modal-close" onclick="connModalClose()">&#10005;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="form-label">테넌트</div><div id="c-name" class="dv-box"></div>
+          <div class="form-label">연결 문자열</div>
+          <textarea class="form-textarea" id="c-conn" rows="3"
+                    placeholder="Server=...;Database=...;User Id=...;Password=..."></textarea>
+          <div class="form-label"></div>
+          <div class="hint">비워 두면 호스트 기본 DB를 사용합니다.</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" onclick="connModalClose()">취소</button>
+        <button class="btn btn-primary" onclick="connSave()">저장</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 삭제 확인 -->
+  <div class="modal-overlay" id="delModal">
+    <div class="confirm-modal">
+      <p><span class="confirm-hl" id="d-name"></span> 테넌트를<br>삭제하시겠습니까?</p>
+      <div class="confirm-btns">
+        <button class="btn btn-primary" onclick="tenantDelete()">예</button>
+        <button class="btn btn-danger" onclick="delModalClose()">아니오</button>
+      </div>
+    </div>
   </div>
 </div>
 
