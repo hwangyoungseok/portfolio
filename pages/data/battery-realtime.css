@@ -1,2 +1,37 @@
 /* 배터리 실시간 모니터링 전용 스타일 (공통은 shared/common.css)
    화면: 데이터 조회 > 배터리 실시간 모니터링 */
+
+.batrt-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+
+.batrt-card { background: #fff; border: 1px solid #dde1e7; border-radius: 8px; padding: 14px 16px; cursor: pointer; transition: box-shadow 0.15s, border-color 0.15s; }
+.batrt-card:hover { box-shadow: 0 2px 10px rgba(0,0,0,0.08); border-color: #1a6ed8; }
+.batrt-card.warn { border-color: #e08a1e; background: #fffaf3; }
+.batrt-card.crit { border-color: #e53935; background: #fffaf9; }
+
+.batrt-head { margin-bottom: 12px; }
+.batrt-name { font-size: 15px; font-weight: bold; color: #1a1a2e; }
+.batrt-sub { font-size: 11px; color: #98a2b3; }
+
+.batrt-gauges { display: flex; flex-direction: column; gap: 9px; margin-bottom: 12px; }
+.gauge { display: flex; align-items: center; gap: 8px; }
+.gauge-label { width: 34px; font-size: 11px; color: #666; flex-shrink: 0; }
+.gauge-track { flex: 1; height: 8px; background: #eef1f4; border-radius: 4px; overflow: hidden; }
+.gauge-fill { height: 100%; border-radius: 4px; background: #1a6ed8; }
+.gauge-fill.warn { background: #e08a1e; }
+.gauge-fill.crit { background: #e53935; }
+.gauge-pct { width: 36px; text-align: right; font-size: 11px; color: #333; font-weight: bold; flex-shrink: 0; }
+
+.batrt-bottom { display: flex; gap: 8px; }
+.batrt-temp { flex: 1; border: 1px solid #eee; border-radius: 6px; padding: 8px 10px; font-size: 12px; color: #444; background: #fafbfc; }
+.batrt-temp b { color: #1a1a2e; }
+.batrt-status { flex-shrink: 0; display: flex; align-items: center; justify-content: center; border-radius: 6px; padding: 8px 12px; font-size: 12px; font-weight: bold; }
+.batrt-status.ok   { background: #e6f4ea; color: #1e7e34; }
+.batrt-status.warn { background: #fff4e5; color: #b76e00; }
+.batrt-status.crit { background: #fdecea; color: #c62828; }
+
+.batrt-empty { grid-column: 1 / -1; padding: 40px; text-align: center; color: #98a2b3; background: #fff; border: 1px solid #dde1e7; border-radius: 6px; font-size: 12px; }
+
+/* ---- 상세 트렌드 모달 ---- */
+.trend-legend { display: flex; gap: 16px; font-size: 12px; color: #555; margin-bottom: 10px; }
+.legend-item { display: flex; align-items: center; gap: 5px; }
+.legend-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
