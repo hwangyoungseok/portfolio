@@ -103,7 +103,6 @@
       ]},
       { label: '티켓', children: [
         { label: '내 티켓',             page: 'ticket/ticket-my' },
-        { label: '미할당 티켓',         page: 'ticket/ticket-unassigned' },
         { label: '전체 티켓',           page: 'ticket/ticket-all' },
       ]},
       { label: 'GW', children: [
@@ -146,6 +145,10 @@
     'ticket/ticket-all',
     'data/ups-data',
     'data/ups-trend',
+    'data/battery-data',
+    'data/battery-trend',
+    'data/battery-realtime',
+    'facility/battery-list',
   ];
   const DONE = new Set([].concat(DONE_OH, DONE_KIM, DONE_HWANG));
 
