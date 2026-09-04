@@ -63,6 +63,7 @@
         { label: '작업',                page: 'admin/job' },
         { label: '템플릿 관리',         page: 'admin/template' },
         { label: '감사로그',            page: 'admin/audit-log' },
+        { label: '설정',                page: 'admin/setting' },
       ]},
     ],
 
