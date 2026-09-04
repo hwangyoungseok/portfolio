@@ -123,7 +123,7 @@
     umsToast(r.on ? '룰을 사용으로 전환했습니다.' : '룰을 미사용으로 전환했습니다.');
   }
 
-  function crEditRule() { umsToast('룰 수정 모달 — D단계에서 구현 예정'); }
+  function crEditRule() { /* 목업 — 동작 없음 */ }
 
   // ===================================================================
   //  B단계: 체크 룰 등록 모달
@@ -158,7 +158,8 @@
 
   let crmFacNo = null;      // 대상 설비 no
   let crmExtra = [];        // 추가 적용 설비 no[]
-  let crmActSeq = 0;
+  let crmActs = [];         // 추가된 Action 목록 [{kind, channels[], targets[], pri}]
+  let crmActEditIdx = null; // 수정 중인 Action 목록 인덱스 (null = 신규 추가 모드)
 
   function el(id) { return document.getElementById(id); }
 
@@ -167,7 +168,7 @@
     if (!f) return;
     crmFacNo = facNo;
     crmExtra = [];
-    crmActSeq = 0;
+    crmActs = [];
 
     el('crmTitle').textContent = '체크 룰 등록';
     el('crmTarget').textContent = f.name + '  (' + f.type + ' · ' + f.loc + ')';
@@ -182,10 +183,12 @@
     el('crmOps').innerHTML = OPS.map(function (o) {
       return '<button type="button" class="cr-op" onclick="crmInsertOp(\'' + o + '\')">' + o + '</button>';
     }).join('');
-    // 조건식 / Action 초기화
+    // 조건식 초기화
     el('crmExpr').value = '';
-    el('crmActList').innerHTML = '';
-    crmAddAction();
+    // Action 초기화: 대상 옵션 채우고, 입력영역/목록 리셋
+    el('crmActTargets').innerHTML = NOTIFY_TARGETS.map(function (t) { return '<option>' + t + '</option>'; }).join('');
+    crmActResetEdit();
+    crmActRenderList();
     // 추가 적용 설비 콤보 (같은 유형, 자기 제외)
     el('crmExtra').innerHTML = '<option value="">설비 선택…</option>'
       + FAC.filter(function (x) { return x.type === f.type && x.no !== facNo; })
@@ -213,55 +216,105 @@
     insertAtCursor(el('crmExpr'), op === '( )' ? '()' : ' ' + op + ' ');
   }
 
-  // ---- Action 리스트 ----
-  function crmAddAction() {
-    const idx = ++crmActSeq;
-    const wrap = document.createElement('div');
-    wrap.className = 'cr-act-row';
-    wrap.dataset.idx = idx;
-    wrap.innerHTML =
-      '<select class="form-select cr-act-kind" onchange="crmActKind(' + idx + ')">'
-      +   '<option value="notify">알림</option><option value="ticket">티켓생성</option>'
-      + '</select>'
-      + '<span class="cr-act-sub" data-sub="notify">'
-      +   '채널 '
-      +   '<label><input type="checkbox" class="ch-email" checked> 이메일</label>'
-      +   '<label><input type="checkbox" class="ch-sms"> SMS</label>'
-      +   '<label><input type="checkbox" class="ch-kakao"> 카카오</label>'
-      +   '&nbsp; 대상 <select class="form-select cr-act-tg" multiple size="3">'
-      +     NOTIFY_TARGETS.map(function (t) { return '<option>' + t + '</option>'; }).join('')
-      +   '</select>'
-      + '</span>'
-      + '<span class="cr-act-sub" data-sub="ticket" hidden>'
-      +   '우선순위 <select class="form-select cr-act-pri"><option>낮음</option><option selected>보통</option><option>높음</option></select>'
-      + '</span>'
-      + '<button type="button" class="btn btn-danger cr-act-del" onclick="crmDelAction(' + idx + ')">삭제</button>';
-    el('crmActList').appendChild(wrap);
+  // ---- Action : 입력영역 1벌 + 아래 추가된 목록 ----
+  function crmActKindChange() {
+    const kind = el('crmActKind').value;
+    document.querySelectorAll('.cr-act-edit .cr-act-sub').forEach(function (s) {
+      s.hidden = (s.dataset.sub !== kind);
+    });
   }
-  function crmActKind(idx) {
-    const row = el('crmActList').querySelector('.cr-act-row[data-idx="' + idx + '"]');
-    const kind = row.querySelector('.cr-act-kind').value;
-    row.querySelectorAll('.cr-act-sub').forEach(function (s) { s.hidden = (s.dataset.sub !== kind); });
+  function crmActResetEdit() {
+    crmActEditIdx = null;
+    el('crmActKind').value = 'notify';
+    el('crmChEmail').checked = true;
+    el('crmChSms').checked = false;
+    el('crmChKakao').checked = false;
+    Array.prototype.forEach.call(el('crmActTargets').options, function (o) { o.selected = false; });
+    el('crmActPri').value = '보통';
+    el('crmActApplyBtn').textContent = '+ 추가';
+    el('crmActCancelBtn').hidden = true;
+    crmActKindChange();
   }
-  function crmDelAction(idx) {
-    const row = el('crmActList').querySelector('.cr-act-row[data-idx="' + idx + '"]');
-    if (row) row.remove();
+  function crmActReadEdit() {
+    const kind = el('crmActKind').value;
+    if (kind === 'ticket') return { kind: 'ticket', channels: [], targets: [], pri: el('crmActPri').value };
+    const channels = [];
+    if (el('crmChEmail').checked) channels.push('이메일');
+    if (el('crmChSms').checked) channels.push('SMS');
+    if (el('crmChKakao').checked) channels.push('카카오');
+    const targets = Array.prototype.map.call(
+      Array.prototype.filter.call(el('crmActTargets').options, function (o) { return o.selected; }),
+      function (o) { return o.value; }
+    );
+    return { kind: 'notify', channels: channels, targets: targets, pri: '' };
+  }
+  function crmActApply() {
+    const a = crmActReadEdit();
+    if (a.kind === 'notify' && !a.channels.length) { umsToast('알림 채널을 하나 이상 선택하세요.'); return; }
+    if (crmActEditIdx != null && crmActs[crmActEditIdx]) {
+      crmActs[crmActEditIdx] = a;          // 기존 줄 갱신
+    } else {
+      crmActs.push(a);                     // 신규 추가
+    }
+    crmActResetEdit();
+    crmActRenderList();
+  }
+  function crmActEdit(i) {
+    const a = crmActs[i];
+    if (!a) return;
+    crmActEditIdx = i;                     // 줄은 목록에 그대로 두고 편집 표시
+    el('crmActKind').value = a.kind;
+    crmActKindChange();
+    if (a.kind === 'notify') {
+      el('crmChEmail').checked = a.channels.indexOf('이메일') >= 0;
+      el('crmChSms').checked = a.channels.indexOf('SMS') >= 0;
+      el('crmChKakao').checked = a.channels.indexOf('카카오') >= 0;
+      Array.prototype.forEach.call(el('crmActTargets').options, function (o) {
+        o.selected = a.targets.indexOf(o.value) >= 0;
+      });
+    } else {
+      el('crmActPri').value = a.pri || '보통';
+    }
+    el('crmActApplyBtn').textContent = '수정 반영';
+    el('crmActCancelBtn').hidden = false;
+    crmActRenderList();
+  }
+  function crmActCancelEdit() { crmActResetEdit(); crmActRenderList(); }
+  function crmActDel(i) {
+    crmActs.splice(i, 1);
+    if (crmActEditIdx != null) {           // 편집 중이던 인덱스 보정
+      if (crmActEditIdx === i) crmActResetEdit();
+      else if (crmActEditIdx > i) crmActEditIdx--;
+    }
+    crmActRenderList();
+  }
+
+  function actDesc(a) {
+    if (a.kind === 'ticket') return '우선순위: ' + (a.pri || '보통');
+    return (a.channels.join(', ') || '채널 없음')
+      + ' · 대상: ' + (a.targets.join(', ') || '없음');
+  }
+  function crmActRenderList() {
+    if (!crmActs.length) {
+      el('crmActList').innerHTML = '<div class="cr-act-empty">추가된 Action이 없습니다.</div>';
+      return;
+    }
+    el('crmActList').innerHTML = crmActs.map(function (a, i) {
+      return '<div class="cr-act-item' + (i === crmActEditIdx ? ' editing' : '') + '">'
+        + '<span class="cr-act-tag">' + (a.kind === 'notify' ? '알림' : '티켓생성') + '</span>'
+        + '<span class="cr-act-desc">' + actDesc(a) + '</span>'
+        + '<span class="cr-act-item-btns">'
+        +   '<button type="button" class="icon-btn" title="수정" onclick="crmActEdit(' + i + ')">&#9998;</button>'
+        +   '<button type="button" class="icon-btn del" title="삭제" onclick="crmActDel(' + i + ')">&#128465;</button>'
+        + '</span></div>';
+    }).join('');
   }
   function actionSummary() {
-    const parts = [];
-    el('crmActList').querySelectorAll('.cr-act-row').forEach(function (row) {
-      const kind = row.querySelector('.cr-act-kind').value;
-      if (kind === 'notify') {
-        const ch = [];
-        if (row.querySelector('.ch-email').checked) ch.push('이메일');
-        if (row.querySelector('.ch-sms').checked) ch.push('SMS');
-        if (row.querySelector('.ch-kakao').checked) ch.push('카카오');
-        parts.push('알림(' + (ch.join(', ') || '채널없음') + ')');
-      } else {
-        parts.push('티켓생성');
-      }
-    });
-    return parts.join(' · ');
+    return crmActs.map(function (a) {
+      return a.kind === 'notify'
+        ? '알림(' + (a.channels.join(', ') || '채널없음') + ')'
+        : '티켓생성';
+    }).join(' · ');
   }
 
   // ---- 추가 적용 설비 ----
@@ -289,7 +342,65 @@
     umsToast('중복 검증 완료 — ' + crmExtra.length + '개 설비 중 겹치는 룰 없음 (목업)');
   }
 
-  function crmCopyExisting() { umsToast('기존 룰에서 복사 — D단계에서 구현 예정'); }
+  // ---- 기존 룰에서 복사 ----
+  let crCopyList = [];   // [{facNo, facName, rule}]
+
+  function crmCopyExisting() {
+    crCopyList = [];
+    FAC.forEach(function (f) {
+      if (f.no === crmFacNo) return;   // 다른 설비의 룰만
+      f.rules.forEach(function (r) { crCopyList.push({ facNo: f.no, facName: f.name, rule: r }); });
+    });
+    el('crCopyQ').value = '';
+    crCopyRender();
+    el('crCopyModal').classList.add('show');
+  }
+  function crCopyClose() { el('crCopyModal').classList.remove('show'); }
+
+  function crCopyRender() {
+    const kw = (el('crCopyQ').value || '').trim();
+    const rows = crCopyList.filter(function (x) {
+      return !kw || x.facName.indexOf(kw) >= 0 || x.rule.expr.indexOf(kw) >= 0;
+    });
+    el('crCopyBody').innerHTML = rows.length ? rows.map(function (x) {
+      return '<tr>'
+        + '<td>' + x.facName + '</td>'
+        + '<td>' + levelBadge(x.rule.level) + '</td>'
+        + '<td class="expr">' + x.rule.expr + '</td>'
+        + '<td>' + x.rule.action + '</td>'
+        + '<td><button type="button" class="cr-copy-pick" onclick="crCopyPick(' + x.facNo + ',' + x.rule.id + ')">선택</button></td>'
+        + '</tr>';
+    }).join('') : '<tr><td colspan="5"><div class="cr-copy-empty">복사할 룰이 없습니다.</div></td></tr>';
+  }
+
+  function parseActionSummary(str) {
+    if (!str || str === '-') return [];
+    return str.split(' · ').map(function (p) {
+      p = p.trim();
+      if (p.indexOf('알림(') === 0) {
+        const inside = p.slice(3, -1);
+        const channels = (inside ? inside.split(',') : [])
+          .map(function (s) { return s.trim(); })
+          .filter(function (s) { return s && s !== '채널없음'; });
+        return { kind: 'notify', channels: channels, targets: [], pri: '' };
+      }
+      if (p.indexOf('티켓생성') === 0) return { kind: 'ticket', channels: [], targets: [], pri: '보통' };
+      return null;
+    }).filter(Boolean);
+  }
+
+  function crCopyPick(facNo, ruleId) {
+    const f = FAC.filter(function (x) { return x.no === facNo; })[0];
+    const r = f && f.rules.filter(function (x) { return x.id === ruleId; })[0];
+    if (!r) return;
+    document.querySelectorAll('input[name=crLevel]').forEach(function (rd) { rd.checked = (rd.value === r.level); });
+    el('crmExpr').value = r.expr;
+    crmActs = parseActionSummary(r.action);
+    crmActResetEdit();
+    crmActRenderList();
+    crCopyClose();
+    umsToast('룰 내용을 불러왔습니다.');
+  }
 
   // ---- 저장 : 대상 + 추가 적용 설비마다 독립 룰 생성 ----
   function crmSave() {
@@ -325,15 +436,20 @@
   window.crToggle       = crToggle;
   window.crAddRule      = crAddRule;
   window.crEditRule     = crEditRule;
-  window.crmClose       = crmClose;
-  window.crmInsertParam = crmInsertParam;
-  window.crmInsertOp    = crmInsertOp;
-  window.crmAddAction   = crmAddAction;
-  window.crmActKind     = crmActKind;
-  window.crmDelAction   = crmDelAction;
-  window.crmExtraRemove = crmExtraRemove;
+  window.crmClose        = crmClose;
+  window.crmInsertParam  = crmInsertParam;
+  window.crmInsertOp     = crmInsertOp;
+  window.crmActKindChange = crmActKindChange;
+  window.crmActApply      = crmActApply;
+  window.crmActEdit       = crmActEdit;
+  window.crmActDel        = crmActDel;
+  window.crmActCancelEdit = crmActCancelEdit;
+  window.crmExtraRemove  = crmExtraRemove;
   window.crmValidateDup = crmValidateDup;
   window.crmCopyExisting = crmCopyExisting;
+  window.crCopyRender   = crCopyRender;
+  window.crCopyPick     = crCopyPick;
+  window.crCopyClose    = crCopyClose;
   window.crmSave        = crmSave;
 
 })();

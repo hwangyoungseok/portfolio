@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>알람 관리 - UMS</title>
+<link rel="stylesheet" href="../../shared/common.css">
+<link rel="stylesheet" href="alarm-manage.css">
+</head>
+<body data-page="alarm/alarm-manage">
+
+<!--
+  화면: 알람 > 알람 관리  (현재 Active 알람)
+  알람 테이블 컬럼(확정):
+    AlarmNo · FacilityId · Source(DEVICE/RULE/SYSTEM/MANUAL) · OccurTime · Name · Description
+    · Severity · Status(미확인/확인/조치완료) · AckBy · AckAt
+    · TicketNo · ClearedTime · ClearType(자동/수동) · ClearedBy
+  Description = 발생 시점에 조립한 텍스트 (RULE: 룰설명 + 조건식 + 계측값 / DEVICE: trap 메시지 / SYSTEM: 원인)
+  구조화 컬럼(TriggerValue/DetailJson) 없음. 유형/위치는 설비에서 조인해 표시.
+  참고: docu/2.design/ums_sequences.md #8
+-->
+
+<div id="umsContent">
+  <div class="content">
+
+    <div class="search-bar">
+      <div class="search-field"><label>심각도</label>
+        <select class="search-select" id="fSev">
+          <option value="">전체</option>
+          <option value="warn">Warning</option>
+          <option value="minor">Minor</option>
+          <option value="major">Major</option>
+          <option value="crit">Critical</option>
+        </select>
+      </div>
+      <div class="search-field"><label>Source</label>
+        <select class="search-select" id="fSrc">
+          <option value="">전체</option>
+          <option value="RULE">RULE</option>
+          <option value="DEVICE">DEVICE</option>
+          <option value="SYSTEM">SYSTEM</option>
+          <option value="MANUAL">MANUAL</option>
+        </select>
+      </div>
+      <div class="search-field"><label>유형</label>
+        <select class="search-select" id="fType">
+          <option value="">전체</option>
+          <option>UPS</option><option>PDU</option><option>칠러</option><option>배터리</option><option>GW</option>
+        </select>
+      </div>
+      <div class="search-field"><label>위치</label><select class="search-select" id="fLoc"></select></div>
+      <div class="search-field"><label>처리상태</label>
+        <select class="search-select" id="fStat">
+          <option value="">전체</option>
+          <option value="new">미확인</option>
+          <option value="ack">확인</option>
+          <option value="done">조치완료</option>
+        </select>
+      </div>
+      <div class="search-field"><label>검색어</label>
+        <input class="search-input" id="q" placeholder="설비명 / 알람명" onkeyup="if(event.key==='Enter')amRender()">
+      </div>
+      <div class="search-actions">
+        <button class="btn btn-primary" onclick="amRender()">조회</button>
+        <button class="btn" onclick="amReset()">초기화</button>
+      </div>
+    </div>
+
+    <div class="grid-wrap">
+      <div class="toolbar">
+        <span style="font-size:12px;color:#666;">Active <b id="amCount">0</b>건</span>
+        <span class="am-newcount">미확인 <b id="amNew">0</b></span>
+        <span class="toolbar-spacer"></span>
+        <span class="hint">행을 클릭하면 우측에 상세가 열립니다.</span>
+      </div>
+
+      <div class="grid-scroll">
+        <table class="grid-table am-table">
+          <thead>
+            <tr>
+              <th style="width:52px;">No</th>
+              <th style="width:72px;">Source</th>
+              <th style="width:84px;">심각도</th>
+              <th style="width:150px;">발생시각</th>
+              <th>대상 설비</th>
+              <th style="width:74px;">유형</th>
+              <th>위치</th>
+              <th>알람명</th>
+              <th style="width:88px;">처리상태</th>
+              <th style="width:96px;">연계 티켓</th>
+            </tr>
+          </thead>
+          <tbody id="amBody"></tbody>
+        </table>
+      </div>
+
+      <div class="paging">
+        <button class="page-btn">&#9664;</button>
+        <button class="page-btn active">1</button>
+        <button class="page-btn">&#9654;</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 우측 상세 패널 -->
+  <div class="drawer-mask" id="amMask" onclick="amDetailClose()"></div>
+  <aside class="drawer" id="amDrawer">
+    <div class="drawer-header">
+      <h3 id="amdTitle">알람 상세</h3>
+      <button class="modal-close" onclick="amDetailClose()">&#10005;</button>
+    </div>
+    <div class="drawer-body" id="amdBody"></div>
+    <div class="drawer-footer am-drawer-footer">
+      <button class="btn btn-primary" onclick="amSaveStatus()">저장</button>
+      <span class="spacer"></span>
+      <button class="btn btn-danger" onclick="amAskClear()">알람 해제</button>
+    </div>
+  </aside>
+
+  <!-- 해제 확인 -->
+  <div class="modal-overlay" id="amClearModal">
+    <div class="confirm-modal">
+      <p><span class="confirm-hl" id="amClearName">이 알람</span> 을<br>해제하시겠습니까?</p>
+      <div class="confirm-btns">
+        <button class="btn btn-primary" onclick="amClear()">예</button>
+        <button class="btn btn-danger" onclick="amClearClose()">아니오</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="../../shared/layout.js"></script>
+<script src="alarm-manage.js"></script>
+</body>
+</html>
