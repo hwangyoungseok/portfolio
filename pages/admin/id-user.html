@@ -11,20 +11,184 @@
 
 <!--
   화면: 관리 > ID 관리 > 사용자   (호스트 모드 전용)
-  설명: 사용자 계정 등록·수정·삭제, 조직 배정, 권한/상태 관리.
+  설명: 사용자 계정 등록·수정·삭제, 조직 배정, 역할/상태 관리.
+        목록 데이터는 [관리 > ID 관리 > 조직] 화면의 구성원과 동일한 사용자 집합.
+        행마다 [작업] 드롭다운으로 편집 / 권한 / 비밀번호 변경 / 잠금 해제 / 삭제.
   ---------------------------------------------------------------------
-  작업 방법:
-   - 아래 <div class="content"> 안에 화면 본문만 작성 (사이드바/헤더/푸터는 layout.js가 자동)
-   - 공통 컴포넌트(.search-bar / .grid-wrap / .toolbar / .grid-table / .paging /
-     .modal-overlay+.modal / .form-grid / .badge / .drawer / umsToast 등)는 shared/common.css 참고
-   - 참고 구현: pages/facility/ups-list.*  (그리드+검색+모달+우측 상세패널),
-                pages/facility/location-manage.*  (좌측 트리+우측 입력영역)
-   - 완성하면 shared/layout.js 의 DONE 목록에 "admin/id-user" 추가
+   - 공통 컴포넌트(.search-bar / .grid-wrap / .toolbar / .grid-table /
+     .modal-overlay+.modal / .form-grid / .switch / umsToast 등)는 shared/common.css 참고
 -->
 
 <div id="umsContent">
   <div class="content">
-    <div class="placeholder-card">사용자 &mdash; 작업 예정</div>
+
+    <!-- 상단 액션 -->
+    <div class="page-actions">
+      <button class="btn" onclick="openTopMenu(event,'imp')">가져오기 <span class="caret">&#9662;</span></button>
+      <button class="btn" onclick="openTopMenu(event,'exp')">내보내기 <span class="caret">&#9662;</span></button>
+      <button class="btn btn-primary" onclick="inviteOpen()">&#9993; 사용자 초대</button>
+      <button class="btn btn-primary" onclick="userOpen(null)">+ 새 사용자</button>
+    </div>
+
+    <!-- 검색 + 필터 -->
+    <div class="search-bar search-main">
+      <input class="search-input search-wide" id="q" placeholder="검색 (사용자 이름 / 이메일 / 이름)"
+             onkeyup="if(event.key==='Enter')renderGrid()">
+      <button class="btn btn-primary" onclick="renderGrid()">&#128269; 검색</button>
+      <button class="btn btn-filter" id="filterBtn" onclick="toggleFilter()">필터 <span class="caret">&#9662;</span></button>
+    </div>
+
+    <div class="search-bar filter-bar" id="filterBar">
+      <div class="search-field"><label>역할</label><select class="search-select" id="fRole"></select></div>
+      <div class="search-field"><label>조직</label><select class="search-select" id="fOrg" style="min-width:150px;"></select></div>
+      <div class="search-field"><label>활성</label>
+        <select class="search-select" id="fActive"><option value="">전체</option><option value="y">활성</option><option value="n">비활성</option></select>
+      </div>
+      <div class="search-field"><label>계정 잠금</label>
+        <select class="search-select" id="fLock"><option value="">전체</option><option value="y">잠금</option><option value="n">정상</option></select>
+      </div>
+      <div class="search-field"><label>이메일 인증</label>
+        <select class="search-select" id="fMail"><option value="">전체</option><option value="y">인증됨</option><option value="n">미인증</option></select>
+      </div>
+      <div class="search-actions">
+        <button class="btn btn-primary" onclick="renderGrid()">적용</button>
+        <button class="btn" onclick="resetSearch()">지우기</button>
+      </div>
+    </div>
+
+    <!-- 그리드 -->
+    <div class="grid-wrap">
+      <div class="grid-scroll">
+        <table class="grid-table" id="userTable">
+          <thead>
+            <tr>
+              <th style="width:96px;">작업</th>
+              <th class="sortable" data-sort="uname" onclick="sortBy('uname')">사용자 이름<span class="sort-ind"></span></th>
+              <th class="sortable" data-sort="email" onclick="sortBy('email')">이메일 주소<span class="sort-ind"></span></th>
+              <th>역할</th>
+              <th>조직</th>
+              <th class="sortable" data-sort="phone" onclick="sortBy('phone')">전화번호<span class="sort-ind"></span></th>
+              <th class="sortable" data-sort="first" onclick="sortBy('first')">이름<span class="sort-ind"></span></th>
+              <th class="sortable" data-sort="last"  onclick="sortBy('last')">성<span class="sort-ind"></span></th>
+              <th class="sortable" data-sort="active" onclick="sortBy('active')">활성<span class="sort-ind"></span></th>
+              <th class="sortable" data-sort="locked" onclick="sortBy('locked')">계정 잠금<span class="sort-ind"></span></th>
+              <th class="sortable" data-sort="mailok" onclick="sortBy('mailok')">이메일 인증됨<span class="sort-ind"></span></th>
+              <th class="sortable" data-sort="tfa"   onclick="sortBy('tfa')">2단계 인증<span class="sort-ind"></span></th>
+              <th class="sortable" data-sort="fail"  onclick="sortBy('fail')">로그인 실패 횟수<span class="sort-ind"></span></th>
+              <th class="sortable" data-sort="created" onclick="sortBy('created')">생성 시간<span class="sort-ind"></span></th>
+              <th class="sortable" data-sort="last_login" onclick="sortBy('last_login')">최종 로그인<span class="sort-ind"></span></th>
+            </tr>
+          </thead>
+          <tbody id="gridBody"></tbody>
+        </table>
+      </div>
+
+      <div class="pane-paging">
+        <select class="search-select" id="pSize" onchange="page=1;renderGrid()" style="min-width:70px;">
+          <option>10</option><option>20</option><option>50</option>
+        </select>
+        <span class="hint">건씩 보기</span>
+        <span class="page-info" id="pInfo">0 - 0 / 전체 0 건</span>
+        <span class="toolbar-spacer"></span>
+        <button class="page-btn" onclick="go('first')">처음</button>
+        <button class="page-btn" onclick="go('prev')">이전</button>
+        <button class="page-btn active" id="pNo">1</button>
+        <button class="page-btn" onclick="go('next')">다음</button>
+        <button class="page-btn" onclick="go('last')">마지막</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 행 [작업] 드롭다운 -->
+  <div id="userMenu" class="drop-menu">
+    <div class="tmenu-item" onclick="menuAct('edit')">편집</div>
+    <div class="tmenu-item" onclick="menuAct('perm')">권한</div>
+    <div class="tmenu-item" onclick="menuAct('passwd')">비밀번호 변경</div>
+    <div class="tmenu-item" onclick="menuAct('unlock')">잠금 해제</div>
+    <div class="tmenu-sep"></div>
+    <div class="tmenu-item danger" onclick="menuAct('delete')">삭제</div>
+  </div>
+
+  <!-- 가져오기 / 내보내기 드롭다운 -->
+  <div id="impMenu" class="drop-menu">
+    <div class="tmenu-item" onclick="topAct('excel-in')">엑셀 파일 가져오기</div>
+    <div class="tmenu-item" onclick="topAct('template')">양식 다운로드</div>
+  </div>
+  <div id="expMenu" class="drop-menu">
+    <div class="tmenu-item" onclick="topAct('excel-out')">엑셀로 내보내기</div>
+    <div class="tmenu-item" onclick="topAct('csv-out')">CSV로 내보내기</div>
+  </div>
+
+  <!-- 사용자 등록/수정 모달 -->
+  <div class="modal-overlay" id="userModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="mTitle">새 사용자</h3>
+        <button class="modal-close" onclick="userModalClose()">&#10005;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="form-label req">사용자 이름</div><input class="form-input" id="m-uname" placeholder="로그인 ID">
+          <div class="form-label req">이메일 주소</div><input class="form-input" id="m-email">
+          <div class="form-label">성</div><input class="form-input" id="m-last">
+          <div class="form-label">이름</div><input class="form-input" id="m-first">
+          <div class="form-label">전화번호</div><input class="form-input" id="m-phone" placeholder="010-0000-0000">
+          <div class="form-label req">역할</div><select class="form-select" id="m-role"></select>
+          <div class="form-label">조직</div><select class="form-select" id="m-org"></select>
+          <div class="form-label">활성</div>
+          <div class="switch-field">
+            <label class="switch"><input type="checkbox" id="m-active" checked><span class="switch-track"></span></label>
+            <span id="m-activeText">활성</span>
+          </div>
+          <div class="form-label">2단계 인증</div>
+          <div class="switch-field">
+            <label class="switch"><input type="checkbox" id="m-tfa"><span class="switch-track"></span></label>
+            <span id="m-tfaText">사용 안 함</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" onclick="userModalClose()">취소</button>
+        <button class="btn btn-primary" onclick="userSave()">저장</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 사용자 초대 모달 -->
+  <div class="modal-overlay" id="inviteModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>사용자 초대</h3>
+        <button class="modal-close" onclick="inviteModalClose()">&#10005;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="form-label req">이메일 주소</div>
+          <textarea class="form-textarea" id="i-emails" rows="3"
+                    placeholder="여러 명은 줄바꿈 또는 쉼표로 구분"></textarea>
+          <div class="form-label req">역할</div><select class="form-select" id="i-role"></select>
+          <div class="form-label">조직</div><select class="form-select" id="i-org"></select>
+          <div class="form-label"></div>
+          <div class="hint">초대 메일의 링크로 본인이 비밀번호를 설정합니다.</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" onclick="inviteModalClose()">취소</button>
+        <button class="btn btn-primary" onclick="inviteSend()">초대 메일 발송</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 삭제 확인 -->
+  <div class="modal-overlay" id="delModal">
+    <div class="confirm-modal">
+      <p id="d-msg"></p>
+      <div class="confirm-btns">
+        <button class="btn btn-primary" id="d-yes" onclick="userDelete()">예</button>
+        <button class="btn btn-danger" onclick="delModalClose()">아니오</button>
+      </div>
+    </div>
   </div>
 </div>
 

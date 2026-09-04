@@ -117,6 +117,9 @@
   const DONE_OH = [
     'saas/tenant',
     'saas/edition',
+    'admin/audit-log',
+    'admin/id-org',
+    'admin/id-user',
   ];
   const DONE_KIM = [
     'facility/ups-list',
