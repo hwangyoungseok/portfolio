@@ -1,0 +1,64 @@
+/* 구독 요청 전용 스타일 (공통은 shared/common.css)
+   화면: SaaS 관리 > 구독 요청 */
+
+/* 상단 처리 현황 요약 */
+.sum-row { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; flex-shrink: 0; }
+.sum-card { background: #fff; border: 1px solid #dde1e7; border-radius: 6px; padding: 12px 14px;
+  cursor: pointer; }
+.sum-card:hover { border-color: #1a6ed8; }
+.sum-card.on { border-color: #1a6ed8; box-shadow: 0 0 0 2px rgba(26,110,216,0.12); }
+.sum-label { font-size: 11.5px; color: #98a2b3; }
+.sum-value { font-size: 20px; font-weight: bold; color: #1a1a2e; margin-top: 4px; }
+.sum-card.new  .sum-value { color: #1a6ed8; }
+.sum-card.review .sum-value { color: #b76e00; }
+.sum-card.done .sum-value { color: #1e7e34; }
+.sum-card.reject .sum-value { color: #c62828; }
+
+/* 그리드 */
+.grid-table td:nth-child(3),
+.grid-table td:nth-child(6) { text-align: left; }
+.grid-table th:nth-child(6),
+.grid-table td:nth-child(6) { min-width: 240px; }
+
+.grid-table th.sortable { cursor: pointer; user-select: none; }
+.grid-table th.sortable:hover { color: #1a6ed8; }
+.sort-ind { display: inline-block; width: 10px; margin-left: 4px; font-size: 9px; color: #b6bec8; }
+.grid-table th.sortable.asc  .sort-ind::before { content: '\25B2'; color: #1a6ed8; }
+.grid-table th.sortable.desc .sort-ind::before { content: '\25BC'; color: #1a6ed8; }
+.grid-table th.sortable:not(.asc):not(.desc) .sort-ind::before { content: '\21C5'; }
+
+/* 행 처리 버튼 */
+.row-acts { display: inline-flex; gap: 4px; }
+.mini-btn { border: 1px solid #ccc; background: #fff; padding: 3px 9px; border-radius: 4px;
+  cursor: pointer; font-size: 11px; color: #444; white-space: nowrap; }
+.mini-btn:hover { border-color: #1a6ed8; color: #1a6ed8; }
+.mini-btn.ok { border-color: #1a6ed8; background: #1a6ed8; color: #fff; font-weight: bold; }
+.mini-btn.ok:hover { background: #1559b8; border-color: #1559b8; color: #fff; }
+.mini-btn.no:hover { border-color: #e53935; color: #e53935; background: #fff5f5; }
+
+/* 처리 상태 뱃지 */
+.badge-new    { background: #eef4fd; color: #1a6ed8; }
+.badge-review { background: #fff4e5; color: #b76e00; }
+.badge-done   { background: #e6f4ea; color: #1e7e34; }
+.badge-reject { background: #fdecea; color: #c62828; }
+.badge-cancel { background: #f2f2f2; color: #888; }
+
+.req-flow b { color: #1a1a2e; }
+.req-none { color: #98a2b3; }
+.from-customer { display: inline-block; margin-left: 6px; padding: 1px 6px; border-radius: 3px;
+  background: #f2faf5; color: #1e7a4a; font-size: 10px; }
+
+/* 하단 페이징 */
+.pane-paging { display: flex; align-items: center; gap: 8px; padding: 10px 14px; flex-shrink: 0;
+  border-top: 1px solid #eef1f4; font-size: 12px; color: #666; }
+.page-info { color: #98a2b3; margin-left: 8px; }
+
+/* 상세 / 처리 모달 */
+#detModal .modal, #actModal .modal { max-width: 580px; }
+.det-dl { display: grid; grid-template-columns: 110px 1fr; gap: 10px 14px; font-size: 12.5px; align-items: start; }
+.det-dl dt { color: #7a8794; }
+.det-dl dd { color: #333; word-break: break-all; white-space: pre-wrap; }
+.det-reply { margin-top: 16px; padding: 12px 14px; border: 1px solid #e5e9ee; border-radius: 4px;
+  background: #f7f9fb; font-size: 12px; color: #444; line-height: 1.8; }
+.det-reply b { color: #1a1a2e; }
+#actModal .dv-box { min-height: 32px; font-size: 12px; }
