@@ -60,9 +60,13 @@
           { label: '사용자',            page: 'admin/id-user' },
           { label: '역할',              page: 'admin/id-role' },
         ]},
-        { label: '작업',                page: 'admin/job' },
+        { label: '작업 관리', children: [
+          { label: '작업',              page: 'admin/job' },
+          { label: '실행 이력',         page: 'admin/job-history' },
+        ]},
         { label: '템플릿 관리',         page: 'admin/template' },
         { label: '감사로그',            page: 'admin/audit-log' },
+        { label: '설정',                page: 'admin/setting' },
       ]},
     ],
 
@@ -100,13 +104,23 @@
       ]},
       { label: '티켓', children: [
         { label: '내 티켓',             page: 'ticket/ticket-my' },
-        { label: '미할당 티켓',         page: 'ticket/ticket-unassigned' },
         { label: '전체 티켓',           page: 'ticket/ticket-all' },
       ]},
       { label: 'GW', children: [
         { label: 'GW 관리',             page: 'gw/gw-list' },
         { label: 'GW 상태 모니터링',    page: 'gw/gw-status' },
         { label: 'GW 서버 상태 모니터링', page: 'gw/gw-server' },
+      ]},
+      // 관리 메뉴는 호스트와 같은 화면을 쓰되, 작업 관리(스케줄러)는 호스트 전용이라 제외
+      { label: '관리', children: [
+        { label: 'ID 관리', children: [
+          { label: '조직',              page: 'admin/id-org' },
+          { label: '사용자',            page: 'admin/id-user' },
+          { label: '역할',              page: 'admin/id-role' },
+        ]},
+        { label: '템플릿 관리',         page: 'admin/template' },
+        { label: '감사로그',            page: 'admin/audit-log' },
+        { label: '설정',                page: 'admin/setting' },
       ]},
     ],
 
@@ -119,6 +133,15 @@
   const DONE_OH = [
     'saas/tenant',
     'saas/edition',
+    'admin/audit-log',
+    'admin/id-org',
+    'admin/id-user',
+    'admin/id-role',
+    'admin/template',
+    'admin/setting',
+    'admin/job',
+    'admin/job-history',
+    'admin/job-detail',
   ];
   const DONE_KIM = [
     'facility/ups-list',
@@ -136,6 +159,10 @@
     'ticket/ticket-all',
     'data/ups-data',
     'data/ups-trend',
+    'data/battery-data',
+    'data/battery-trend',
+    'data/battery-realtime',
+    'facility/battery-list',
   ];
   const DONE = new Set([].concat(DONE_OH, DONE_KIM, DONE_HWANG));
 

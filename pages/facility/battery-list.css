@@ -1,2 +1,8 @@
 /* 배터리 관리 전용 스타일 (공통은 shared/common.css)
    화면: 설비관리 > 배터리 관리 */
+
+#batModal .modal { max-width: 600px; }
+
+.grid-table td:nth-child(2) { text-align: left; }
+.grid-table th:nth-child(2),
+.grid-table td:nth-child(2) { min-width: 110px; }

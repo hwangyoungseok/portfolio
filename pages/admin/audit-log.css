@@ -1,2 +1,94 @@
 /* 감사로그 전용 스타일 (공통은 shared/common.css)
    화면: 관리 > 감사로그 */
+
+/* ---------- 탭 ---------- */
+.tabs { display: flex; gap: 20px; background: #fff; border: 1px solid #dde1e7; border-radius: 6px;
+  padding: 0 16px; flex-shrink: 0; }
+.tab { padding: 11px 2px; font-size: 12.5px; color: #7a8794; cursor: pointer;
+  border-bottom: 2px solid transparent; white-space: nowrap; }
+.tab:hover { color: #1a6ed8; }
+.tab.active { color: #1a6ed8; font-weight: bold; border-bottom-color: #1a6ed8; }
+
+.tab-pane { display: none; flex: 1; flex-direction: column; gap: 10px; min-height: 0; }
+.tab-pane.show { display: flex; }
+
+/* 모달 안 탭 */
+.modal-tabs { border: none; border-bottom: 1px solid #eee; border-radius: 0; padding: 0;
+  margin-bottom: 14px; }
+.modal-tabs .tab { padding: 8px 2px; font-size: 12px; }
+.dtab-pane { display: none; }
+.dtab-pane.show { display: block; }
+
+/* ---------- 그리드 ---------- */
+.grid-table td:nth-child(2),
+.grid-table td:nth-child(9) { text-align: left; }
+.grid-table th:nth-child(2),
+.grid-table td:nth-child(2) { min-width: 260px; }
+
+/* 정렬 가능한 헤더 */
+.grid-table th.sortable { cursor: pointer; user-select: none; }
+.grid-table th.sortable:hover { color: #1a6ed8; }
+.sort-ind { display: inline-block; width: 10px; margin-left: 4px; font-size: 9px; color: #b6bec8; }
+.grid-table th.sortable.asc  .sort-ind::before { content: '\25B2'; color: #1a6ed8; }
+.grid-table th.sortable.desc .sort-ind::before { content: '\25BC'; color: #1a6ed8; }
+.grid-table th.sortable:not(.asc):not(.desc) .sort-ind::before { content: '\21C5'; }
+
+/* [상세] 버튼 */
+.btn-detail { border: 1px solid #1a6ed8; background: #1a6ed8; color: #fff; font-weight: bold;
+  padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 11.5px;
+  display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+.btn-detail:hover { background: #1559b8; border-color: #1559b8; }
+
+/* HTTP 상태코드 / 메서드 뱃지 */
+.http-req { display: inline-flex; align-items: center; gap: 6px; }
+.http-code { padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: bold; color: #fff; line-height: 1.6; }
+.code-2 { background: #1e7e34; }
+.code-3 { background: #b76e00; }
+.code-4 { background: #e07b39; }
+.code-5 { background: #c62828; }
+.http-method { padding: 2px 7px; border-radius: 3px; font-size: 10.5px; font-weight: bold;
+  color: #fff; background: #3d4a5c; letter-spacing: 0.3px; }
+.http-url { color: #333; }
+
+/* 상관관계 ID 는 폭이 길어 축약 */
+.corr-id { font-family: Consolas, 'Courier New', monospace; font-size: 11px; color: #7a8794; }
+
+/* 예외 발생 표시 */
+.exc-yes { color: #c62828; font-weight: bold; }
+.exc-no  { color: #ccd2d9; }
+
+/* 변경 유형 뱃지 */
+.badge-create { background: #e6f4ea; color: #1e7e34; }
+.badge-update { background: #eef4fd; color: #1a6ed8; }
+.badge-delete { background: #fdecea; color: #c62828; }
+
+/* ---------- 상세 팝업 ---------- */
+#logModal .modal, #entityModal .modal { max-width: 760px; }
+
+.audit-dv { display: flex; flex-direction: column; }
+.audit-row { display: grid; grid-template-columns: 150px 1fr; gap: 12px; align-items: start;
+  padding: 11px 2px; border-bottom: 1px solid #f0f0f0; font-size: 12.5px; }
+.audit-row:last-child { border-bottom: none; }
+.audit-label { color: #444; font-weight: bold; }
+.audit-val { color: #333; word-break: break-all; }
+.audit-val .empty { color: #b6bec8; }
+
+/* 예외 JSON 박스 */
+.json-box { background: #f8f9fa; border: 1px solid #eceff2; border-radius: 4px; padding: 10px 12px;
+  font-family: Consolas, 'Courier New', monospace; font-size: 11.5px; line-height: 1.7; color: #333;
+  white-space: pre; overflow-x: auto; max-height: 260px; }
+
+/* 상세 팝업 안의 작은 표 (작업 탭 / 엔티티 변경 필드) */
+.mini-table { width: 100%; border-collapse: collapse; }
+.mini-table th { background: #f8f9fa; padding: 7px 10px; text-align: left; font-size: 11.5px;
+  color: #444; border-bottom: 1px solid #dde1e7; white-space: nowrap; }
+.mini-table td { padding: 7px 10px; font-size: 12px; color: #333; border-bottom: 1px solid #f2f2f2;
+  vertical-align: top; word-break: break-all; }
+.mini-table td.num { text-align: right; white-space: nowrap; }
+.val-old { color: #c62828; text-decoration: line-through; }
+.val-new { color: #1e7e34; }
+
+/* 하단 페이징 (다른 관리 화면과 동일 패턴) */
+.pane-paging { display: flex; align-items: center; gap: 8px; padding: 10px 14px; flex-shrink: 0;
+  border-top: 1px solid #eef1f4; font-size: 12px; color: #666; }
+.page-info { color: #98a2b3; margin-left: 8px; }

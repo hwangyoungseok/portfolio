@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>실행 이력 - UMS</title>
+<link rel="stylesheet" href="../../shared/common.css">
+<link rel="stylesheet" href="job-history.css">
+</head>
+<body data-page="admin/job-history">
+
+<!--
+  화면: 관리 > 작업 관리 > 실행 이력   (호스트 모드 전용)
+  설명: 모든 백그라운드 작업의 실행 이력을 한 목록으로 조회.
+        작업 이름 / 상태 / 예정 시각 구간으로 검색하고, 작업 이름을 누르면
+        해당 작업의 상세 이력(admin/job-detail)으로 이동한다.
+  ---------------------------------------------------------------------
+   - 공통 컴포넌트(.search-bar / .grid-wrap / .grid-table / .badge 등)는 shared/common.css 참고
+-->
+
+<div id="umsContent">
+  <div class="content">
+
+    <!-- 검색조건 -->
+    <div class="search-bar jh-filter">
+      <div class="ff"><label>작업 이름</label>
+        <input class="search-input" id="fName" placeholder=""
+               onkeyup="if(event.key==='Enter')search()"></div>
+      <div class="ff"><label>상태</label>
+        <select class="search-select" id="fState">
+          <option value="">-</option>
+          <option value="ok">성공</option>
+          <option value="fail">실패</option>
+        </select></div>
+      <div class="ff"><label>예정 시각 &ge;</label>
+        <input class="search-input" id="fFrom" type="datetime-local"></div>
+      <div class="ff"><label>예정 시각 &le;</label>
+        <input class="search-input" id="fTo" type="datetime-local"></div>
+      <div class="ff-actions">
+        <button class="btn" onclick="resetSearch()">지우기</button>
+        <button class="btn btn-primary" onclick="search()">&#128269; 실행 이력</button>
+      </div>
+    </div>
+
+    <!-- 그리드 -->
+    <div class="grid-wrap">
+      <div class="grid-scroll">
+        <table class="grid-table" id="execTable">
+          <thead>
+            <tr>
+              <th class="sortable" data-sort="name"  onclick="sortBy('name')">작업 이름<span class="sort-ind"></span></th>
+              <th class="sortable" data-sort="ok"    onclick="sortBy('ok')" style="width:90px;">상태<span class="sort-ind"></span></th>
+              <th class="sortable" data-sort="at"    onclick="sortBy('at')" style="width:200px;">예정 시각<span class="sort-ind"></span></th>
+              <th class="sortable" data-sort="start" onclick="sortBy('start')" style="width:200px;">시작<span class="sort-ind"></span></th>
+              <th class="sortable" data-sort="dur"   onclick="sortBy('dur')" style="width:130px;">소요 시간<span class="sort-ind"></span></th>
+              <th style="width:80px;">재시도</th>
+              <th class="sortable" data-sort="node"  onclick="sortBy('node')" style="width:170px;">노드<span class="sort-ind"></span></th>
+            </tr>
+          </thead>
+          <tbody id="gridBody"></tbody>
+        </table>
+      </div>
+
+      <div class="pane-paging">
+        <select class="search-select" id="pSize" onchange="go('size')" style="min-width:70px;">
+          <option>10</option><option>20</option><option>50</option>
+        </select>
+        <span class="hint">건씩 보기</span>
+        <span class="page-info" id="pInfo">0 - 0 / 전체 0 건</span>
+        <span class="toolbar-spacer"></span>
+        <button class="page-btn" onclick="go('first')">처음</button>
+        <button class="page-btn" onclick="go('prev')">이전</button>
+        <span id="pageNums"></span>
+        <button class="page-btn" onclick="go('next')">다음</button>
+        <button class="page-btn" onclick="go('last')">마지막</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="../../shared/layout.js"></script>
+<script src="job-history.js"></script>
+</body>
+</html>

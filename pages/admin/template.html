@@ -10,21 +10,94 @@
 <body data-page="admin/template">
 
 <!--
-  화면: 관리 > 템플릿 관리   (호스트 모드 전용)
-  설명: 화면/알람/보고서 등에 쓰이는 템플릿 등록·수정·삭제 및 버전 관리.
+  화면: 관리 > 템플릿 관리   (호스트/고객 공통)
+  설명: 메일/알림에 쓰이는 텍스트 템플릿 목록과 콘텐츠 편집.
+        [콘텐츠 편집] 버튼으로 컬처(언어)별 본문을 편집하고, 기본값 복원을 지원한다.
   ---------------------------------------------------------------------
-  작업 방법:
-   - 아래 <div class="content"> 안에 화면 본문만 작성 (사이드바/헤더/푸터는 layout.js가 자동)
-   - 공통 컴포넌트(.search-bar / .grid-wrap / .toolbar / .grid-table / .paging /
-     .modal-overlay+.modal / .form-grid / .badge / .drawer / umsToast 등)는 shared/common.css 참고
-   - 참고 구현: pages/facility/ups-list.*  (그리드+검색+모달+우측 상세패널),
-                pages/facility/location-manage.*  (좌측 트리+우측 입력영역)
-   - 완성하면 shared/layout.js 의 DONE 목록에 "admin/template" 추가
+   - 공통 컴포넌트(.search-bar / .grid-wrap / .grid-table / .modal-overlay+.modal /
+     .form-grid / umsToast 등)는 shared/common.css 참고
 -->
 
 <div id="umsContent">
   <div class="content">
-    <div class="placeholder-card">템플릿 관리 &mdash; 작업 예정</div>
+
+    <!-- 검색 -->
+    <div class="search-bar search-main">
+      <input class="search-input search-wide" id="q" placeholder="검색 (이름 / 표시 이름)"
+             onkeyup="if(event.key==='Enter')renderGrid()">
+      <button class="btn btn-primary" onclick="renderGrid()">&#128269; 검색</button>
+    </div>
+
+    <!-- 그리드 -->
+    <div class="grid-wrap">
+      <div class="grid-scroll">
+        <table class="grid-table" id="tplTable">
+          <thead>
+            <tr>
+              <th style="width:120px;"></th>
+              <th class="sortable" data-sort="name"  onclick="sortBy('name')">이름<span class="sort-ind"></span></th>
+              <th class="sortable" data-sort="label" onclick="sortBy('label')">표시 이름<span class="sort-ind"></span></th>
+              <th class="sortable" data-sort="inline" onclick="sortBy('inline')" style="width:150px;">인라인 로컬라이제이션<span class="sort-ind"></span></th>
+              <th class="sortable" data-sort="layout" onclick="sortBy('layout')">레이아웃<span class="sort-ind"></span></th>
+              <th style="width:120px;">기본 컬처 이름</th>
+            </tr>
+          </thead>
+          <tbody id="gridBody"></tbody>
+        </table>
+      </div>
+
+      <div class="pane-paging">
+        <select class="search-select" id="pSize" onchange="go('size')" style="min-width:70px;">
+          <option>10</option><option>20</option><option>50</option>
+        </select>
+        <span class="hint">건씩 보기</span>
+        <span class="page-info" id="pInfo">0 - 0 / 전체 0 건</span>
+        <span class="toolbar-spacer"></span>
+        <button class="page-btn" onclick="go('first')">처음</button>
+        <button class="page-btn" onclick="go('prev')">이전</button>
+        <button class="page-btn active" id="pNo">1</button>
+        <button class="page-btn" onclick="go('next')">다음</button>
+        <button class="page-btn" onclick="go('last')">마지막</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 콘텐츠 편집 모달 -->
+  <div class="modal-overlay" id="editModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="eTitle">콘텐츠 편집</h3>
+        <button class="modal-close" onclick="editModalClose()">&#10005;</button>
+      </div>
+      <div class="modal-body">
+        <div class="tpl-meta">
+          <div class="tpl-meta-row"><span>이름</span><b id="e-name">-</b></div>
+          <div class="tpl-meta-row"><span>레이아웃</span><b id="e-layout">-</b></div>
+        </div>
+
+        <div class="tpl-toolbar">
+          <label>컬처</label>
+          <select class="search-select" id="e-culture" onchange="cultureChange()" style="min-width:150px;">
+            <option value="ko">한국어 (ko)</option>
+            <option value="en">English (en)</option>
+          </select>
+          <span class="toolbar-spacer"></span>
+          <button class="btn" onclick="restoreDefault()">기본값으로 복원</button>
+        </div>
+
+        <textarea class="tpl-editor" id="e-body" spellcheck="false"></textarea>
+
+        <div class="tpl-vars">
+          <span class="hint">사용 가능한 변수</span>
+          <span id="e-vars"></span>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" onclick="editModalClose()">취소</button>
+        <button class="btn btn-primary" onclick="contentSave()">저장</button>
+      </div>
+    </div>
   </div>
 </div>
 
