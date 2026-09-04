@@ -104,12 +104,18 @@
           </table>
         </div>
 
-        <div class="paging">
-          <button class="page-btn" onclick="umsToast('처음 페이지 (목업)')">처음</button>
-          <button class="page-btn" onclick="umsToast('이전 페이지 (목업)')">이전</button>
-          <button class="page-btn active">1</button>
-          <button class="page-btn" onclick="umsToast('다음 페이지 (목업)')">다음</button>
-          <button class="page-btn" onclick="umsToast('마지막 페이지 (목업)')">마지막</button>
+        <div class="pane-paging">
+          <select class="search-select" id="lSize" onchange="lGo('size')" style="min-width:70px;">
+            <option>10</option><option>20</option><option>50</option>
+          </select>
+          <span class="hint">건씩 보기</span>
+          <span class="page-info" id="lInfo">0 - 0 / 전체 0 건</span>
+          <span class="toolbar-spacer"></span>
+          <button class="page-btn" onclick="lGo('first')">처음</button>
+          <button class="page-btn" onclick="lGo('prev')">이전</button>
+          <button class="page-btn active" id="lNo">1</button>
+          <button class="page-btn" onclick="lGo('next')">다음</button>
+          <button class="page-btn" onclick="lGo('last')">마지막</button>
         </div>
       </div>
     </div>
@@ -167,12 +173,18 @@
           </table>
         </div>
 
-        <div class="paging">
-          <button class="page-btn" onclick="umsToast('처음 페이지 (목업)')">처음</button>
-          <button class="page-btn" onclick="umsToast('이전 페이지 (목업)')">이전</button>
-          <button class="page-btn active">1</button>
-          <button class="page-btn" onclick="umsToast('다음 페이지 (목업)')">다음</button>
-          <button class="page-btn" onclick="umsToast('마지막 페이지 (목업)')">마지막</button>
+        <div class="pane-paging">
+          <select class="search-select" id="eSize" onchange="eGo('size')" style="min-width:70px;">
+            <option>10</option><option>20</option><option>50</option>
+          </select>
+          <span class="hint">건씩 보기</span>
+          <span class="page-info" id="eInfo">0 - 0 / 전체 0 건</span>
+          <span class="toolbar-spacer"></span>
+          <button class="page-btn" onclick="eGo('first')">처음</button>
+          <button class="page-btn" onclick="eGo('prev')">이전</button>
+          <button class="page-btn active" id="eNo">1</button>
+          <button class="page-btn" onclick="eGo('next')">다음</button>
+          <button class="page-btn" onclick="eGo('last')">마지막</button>
         </div>
       </div>
     </div>

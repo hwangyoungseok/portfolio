@@ -60,7 +60,10 @@
           { label: '사용자',            page: 'admin/id-user' },
           { label: '역할',              page: 'admin/id-role' },
         ]},
-        { label: '작업',                page: 'admin/job' },
+        { label: '작업 관리', children: [
+          { label: '작업',              page: 'admin/job' },
+          { label: '실행 이력',         page: 'admin/job-history' },
+        ]},
         { label: '템플릿 관리',         page: 'admin/template' },
         { label: '감사로그',            page: 'admin/audit-log' },
         { label: '설정',                page: 'admin/setting' },
@@ -122,6 +125,12 @@
     'admin/audit-log',
     'admin/id-org',
     'admin/id-user',
+    'admin/id-role',
+    'admin/template',
+    'admin/setting',
+    'admin/job',
+    'admin/job-history',
+    'admin/job-detail',
   ];
   const DONE_KIM = [
     'facility/ups-list',

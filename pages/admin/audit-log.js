@@ -63,11 +63,116 @@
       fields: [ { f: 'CapacityKva', o: '10', n: '15' }, { f: 'Memo', o: '', n: '2026년 증설' } ] },
   ];
 
+  // ---- 목업 데이터 보강: 페이징 확인용으로 로그/변경이력을 자동 생성해 덧붙인다 ----
+  //      (손으로 적은 위 데이터가 앞쪽, 생성 데이터가 뒤쪽 날짜로 이어진다)
+  (function generate() {
+    // 재현 가능한 난수 (새로고침해도 같은 목록)
+    let seed = 20260904;
+    function rnd() { seed = (seed * 1103515245 + 12345) % 2147483648; return seed / 2147483648; }
+    function pick(a) { return a[Math.floor(rnd() * a.length)]; }
+    function hex(n) {
+      let out = '';
+      for (let i = 0; i < n; i++) out += '0123456789abcdef'.charAt(Math.floor(rnd() * 16));
+      return out;
+    }
+    function pad(n) { return String(n).padStart(2, '0'); }
+
+    const USERS = ['admin', 'oh.yh', 'kim.jh', 'nam.kh', 'hwang.by', 'park.jh', 'han.sy',
+                   'choi.ma', 'yoon.dh', 'lee.sm', 'seo.jw', 'bae.sh', 'ahn.js', 'ma.sj'];
+    const IPS   = ['14.52.234.104', '211.35.120.77', '203.244.11.9', '121.128.45.6', '58.226.19.88'];
+    const CLIENTS = ['Chrome 141 / Windows 11', 'Edge 140 / Windows 11', 'Chrome 140 / macOS', ''];
+
+    // URL 별 호출되는 서비스/메서드 (작업 탭에 표시)
+    const EP = [
+      { url: '/Saas/Tenants',       m: 'GET',    svc: 'TenantAppService',        mtd: 'GetListAsync' },
+      { url: '/Saas/Editions',      m: 'GET',    svc: 'EditionAppService',       mtd: 'GetListAsync' },
+      { url: '/Admin/Users',        m: 'GET',    svc: 'IdentityUserAppService',  mtd: 'GetListAsync' },
+      { url: '/Admin/Users',        m: 'POST',   svc: 'IdentityUserAppService',  mtd: 'CreateAsync' },
+      { url: '/Admin/Roles',        m: 'GET',    svc: 'IdentityRoleAppService',  mtd: 'GetListAsync' },
+      { url: '/Admin/Roles',        m: 'PUT',    svc: 'IdentityRoleAppService',  mtd: 'UpdateAsync' },
+      { url: '/Admin/OrgUnits',     m: 'GET',    svc: 'OrganizationUnitAppService', mtd: 'GetListAsync' },
+      { url: '/Admin/OrgUnits',     m: 'POST',   svc: 'OrganizationUnitAppService', mtd: 'CreateAsync' },
+      { url: '/Admin/AuditLogs',    m: 'GET',    svc: 'AuditLogAppService',      mtd: 'GetListAsync' },
+      { url: '/Admin/Settings',     m: 'POST',   svc: 'SettingAppService',       mtd: 'UpdateAsync' },
+      { url: '/Facility/UpsList',   m: 'GET',    svc: 'UpsAppService',           mtd: 'GetListAsync' },
+      { url: '/Facility/UpsList',   m: 'PUT',    svc: 'UpsAppService',           mtd: 'UpdateAsync' },
+      { url: '/Facility/PduList',   m: 'GET',    svc: 'PduAppService',           mtd: 'GetListAsync' },
+      { url: '/Data/UpsData',       m: 'GET',    svc: 'UpsDataAppService',       mtd: 'GetListAsync' },
+      { url: '/Data/PduData',       m: 'GET',    svc: 'PduDataAppService',       mtd: 'GetListAsync' },
+      { url: '/Alarm/Rules',        m: 'GET',    svc: 'AlarmRuleAppService',     mtd: 'GetListAsync' },
+      { url: '/Alarm/History',      m: 'GET',    svc: 'AlarmHistoryAppService',  mtd: 'GetListAsync' },
+      { url: '/Ticket/My',          m: 'GET',    svc: 'TicketAppService',        mtd: 'GetMyListAsync' },
+      { url: '/Ticket/Assign',      m: 'POST',   svc: 'TicketAppService',        mtd: 'AssignAsync' },
+      { url: '/Gw/GwList',          m: 'GET',    svc: 'GatewayAppService',       mtd: 'GetListAsync' },
+      { url: '/Account/Login',      m: 'POST',   svc: 'AccountAppService',       mtd: 'LoginAsync' },
+      { url: '/Account/Logout',     m: 'POST',   svc: 'AccountAppService',       mtd: 'LogoutAsync' },
+      { url: '/Admin/Users',        m: 'DELETE', svc: 'IdentityUserAppService',  mtd: 'DeleteAsync' },
+    ];
+
+    let no = LOGS.length;
+    // 2026-09-04 09:00 부터 과거로 내려가며 생성
+    let t = new Date(2026, 8, 4, 9, 0, 0);
+
+    for (let i = 0; i < 36; i++) {
+      t = new Date(t.getTime() - (8 + Math.floor(rnd() * 190)) * 60000);   // 8분~3시간 간격
+      const ep = pick(EP);
+      const r  = rnd();
+      const code = r > 0.92 ? 500 : (r > 0.88 ? 404 : (r > 0.85 ? 401 : (r > 0.80 ? 302 : 200)));
+      const dur  = code === 500 ? 120 + Math.floor(rnd() * 600)
+                 : (ep.url.indexOf('/Data/') === 0 ? 800 + Math.floor(rnd() * 2500)
+                                                   : 40 + Math.floor(rnd() * 500));
+      const time = t.getFullYear() + '-' + pad(t.getMonth() + 1) + '-' + pad(t.getDate())
+                 + ' ' + pad(t.getHours()) + ':' + pad(t.getMinutes()) + ':' + pad(t.getSeconds());
+      const acts = [{ svc: ep.svc, mtd: ep.mtd, dur: Math.max(10, dur - 20 - Math.floor(rnd() * 30)), param: '{ maxResultCount: 20, skipCount: 0 }' }];
+      if (rnd() > 0.5) acts.push({ svc: 'PermissionChecker', mtd: 'IsGrantedAsync', dur: 4 + Math.floor(rnd() * 20), param: '{ policy: "' + ep.url.split('/')[1] + '" }' });
+
+      LOGS.push({
+        no: ++no, code: code, method: ep.m, url: ep.url,
+        user: code === 401 ? '-' : pick(USERS),
+        ip: pick(IPS), time: time, dur: dur,
+        app: ep.url.indexOf('/Data/') === 0 ? 'UMS-API' : 'UMS-Portal Web',
+        corr: hex(32), exc: code === 500 ? EXC_JSON : '',
+        client: pick(CLIENTS), acts: acts,
+      });
+    }
+
+    // ---- 엔티티 변경 이력도 함께 생성 ----
+    const ENT = [
+      { e: 'Tenant',       f: [['Name', '세종클라우드', '세종클라우드(주)'], ['EditionId', '1', '2'], ['IsActive', 'true', 'false']] },
+      { e: 'Edition',      f: [['MonthlyPrice', '300000', '350000'], ['TrialDays', '30', '14']] },
+      { e: 'Setting',      f: [['Value', 'false', 'true'], ['Value', '30', '90']] },
+      { e: 'IdentityUser', f: [['Email', 'old@eteverse.com', 'new@eteverse.com'], ['IsActive', 'true', 'false'], ['PhoneNumber', '010-0000-0000', '010-1111-2222']] },
+      { e: 'Ups',          f: [['CapacityKva', '10', '15'], ['Memo', '', '점검 완료'], ['LocationId', '2', '3']] },
+    ];
+    const ENT_USERS = ['admin', 'oh.yh', 'kim.jh', 'nam.kh', 'hwang.by'];
+
+    let cno = CHANGES.length;
+    let ct = new Date(2026, 8, 3, 18, 0, 0);
+    for (let i = 0; i < 22; i++) {
+      ct = new Date(ct.getTime() - (30 + Math.floor(rnd() * 600)) * 60000);
+      const src = pick(ENT);
+      const type = pick(['C', 'U', 'U', 'U', 'D']);
+      const cnt  = 1 + Math.floor(rnd() * src.f.length);
+      const time = ct.getFullYear() + '-' + pad(ct.getMonth() + 1) + '-' + pad(ct.getDate())
+                 + ' ' + pad(ct.getHours()) + ':' + pad(ct.getMinutes()) + ':' + pad(ct.getSeconds());
+      CHANGES.push({
+        no: ++cno, type: type, entity: src.e,
+        eid: String(1000 + Math.floor(rnd() * 9000)),
+        user: pick(ENT_USERS), time: time, corr: hex(32),
+        fields: src.f.slice(0, cnt).map(function (x) {
+          return { f: x[0], o: type === 'C' ? '' : x[1], n: type === 'D' ? '' : x[2] };
+        }),
+      });
+    }
+  })();
+
   const TYPE_BADGE = { C: ['badge-create', '생성'], U: ['badge-update', '수정'], D: ['badge-delete', '삭제'] };
 
   let sortKey = 'time';
   let sortAsc = false;
   let detailNo = null;
+  let lPage = 1;   // 감사 로그 탭 페이지
+  let ePage = 1;   // 엔티티 변경 사항 탭 페이지
 
   function esc(s) {
     return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -98,7 +203,8 @@
   }
 
   // ---- 감사 로그 그리드 ----
-  function renderLog() {
+  // 검색조건 + 정렬을 적용한 전체 행 (페이징 전)
+  function logRows() {
     const kw   = (document.getElementById('q').value || '').trim();
     const from = document.getElementById('fFrom').value;
     const to   = document.getElementById('fTo').value;
@@ -127,9 +233,20 @@
       if (va === vb) return 0;
       return (va > vb ? 1 : -1) * (sortAsc ? 1 : -1);
     });
+    return rows;
+  }
 
-    document.getElementById('logBody').innerHTML = rows.length
-      ? rows.map(function (r) {
+  function renderLog() {
+    const rows   = logRows();
+    const lSize  = Number(document.getElementById('lSize').value);
+    const lTotal = rows.length;
+    const lMax   = Math.max(1, Math.ceil(lTotal / lSize));
+    if (lPage > lMax) lPage = lMax;
+    const lFrom = (lPage - 1) * lSize;
+    const pageRows = rows.slice(lFrom, lFrom + lSize);
+
+    document.getElementById('logBody').innerHTML = pageRows.length
+      ? pageRows.map(function (r) {
           return '<tr>'
             + '<td><button class="btn-detail" onclick="logDetail(' + r.no + ')">&#128065; 상세</button></td>'
             + '<td>' + httpReq(r) + '</td>'
@@ -145,7 +262,11 @@
         }).join('')
       : '<tr><td colspan="10" style="padding:30px;color:#98a2b3;">조회 결과가 없습니다.</td></tr>';
 
-    document.getElementById('logCount').textContent = rows.length;
+    document.getElementById('logCount').textContent = lTotal;
+    document.getElementById('lInfo').textContent = lTotal
+      ? (lFrom + 1) + ' - ' + (lFrom + pageRows.length) + ' / 전체 ' + lTotal + ' 건'
+      : '0 - 0 / 전체 0 건';
+    document.getElementById('lNo').textContent = lPage;
 
     document.querySelectorAll('#logTable th.sortable').forEach(function (th) {
       th.classList.remove('asc', 'desc');
@@ -156,12 +277,26 @@
   function sortLog(key) {
     if (sortKey === key) sortAsc = !sortAsc;
     else { sortKey = key; sortAsc = true; }
+    lPage = 1;
+    renderLog();
+  }
+
+  // 감사 로그 탭 페이지 이동 ('size' 는 페이지 크기 변경)
+  function lGo(dir) {
+    if (dir === 'size') { lPage = 1; renderLog(); return; }
+    const size = Number(document.getElementById('lSize').value);
+    const max  = Math.max(1, Math.ceil(logRows().length / size));
+    if (dir === 'first') lPage = 1;
+    if (dir === 'prev')  lPage = Math.max(1, lPage - 1);
+    if (dir === 'next')  lPage = Math.min(max, lPage + 1);
+    if (dir === 'last')  lPage = max;
     renderLog();
   }
 
   function resetLog() {
     ['fFrom', 'fTo', 'fMethod', 'fCode', 'fExc', 'fMin', 'fMax', 'fCorr', 'q']
       .forEach(function (id) { document.getElementById(id).value = ''; });
+    lPage = 1;
     renderLog();
   }
 
@@ -209,7 +344,8 @@
   }
 
   // ---- 엔티티 변경 사항 ----
-  function renderEntity() {
+  // 검색조건을 적용한 전체 행 (페이징 전)
+  function entityRows() {
     const kw   = (document.getElementById('eq').value || '').trim();
     const from = document.getElementById('eFrom').value;
     const to   = document.getElementById('eTo').value;
@@ -224,9 +360,20 @@
         && (!type || r.type === type)
         && (!ent  || r.entity === ent);
     });
+    return rows;
+  }
 
-    document.getElementById('entityBody').innerHTML = rows.length
-      ? rows.map(function (r) {
+  function renderEntity() {
+    const rows   = entityRows();
+    const eSize  = Number(document.getElementById('eSize').value);
+    const eTotal = rows.length;
+    const eMax   = Math.max(1, Math.ceil(eTotal / eSize));
+    if (ePage > eMax) ePage = eMax;
+    const eFrom = (ePage - 1) * eSize;
+    const pageRows = rows.slice(eFrom, eFrom + eSize);
+
+    document.getElementById('entityBody').innerHTML = pageRows.length
+      ? pageRows.map(function (r) {
           const pair = TYPE_BADGE[r.type];
           return '<tr>'
             + '<td><button class="btn-detail" onclick="entityDetail(' + r.no + ')">&#128065; 상세</button></td>'
@@ -241,11 +388,28 @@
         }).join('')
       : '<tr><td colspan="8" style="padding:30px;color:#98a2b3;">조회 결과가 없습니다.</td></tr>';
 
-    document.getElementById('entityCount').textContent = rows.length;
+    document.getElementById('entityCount').textContent = eTotal;
+    document.getElementById('eInfo').textContent = eTotal
+      ? (eFrom + 1) + ' - ' + (eFrom + pageRows.length) + ' / 전체 ' + eTotal + ' 건'
+      : '0 - 0 / 전체 0 건';
+    document.getElementById('eNo').textContent = ePage;
+  }
+
+  // 엔티티 변경 사항 탭 페이지 이동
+  function eGo(dir) {
+    if (dir === 'size') { ePage = 1; renderEntity(); return; }
+    const size = Number(document.getElementById('eSize').value);
+    const max  = Math.max(1, Math.ceil(entityRows().length / size));
+    if (dir === 'first') ePage = 1;
+    if (dir === 'prev')  ePage = Math.max(1, ePage - 1);
+    if (dir === 'next')  ePage = Math.min(max, ePage + 1);
+    if (dir === 'last')  ePage = max;
+    renderEntity();
   }
 
   function resetEntity() {
     ['eFrom', 'eTo', 'eType', 'eEntity', 'eq'].forEach(function (id) { document.getElementById(id).value = ''; });
+    ePage = 1;
     renderEntity();
   }
 
@@ -295,6 +459,8 @@
   window.sortLog          = sortLog;
   window.resetLog         = resetLog;
   window.logDetail        = logDetail;
+  window.lGo              = lGo;
+  window.eGo              = eGo;
   window.renderEntity     = renderEntity;
   window.resetEntity      = resetEntity;
   window.entityDetail     = entityDetail;

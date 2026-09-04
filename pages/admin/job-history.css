@@ -1,0 +1,43 @@
+/* 실행 이력 전용 스타일 (공통은 shared/common.css)
+   화면: 관리 > 작업 관리 > 실행 이력 */
+
+/* 검색조건 — 라벨을 입력 위에 두는 형태 */
+.jh-filter { flex-direction: column; align-items: stretch; gap: 14px; }
+.jh-filter { display: grid; grid-template-columns: repeat(4, minmax(180px, 1fr)); }
+.ff { display: flex; flex-direction: column; gap: 6px; }
+.ff label { font-size: 12px; color: #555; }
+.ff .search-input, .ff .search-select { width: 100%; min-width: 0; }
+.ff-actions { grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: 8px; }
+
+/* 그리드 */
+.grid-table td { text-align: left; }
+.grid-table th { text-align: left; }
+.grid-table th:nth-child(1),
+.grid-table td:nth-child(1) { min-width: 330px; }
+.grid-table td.num { text-align: right; }
+
+.grid-table th.sortable { cursor: pointer; user-select: none; }
+.grid-table th.sortable:hover { color: #1a6ed8; }
+.sort-ind { display: inline-block; width: 10px; margin-left: 4px; font-size: 9px; color: #b6bec8; }
+.grid-table th.sortable.asc  .sort-ind::before { content: '\25B2'; color: #1a6ed8; }
+.grid-table th.sortable.desc .sort-ind::before { content: '\25BC'; color: #1a6ed8; }
+.grid-table th.sortable:not(.asc):not(.desc) .sort-ind::before { content: '\21C5'; }
+
+/* 작업 이름 링크 */
+.job-name { color: #1a6ed8; text-decoration: underline; font-size: 12px; }
+.job-name:hover { color: #1559b8; }
+
+/* 상태 뱃지 */
+.badge-ok2   { background: #1e7e34; color: #fff; }
+.badge-fail2 { background: #c62828; color: #fff; }
+
+/* 느린 실행 강조 */
+.dur-slow { color: #b76e00; font-weight: bold; }
+
+/* 하단 페이징 */
+.pane-paging { display: flex; align-items: center; gap: 4px; padding: 10px 14px; flex-shrink: 0;
+  border-top: 1px solid #eef1f4; font-size: 12px; color: #666; }
+.pane-paging .hint { margin-left: 4px; }
+.page-info { color: #98a2b3; margin-left: 8px; }
+#pageNums { display: inline-flex; gap: 4px; }
+.page-dots { display: inline-flex; align-items: center; padding: 0 4px; color: #98a2b3; }

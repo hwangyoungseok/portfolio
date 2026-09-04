@@ -11,20 +11,254 @@
 
 <!--
   화면: 관리 > 설정   (호스트 모드 전용)
-  설명: 시스템 공통 설정 — 기본 정책, 알림/메일 발송, 연동 키 등 호스트 전역 설정 관리.
+  설명: 시스템 공통 설정. 좌측 카테고리(계정 / 기능 관리 / 시간대 / 이메일 / ID 관리)를
+        선택하면 우측에 해당 설정이 표시되고, 카테고리에 따라 상단 탭이 더 있다.
   ---------------------------------------------------------------------
-  작업 방법:
-   - 아래 <div class="content"> 안에 화면 본문만 작성 (사이드바/헤더/푸터는 layout.js가 자동)
-   - 공통 컴포넌트(.search-bar / .grid-wrap / .toolbar / .grid-table / .paging /
-     .modal-overlay+.modal / .form-grid / .badge / .switch / umsToast 등)는 shared/common.css 참고
-   - 참고 구현: pages/saas/tenant.*  (그리드+검색+행 작업 드롭다운+모달),
-                pages/facility/location-manage.*  (좌측 트리+우측 입력영역)
-   - 완성하면 shared/layout.js 의 DONE 목록에 "admin/setting" 추가
+   - 공통 컴포넌트(.form-grid / .btn / .switch / umsToast 등)는 shared/common.css 참고
 -->
 
 <div id="umsContent">
   <div class="content">
-    <div class="placeholder-card">설정 &mdash; 작업 예정</div>
+    <div class="set-wrap">
+
+      <!-- 좌측 카테고리 -->
+      <nav class="set-nav">
+        <div class="set-nav-item active" data-sec="account"  onclick="selectSec('account')">계정</div>
+        <div class="set-nav-item"        data-sec="feature"  onclick="selectSec('feature')">기능 관리</div>
+        <div class="set-nav-item"        data-sec="timezone" onclick="selectSec('timezone')">시간대</div>
+        <div class="set-nav-item"        data-sec="email"    onclick="selectSec('email')">이메일</div>
+        <div class="set-nav-item"        data-sec="identity" onclick="selectSec('identity')">ID 관리</div>
+      </nav>
+
+      <!-- 우측 본문 -->
+      <div class="set-body">
+
+        <!-- ===== 계정 ===== -->
+        <section class="set-sec show" id="sec-account">
+          <div class="tabs">
+            <div class="tab active" data-tab="acc-general" onclick="selectTab('account','acc-general')">일반</div>
+            <div class="tab"        data-tab="acc-2fa"     onclick="selectTab('account','acc-2fa')">2단계 인증</div>
+            <div class="tab"        data-tab="acc-captcha" onclick="selectTab('account','acc-captcha')">캡차</div>
+          </div>
+
+          <div class="set-pane show" id="pane-acc-general">
+            <h3 class="set-title">일반</h3>
+            <label class="chk"><input type="checkbox" id="s-selfreg" checked>
+              <span>자가 회원가입 허용</span></label>
+            <label class="chk"><input type="checkbox" id="s-localpw" checked>
+              <span>로컬 사용자 이름과 비밀번호로 회원가입 및 로그인 허용</span></label>
+            <label class="chk"><input type="checkbox" id="s-enum">
+              <span>이메일 열거 방지</span>
+              <em>'비밀번호 찾기' 화면에서 입력한 이메일이 시스템에 등록되어 있는지 여부를 표시하지 않습니다.</em></label>
+            <div class="set-actions"><button class="btn btn-primary" onclick="save('계정 &gt; 일반')">&#128190; 저장</button></div>
+          </div>
+
+          <div class="set-pane" id="pane-acc-2fa">
+            <h3 class="set-title">2단계 인증</h3>
+            <div class="form-grid">
+              <div class="form-label">사용 방식</div>
+              <select class="form-select" id="s-2fa">
+                <option>선택 사항 (사용자가 설정)</option>
+                <option>사용 안 함</option>
+                <option>필수 (모든 사용자에게 강제)</option>
+              </select>
+              <div class="form-label">인증 수단</div>
+              <select class="form-select" id="s-2fa-type">
+                <option>이메일 인증 코드</option>
+                <option>SMS 인증 코드</option>
+                <option>OTP 앱 (TOTP)</option>
+              </select>
+              <div class="form-label">코드 유효 시간</div>
+              <div class="form-inline"><input class="form-input" id="s-2fa-exp" type="number" min="1" value="5" style="max-width:100px;"><span class="hint">분</span></div>
+            </div>
+            <label class="chk"><input type="checkbox" id="s-2fa-remember" checked>
+              <span>이 브라우저 기억하기 허용</span>
+              <em>한 번 인증한 브라우저에서는 30일간 2단계 인증을 다시 요구하지 않습니다.</em></label>
+            <div class="set-actions"><button class="btn btn-primary" onclick="save('계정 &gt; 2단계 인증')">&#128190; 저장</button></div>
+          </div>
+
+          <div class="set-pane" id="pane-acc-captcha">
+            <h3 class="set-title">캡차</h3>
+            <label class="chk"><input type="checkbox" id="s-captcha">
+              <span>캡차 사용</span>
+              <em>로그인 실패가 반복되거나 회원가입 시 캡차를 표시합니다.</em></label>
+            <div class="form-grid">
+              <div class="form-label">제공자</div>
+              <select class="form-select" id="s-captcha-vendor">
+                <option>Google reCAPTCHA v2</option>
+                <option>Google reCAPTCHA v3</option>
+                <option>hCaptcha</option>
+              </select>
+              <div class="form-label">사이트 키</div><input class="form-input" id="s-captcha-site" placeholder="site key">
+              <div class="form-label">비밀 키</div><input class="form-input" id="s-captcha-secret" placeholder="secret key">
+              <div class="form-label">적용 화면</div>
+              <div class="chk-inline">
+                <label class="chk sm"><input type="checkbox" id="s-captcha-login" checked><span>로그인</span></label>
+                <label class="chk sm"><input type="checkbox" id="s-captcha-signup" checked><span>회원가입</span></label>
+                <label class="chk sm"><input type="checkbox" id="s-captcha-pw"><span>비밀번호 찾기</span></label>
+              </div>
+            </div>
+            <div class="set-actions"><button class="btn btn-primary" onclick="save('계정 &gt; 캡차')">&#128190; 저장</button></div>
+          </div>
+        </section>
+
+        <!-- ===== 기능 관리 ===== -->
+        <section class="set-sec" id="sec-feature">
+          <div class="set-pane show">
+            <h3 class="set-title">기능 관리</h3>
+            <p class="set-desc">호스트 전역에서 켜고 끄는 기능입니다. 테넌트별 제공 범위는 [SaaS 관리 &gt; 에디션]에서 지정합니다.</p>
+            <label class="chk"><input type="checkbox" id="f-mail" checked>
+              <span>알람 메일 발송</span>
+              <em>알람 룰에 지정된 수신자에게 메일을 발송합니다.</em></label>
+            <label class="chk"><input type="checkbox" id="f-sms">
+              <span>알람 SMS 발송</span>
+              <em>SMS 연동이 설정된 경우에만 동작합니다.</em></label>
+            <label class="chk"><input type="checkbox" id="f-api" checked>
+              <span>Open API</span>
+              <em>외부 시스템 연동용 REST API를 활성화합니다.</em></label>
+            <label class="chk"><input type="checkbox" id="f-audit" checked>
+              <span>감사로그 기록</span>
+              <em>모든 요청과 엔티티 변경 이력을 저장합니다.</em></label>
+            <label class="chk"><input type="checkbox" id="f-maint">
+              <span>점검 모드</span>
+              <em>호스트 관리자를 제외한 모든 사용자의 접속을 차단합니다.</em></label>
+
+            <div class="form-grid" style="margin-top:18px;">
+              <div class="form-label">데이터 보관</div>
+              <div class="form-inline"><input class="form-input" id="f-retention" type="number" min="1" value="36" style="max-width:100px;"><span class="hint">개월 (초과 데이터는 자동 삭제)</span></div>
+              <div class="form-label">감사로그 보관</div>
+              <div class="form-inline"><input class="form-input" id="f-audit-retention" type="number" min="1" value="12" style="max-width:100px;"><span class="hint">개월</span></div>
+            </div>
+            <div class="set-actions"><button class="btn btn-primary" onclick="save('기능 관리')">&#128190; 저장</button></div>
+          </div>
+        </section>
+
+        <!-- ===== 시간대 ===== -->
+        <section class="set-sec" id="sec-timezone">
+          <div class="set-pane show">
+            <h3 class="set-title">시간대</h3>
+            <p class="set-desc">화면에 표시되는 날짜·시간의 기준입니다. 수집 데이터는 UTC로 저장됩니다.</p>
+            <div class="form-grid">
+              <div class="form-label">기본 시간대</div>
+              <select class="form-select" id="t-zone">
+                <option>(UTC+09:00) 서울</option>
+                <option>(UTC+00:00) UTC</option>
+                <option>(UTC+08:00) 홍콩</option>
+                <option>(UTC+09:00) 도쿄</option>
+              </select>
+              <div class="form-label">날짜 형식</div>
+              <select class="form-select" id="t-date">
+                <option>2026-09-04</option>
+                <option>2026년 9월 4일</option>
+                <option>09/04/2026</option>
+              </select>
+              <div class="form-label">시간 형식</div>
+              <select class="form-select" id="t-time">
+                <option>24시간 (14:30)</option>
+                <option>12시간 (오후 2:30)</option>
+              </select>
+              <div class="form-label">주 시작 요일</div>
+              <select class="form-select" id="t-week"><option>월요일</option><option>일요일</option></select>
+            </div>
+            <label class="chk"><input type="checkbox" id="t-user" checked>
+              <span>사용자별 시간대 설정 허용</span>
+              <em>사용자가 자신의 프로필에서 시간대를 바꿀 수 있습니다.</em></label>
+            <div class="set-actions"><button class="btn btn-primary" onclick="save('시간대')">&#128190; 저장</button></div>
+          </div>
+        </section>
+
+        <!-- ===== 이메일 ===== -->
+        <section class="set-sec" id="sec-email">
+          <div class="set-pane show">
+            <h3 class="set-title">이메일 (SMTP)</h3>
+            <p class="set-desc">알람·초대·리포트 메일 발송에 사용할 SMTP 서버 정보입니다.</p>
+            <div class="form-grid">
+              <div class="form-label req">SMTP 호스트</div><input class="form-input" id="m-host" value="smtp.eteverse.com">
+              <div class="form-label req">포트</div>
+              <div class="form-inline"><input class="form-input" id="m-port" type="number" value="587" style="max-width:120px;"><span class="hint">일반 25 / TLS 587 / SSL 465</span></div>
+              <div class="form-label">보안 연결</div>
+              <select class="form-select" id="m-secure"><option>STARTTLS</option><option>SSL/TLS</option><option>사용 안 함</option></select>
+              <div class="form-label">인증 사용</div>
+              <div class="switch-field">
+                <label class="switch"><input type="checkbox" id="m-auth" checked><span class="switch-track"></span></label>
+                <span id="m-authText">사용</span>
+              </div>
+              <div class="form-label">계정</div><input class="form-input" id="m-user" value="noreply@eteverse.com">
+              <div class="form-label">비밀번호</div>
+              <div class="form-inline">
+                <input class="form-input" id="m-pass" type="password" placeholder="변경하려면 입력">
+                <span class="hint">비워 두면 기존 값 유지</span>
+              </div>
+              <div class="form-label req">발신자 이름</div><input class="form-input" id="m-from-name" value="UMS 통합 관리 시스템">
+              <div class="form-label req">발신자 주소</div><input class="form-input" id="m-from" value="noreply@eteverse.com">
+            </div>
+            <div class="set-actions">
+              <button class="btn btn-primary" onclick="save('이메일')">&#128190; 저장</button>
+              <button class="btn" onclick="testMail()">테스트 메일 발송</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===== ID 관리 ===== -->
+        <section class="set-sec" id="sec-identity">
+          <div class="tabs">
+            <div class="tab active" data-tab="id-password" onclick="selectTab('identity','id-password')">비밀번호</div>
+            <div class="tab"        data-tab="id-lockout"  onclick="selectTab('identity','id-lockout')">계정 잠금</div>
+            <div class="tab"        data-tab="id-user"     onclick="selectTab('identity','id-user')">사용자</div>
+          </div>
+
+          <div class="set-pane show" id="pane-id-password">
+            <h3 class="set-title">비밀번호 정책</h3>
+            <div class="form-grid">
+              <div class="form-label">최소 길이</div>
+              <div class="form-inline"><input class="form-input" id="p-len" type="number" min="4" value="8" style="max-width:100px;"><span class="hint">자</span></div>
+              <div class="form-label">사용 문자</div>
+              <div class="chk-inline">
+                <label class="chk sm"><input type="checkbox" id="p-digit" checked><span>숫자</span></label>
+                <label class="chk sm"><input type="checkbox" id="p-lower" checked><span>소문자</span></label>
+                <label class="chk sm"><input type="checkbox" id="p-upper" checked><span>대문자</span></label>
+                <label class="chk sm"><input type="checkbox" id="p-special" checked><span>특수문자</span></label>
+              </div>
+              <div class="form-label">비밀번호 만료</div>
+              <div class="form-inline"><input class="form-input" id="p-expire" type="number" min="0" value="90" style="max-width:100px;"><span class="hint">일 (0 = 만료 없음)</span></div>
+              <div class="form-label">재사용 제한</div>
+              <div class="form-inline"><input class="form-input" id="p-history" type="number" min="0" value="3" style="max-width:100px;"><span class="hint">회 이전 비밀번호까지 재사용 금지</span></div>
+            </div>
+            <div class="set-actions"><button class="btn btn-primary" onclick="save('ID 관리 &gt; 비밀번호')">&#128190; 저장</button></div>
+          </div>
+
+          <div class="set-pane" id="pane-id-lockout">
+            <h3 class="set-title">계정 잠금</h3>
+            <label class="chk"><input type="checkbox" id="l-enabled" checked>
+              <span>로그인 실패 시 계정 잠금 사용</span></label>
+            <div class="form-grid">
+              <div class="form-label">허용 실패 횟수</div>
+              <div class="form-inline"><input class="form-input" id="l-count" type="number" min="1" value="5" style="max-width:100px;"><span class="hint">회</span></div>
+              <div class="form-label">잠금 시간</div>
+              <div class="form-inline"><input class="form-input" id="l-min" type="number" min="1" value="30" style="max-width:100px;"><span class="hint">분</span></div>
+            </div>
+            <div class="set-actions"><button class="btn btn-primary" onclick="save('ID 관리 &gt; 계정 잠금')">&#128190; 저장</button></div>
+          </div>
+
+          <div class="set-pane" id="pane-id-user">
+            <h3 class="set-title">사용자</h3>
+            <label class="chk"><input type="checkbox" id="u-mailok" checked>
+              <span>이메일 인증 필수</span>
+              <em>인증을 마치기 전에는 로그인할 수 없습니다.</em></label>
+            <label class="chk"><input type="checkbox" id="u-unique" checked>
+              <span>이메일 주소 중복 금지</span></label>
+            <label class="chk"><input type="checkbox" id="u-phone">
+              <span>전화번호 인증 필수</span></label>
+            <div class="form-grid">
+              <div class="form-label">사용자 이름 허용 문자</div>
+              <input class="form-input" id="u-chars" value="abcdefghijklmnopqrstuvwxyz0123456789-._">
+            </div>
+            <div class="set-actions"><button class="btn btn-primary" onclick="save('ID 관리 &gt; 사용자')">&#128190; 저장</button></div>
+          </div>
+        </section>
+
+      </div>
+    </div>
   </div>
 </div>
 

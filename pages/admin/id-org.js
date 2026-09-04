@@ -30,6 +30,28 @@
     { id: 10, name: '강예린', email: 'kang.yr@eteverse.com',  role: '조회 전용' },
     { id: 11, name: '조성우', email: 'cho.sw@eteverse.com',   role: '설비 운영자' },
     { id: 12, name: '신하늘', email: 'shin.hn@eteverse.com',  role: '조회 전용' },
+    { id: 13,  name: '서지우',  email: 'seo.jw@eteverse.com',     role: '조회 전용' },
+    { id: 14,  name: '문태준',  email: 'moon.tj@eteverse.com',    role: '설비 운영자' },
+    { id: 15,  name: '배수현',  email: 'bae.sh@eteverse.com',     role: '티켓 담당자' },
+    { id: 16,  name: '노경민',  email: 'noh.km@eteverse.com',     role: '조회 전용' },
+    { id: 17,  name: '임채원',  email: 'lim.cw@eteverse.com',     role: '설비 운영자' },
+    { id: 18,  name: '송민재',  email: 'song.mj@eteverse.com',    role: '티켓 담당자' },
+    { id: 19,  name: '홍유진',  email: 'hong.yj@eteverse.com',    role: '조회 전용' },
+    { id: 20,  name: '안준서',  email: 'ahn.js@eteverse.com',     role: '설비 운영자' },
+    { id: 21,  name: '유하린',  email: 'yoo.hr@eteverse.com',     role: '조회 전용' },
+    { id: 22,  name: '곽도윤',  email: 'kwak.dy@eteverse.com',    role: '설비 운영자' },
+    { id: 23,  name: '남기훈',  email: 'nam.kh@eteverse.com',     role: '시스템 관리자' },
+    { id: 24,  name: '오세라',  email: 'oh.sr@eteverse.com',      role: '조회 전용' },
+    { id: 25,  name: '백승호',  email: 'baek.sh@eteverse.com',    role: '티켓 담당자' },
+    { id: 26,  name: '전미소',  email: 'jeon.ms@eteverse.com',    role: '조회 전용' },
+    { id: 27,  name: '구자현',  email: 'koo.jh@eteverse.com',     role: '설비 운영자' },
+    { id: 28,  name: '심다은',  email: 'shim.de@eteverse.com',    role: '조회 전용' },
+    { id: 29,  name: '양준혁',  email: 'yang.jh@eteverse.com',    role: '설비 운영자' },
+    { id: 30,  name: '표지훈',  email: 'pyo.jh@eteverse.com',     role: '티켓 담당자' },
+    { id: 31,  name: '하윤아',  email: 'ha.ya@eteverse.com',      role: '조회 전용' },
+    { id: 32,  name: '마성진',  email: 'ma.sj@eteverse.com',      role: '설비 운영자' },
+    { id: 33,  name: '진소영',  email: 'jin.sy@eteverse.com',     role: '조회 전용' },
+    { id: 34,  name: '편승훈',  email: 'pyeon.sh@eteverse.com',   role: '시스템 관리자' },
   ];
 
   // ---- 전체 역할 ----
@@ -38,10 +60,15 @@
     { id: 2, name: '설비 운영자',   desc: '설비 등록·수정 및 알람 처리' },
     { id: 3, name: '티켓 담당자',   desc: '티켓 배정 및 처리' },
     { id: 4, name: '조회 전용',     desc: '데이터 조회만 가능' },
+    { id: 5, name: '게스트',        desc: '임시 계정용 — 현황 화면만 열람' },
   ];
 
   // ---- 조직별 구성원 / 역할 매핑 ----
-  const ORG_USERS = { 1: [3], 2: [4, 7], 3: [6], 4: [10], 5: [1], 6: [2, 5, 8, 11], 7: [9], 8: [12], 9: [], 10: [] };
+  const ORG_USERS = {
+    1: [3], 2: [4, 7, 24], 3: [6, 21, 28], 4: [10, 19, 31], 5: [1, 23],
+    6: [2, 5, 8, 11, 15, 20, 29, 30], 7: [9, 14, 17, 22, 25, 32],
+    8: [12, 18, 27, 34], 9: [26], 10: [13, 16, 33],
+  };
   const ORG_ROLES = { 1: [1], 2: [4], 3: [4], 4: [4], 5: [1, 2], 6: [2, 3], 7: [2], 8: [1], 9: [], 10: [] };
 
   let curId    = 5;       // 선택된 조직

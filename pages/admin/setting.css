@@ -1,2 +1,55 @@
 /* 설정 전용 스타일 (공통은 shared/common.css)
    화면: 관리 > 설정 */
+
+.set-wrap { display: flex; gap: 0; flex: 1; min-height: 0; background: #fff;
+  border: 1px solid #dde1e7; border-radius: 6px; overflow: hidden; }
+
+/* ---------- 좌측 카테고리 ---------- */
+.set-nav { width: 220px; flex-shrink: 0; border-right: 1px solid #eef1f4; padding: 14px 12px; }
+.set-nav-item { padding: 10px 14px; border-radius: 6px; font-size: 12.5px; color: #555; cursor: pointer;
+  margin-bottom: 4px; white-space: nowrap; }
+.set-nav-item:hover { background: #f0f6ff; color: #1a6ed8; }
+.set-nav-item.active { background: #e8f1fd; color: #1a6ed8; font-weight: bold; }
+
+/* ---------- 우측 본문 ---------- */
+.set-body { flex: 1; min-width: 0; overflow: auto; padding: 16px 24px 24px; }
+
+.set-sec { display: none; }
+.set-sec.show { display: block; }
+
+/* 섹션 안 탭 */
+.tabs { display: flex; gap: 18px; border-bottom: 1px solid #eef1f4; margin-bottom: 18px; }
+.tab { padding: 8px 2px; font-size: 12.5px; color: #7a8794; cursor: pointer;
+  border-bottom: 2px solid transparent; white-space: nowrap; }
+.tab:hover { color: #1a6ed8; }
+.tab.active { color: #1a6ed8; font-weight: bold; border-bottom-color: #1a6ed8; }
+
+.set-pane { display: none; max-width: 620px; }
+.set-pane.show { display: block; }
+
+.set-title { font-size: 15px; font-weight: bold; color: #1a1a2e; margin-bottom: 14px; }
+.set-desc { font-size: 12px; color: #98a2b3; line-height: 1.8; margin: -6px 0 16px; }
+
+/* 체크박스 항목 (레퍼런스의 설정 토글) */
+.chk { display: grid; grid-template-columns: 18px 1fr; gap: 4px 10px; align-items: start;
+  padding: 8px 0; font-size: 12.5px; color: #333; cursor: pointer; }
+.chk input { width: 15px; height: 15px; margin-top: 1px; cursor: pointer; accent-color: #1a6ed8; }
+.chk span { line-height: 1.5; }
+.chk em { grid-column: 2; font-style: normal; font-size: 11.5px; color: #98a2b3; line-height: 1.7; }
+
+.chk.sm { display: inline-flex; grid-template-columns: none; align-items: center; gap: 6px;
+  padding: 0; margin-right: 16px; }
+.chk-inline { display: flex; flex-wrap: wrap; align-items: center; }
+
+/* 저장 버튼 줄 */
+.set-actions { display: flex; gap: 8px; margin-top: 22px; padding-top: 18px; border-top: 1px solid #eef1f4; }
+
+/* 폼 간격 (설정 화면은 라벨을 조금 더 넓게) */
+.set-pane .form-grid { grid-template-columns: 150px 1fr; gap: 12px 14px; margin-top: 14px; }
+.set-pane .form-label { text-align: left; color: #555; }
+.set-pane .form-input, .set-pane .form-select { max-width: 380px; }
+
+/* 입력 옆 안내문은 줄바꿈 없이 */
+.set-pane .form-inline { flex-wrap: nowrap; }
+.set-pane .form-inline .hint { white-space: nowrap; }
+.set-pane #m-pass { max-width: 260px; }
