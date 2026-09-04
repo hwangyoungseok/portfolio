@@ -110,6 +110,17 @@
         { label: 'GW 상태 모니터링',    page: 'gw/gw-status' },
         { label: 'GW 서버 상태 모니터링', page: 'gw/gw-server' },
       ]},
+      // 관리 메뉴는 호스트와 같은 화면을 쓰되, 작업 관리(스케줄러)는 호스트 전용이라 제외
+      { label: '관리', children: [
+        { label: 'ID 관리', children: [
+          { label: '조직',              page: 'admin/id-org' },
+          { label: '사용자',            page: 'admin/id-user' },
+          { label: '역할',              page: 'admin/id-role' },
+        ]},
+        { label: '템플릿 관리',         page: 'admin/template' },
+        { label: '감사로그',            page: 'admin/audit-log' },
+        { label: '설정',                page: 'admin/setting' },
+      ]},
     ],
 
   };

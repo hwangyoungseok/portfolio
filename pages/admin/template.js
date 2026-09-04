@@ -1,5 +1,5 @@
 // 템플릿 관리 페이지 스크립트 (목업 데이터)
-// 화면: 관리 > 템플릿 관리   (호스트 모드 전용)
+// 화면: 관리 > 템플릿 관리   (호스트/고객 공통)
 (function () {
 
   const LAYOUT = 'Abp.StandardEmailTemplates.Layout';
