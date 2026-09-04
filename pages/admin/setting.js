@@ -6,6 +6,9 @@
   const lastTab = { account: 'acc-general', identity: 'id-password' };
 
   function selectSec(sec) {
+    // 고객 모드에서 감춰진 카테고리(.host-only)는 선택하지 않는다
+    const nav = document.querySelector('.set-nav-item[data-sec="' + sec + '"]');
+    if (nav && !nav.offsetParent) return;
     document.querySelectorAll('.set-nav-item').forEach(function (el) {
       el.classList.toggle('active', el.dataset.sec === sec);
     });

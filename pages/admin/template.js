@@ -56,17 +56,18 @@
     'Ums.Report.MonthlyUsage':    ['{{model.month}}', '{{model.tenantName}}', '{{model.alarmCount}}', '{{model.ticketCount}}', '{{model.link}}'],
   };
 
+  // host: 1 = 호스트 전역 템플릿 (고객 모드에서는 보이지 않는다)
   const DATA = [
-    { no: 1,  name: 'Abp.Account.EmailConfirmationLink',            label: '이메일 인증 이메일',            inline: 1, layout: LAYOUT, culture: '' },
-    { no: 2,  name: 'Abp.Account.EmailSecurityCode',                label: '이메일 보안 코드',              inline: 1, layout: LAYOUT, culture: '' },
-    { no: 3,  name: 'Abp.Account.PasswordResetLink',                label: '비밀번호 재설정 이메일',        inline: 1, layout: LAYOUT, culture: '' },
-    { no: 4,  name: 'Abp.Account.UserInvitation',                   label: '사용자 초대 이메일',            inline: 1, layout: LAYOUT, culture: '' },
-    { no: 5,  name: 'Abp.StandardEmailTemplates.Layout',            label: 'Default email layout template', inline: 1, layout: '',     culture: '' },
-    { no: 6,  name: 'Abp.StandardEmailTemplates.Message',           label: 'Simple message template for emails', inline: 1, layout: LAYOUT, culture: '' },
-    { no: 7,  name: 'EmailNotifierLayout',                          label: '이메일 알림 템플릿',            inline: 1, layout: '',     culture: 'en' },
-    { no: 8,  name: 'Eteverse.Abp.Gdpr.PrivacyPolicy',              label: '개인정보 처리방침',             inline: 0, layout: '',     culture: '' },
-    { no: 9,  name: 'Eteverse.Abp.Gdpr.TermsOfService',             label: '이용약관',                      inline: 0, layout: '',     culture: '' },
-    { no: 10, name: 'Eteverse.Abp.MultiTenancy.NewTenantRegistered', label: '테넌트 생성 알림',             inline: 0, layout: LAYOUT, culture: '' },
+    { no: 1,  name: 'Abp.Account.EmailConfirmationLink',            label: '이메일 인증 이메일',            inline: 1, layout: LAYOUT, culture: '', host: 1 },
+    { no: 2,  name: 'Abp.Account.EmailSecurityCode',                label: '이메일 보안 코드',              inline: 1, layout: LAYOUT, culture: '', host: 1 },
+    { no: 3,  name: 'Abp.Account.PasswordResetLink',                label: '비밀번호 재설정 이메일',        inline: 1, layout: LAYOUT, culture: '', host: 1 },
+    { no: 4,  name: 'Abp.Account.UserInvitation',                   label: '사용자 초대 이메일',            inline: 1, layout: LAYOUT, culture: '', host: 1 },
+    { no: 5,  name: 'Abp.StandardEmailTemplates.Layout',            label: 'Default email layout template', inline: 1, layout: '',     culture: '', host: 1 },
+    { no: 6,  name: 'Abp.StandardEmailTemplates.Message',           label: 'Simple message template for emails', inline: 1, layout: LAYOUT, culture: '', host: 1 },
+    { no: 7,  name: 'EmailNotifierLayout',                          label: '이메일 알림 템플릿',            inline: 1, layout: '',     culture: 'en', host: 1 },
+    { no: 8,  name: 'Eteverse.Abp.Gdpr.PrivacyPolicy',              label: '개인정보 처리방침',             inline: 0, layout: '',     culture: '', host: 1 },
+    { no: 9,  name: 'Eteverse.Abp.Gdpr.TermsOfService',             label: '이용약관',                      inline: 0, layout: '',     culture: '', host: 1 },
+    { no: 10, name: 'Eteverse.Abp.MultiTenancy.NewTenantRegistered', label: '테넌트 생성 알림',             inline: 0, layout: LAYOUT, culture: '', host: 1 },
     { no: 11, name: 'Ums.Alarm.MailNotification',                   label: '알람 발생 메일',                inline: 0, layout: LAYOUT, culture: '' },
     { no: 12, name: 'Ums.Alarm.SmsNotification',                    label: '알람 발생 SMS',                 inline: 0, layout: '',     culture: '' },
     { no: 13, name: 'Ums.Ticket.Assigned',                          label: '티켓 배정 알림',                inline: 0, layout: LAYOUT, culture: '' },
@@ -91,6 +92,7 @@
   function filtered() {
     const kw = (document.getElementById('q').value || '').trim();
     const rows = DATA.filter(function (r) {
+      if (!window.umsIsHost && r.host) return false;
       return !kw || r.name.toLowerCase().indexOf(kw.toLowerCase()) >= 0 || r.label.indexOf(kw) >= 0;
     });
     rows.sort(function (a, b) {

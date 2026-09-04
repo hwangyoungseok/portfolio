@@ -37,6 +37,9 @@
   };
   const DEFAULT_ROLE = 'host';
 
+  // 고객 모드가 대표하는 테넌트. 관리 화면(admin/**)은 이 테넌트 범위만 보여준다.
+  const CUSTOMER_TENANT = '한빛데이터센터';
+
   // ---- 메뉴 트리 (모드별로 분리) --------------------------------------
   // 대메뉴 > 중메뉴. page = "그룹/키" (파일: pages/그룹/키.html)
   // 같은 page 키를 두 모드가 함께 가리켜도 된다(파일 공유).
@@ -45,14 +48,14 @@
     // ↓↓↓ 호스트(운영사) 모드 — 고객사/티켓 처리 등 운영 업무.
     //     화면이 아직 없는 항목은 page 키만 잡아두고 파일을 만들면 된다.
     host: [
-      { label: 'SaaS 관리', children: [
-        { label: '테넌트',              page: 'saas/tenant' },
-        { label: '에디션',              page: 'saas/edition' },
-      ]},
       { label: '티켓', children: [
         { label: '내 티켓',             page: 'ticket/ticket-my' },
         { label: '미할당 티켓',         page: 'ticket/ticket-unassigned' },
         { label: '전체 티켓',           page: 'ticket/ticket-all' },
+      ]},
+      { label: 'SaaS 관리', children: [
+        { label: '테넌트',              page: 'saas/tenant' },
+        { label: '에디션',              page: 'saas/edition' },
       ]},
       { label: '관리', children: [
         { label: 'ID 관리', children: [
@@ -304,6 +307,12 @@
         + '</b> 모드 메뉴입니다. 현재 <b>' + cfg.label + '</b> 모드에서는 메뉴에 노출되지 않습니다.</div>'
       : '';
 
+    // 고객 모드로 관리 화면을 볼 때는 테넌트 범위 안내를 띄운다
+    const scope = (ROLE === 'customer' && key.indexOf('admin/') === 0)
+      ? '<div class="scope-note">고객 모드 &mdash; <b>' + CUSTOMER_TENANT
+        + '</b> 테넌트 범위의 데이터만 표시됩니다.</div>'
+      : '';
+
     // 페이지 본문 추출
     const holder = document.getElementById('umsContent');
     const inner = holder ? holder.innerHTML : '';
@@ -337,6 +346,7 @@
       +     bc + '<div class="breadcrumb-title">' + meta.label + '</div>'
       +   '</div></div>'
       +   notice
+      +   scope
       +   inner
       + '</div>'
       + '<div class="footer">'
@@ -365,6 +375,7 @@
   // ---- 페이지 스크립트에서 쓸 수 있는 모드 정보 ----
   window.umsRole = ROLE;
   window.umsIsHost = (ROLE === 'host');
+  window.umsTenant = CUSTOMER_TENANT;
   window.umsLink = withRole;   // 페이지 안에서 다른 화면으로 링크 만들 때 사용
 
   // ---- 공통 토스트 (window.umsToast('저장되었습니다.')) ----

@@ -5,12 +5,13 @@
 
   // ---- 권한 트리 (UMS 메뉴 기준) ----
   const PERM_GROUPS = [
-    { key: 'saas',     name: 'SaaS 관리', items: [
+    // host: 1 = 호스트 전용 권한 그룹 (고객 모드에서는 보이지 않는다)
+    { key: 'saas',     name: 'SaaS 관리', host: 1, items: [
       { key: 'saas.tenant.view', name: '테넌트 조회' }, { key: 'saas.tenant.edit', name: '테넌트 관리' },
       { key: 'saas.edition.view', name: '에디션 조회' }, { key: 'saas.edition.edit', name: '에디션 관리' } ]},
     { key: 'admin',    name: '관리', items: [
       { key: 'admin.org',      name: '조직' },        { key: 'admin.user',    name: '사용자' },
-      { key: 'admin.role',     name: '역할' },        { key: 'admin.job',     name: '작업' },
+      { key: 'admin.role',     name: '역할' },        { key: 'admin.job',     name: '작업', host: 1 },
       { key: 'admin.template', name: '템플릿 관리' }, { key: 'admin.audit',   name: '감사로그' },
       { key: 'admin.setting',  name: '설정' } ]},
     { key: 'ticket',   name: '티켓', items: [
@@ -30,6 +31,19 @@
     return a.concat(g.items.map(function (i) { return i.key; }));
   }, []);
 
+  // 고객 모드에서는 호스트 전용 권한(SaaS 관리 · 작업)을 감춘다
+  function visibleGroups() {
+    if (window.umsIsHost) return PERM_GROUPS;
+    return PERM_GROUPS.filter(function (g) { return !g.host; }).map(function (g) {
+      return { key: g.key, name: g.name, items: g.items.filter(function (i) { return !i.host; }) };
+    });
+  }
+  function visibleKeys() {
+    return visibleGroups().reduce(function (a, g) {
+      return a.concat(g.items.map(function (i) { return i.key; }));
+    }, []);
+  }
+
   function keySet(keys) {
     const o = {};
     keys.forEach(function (k) { o[k] = true; });
@@ -38,7 +52,8 @@
 
   // ---- 역할 (조직 화면 ROLES 와 동일) ----
   const DATA = [
-    { no: 1, name: '시스템 관리자', desc: '전체 메뉴 및 설정 접근', isDefault: 0, isPublic: 1,
+    // hostOnly: 1 = 호스트 전용 역할 (고객 모드에서는 보이지 않는다)
+    { no: 1, name: '시스템 관리자', desc: '전체 메뉴 및 설정 접근', isDefault: 0, isPublic: 1, hostOnly: 1,
       perms: keySet(ALL_KEYS) },
     { no: 2, name: '설비 운영자', desc: '설비 등록·수정 및 알람 처리', isDefault: 0, isPublic: 1,
       perms: keySet(['facility.view', 'facility.edit', 'status.view', 'data.view', 'data.export',
@@ -54,7 +69,7 @@
 
   // ---- 사용자 (사용자 화면 DATA 와 동일한 집합: 역할별 인원 산출용) ----
   const USERS = [
-    { uname: 'admin',    name: 'admin',  org: '-',            role: '시스템 관리자' },
+    { uname: 'admin',    name: 'admin',  org: '-',            role: '시스템 관리자', sys: 1 },
     { uname: 'oh.yh',    name: '오영훈', org: '경영지원본부', role: '시스템 관리자' },
     { uname: 'kim.jh',   name: '김진호', org: '기술본부',     role: '시스템 관리자' },
     { uname: 'nam.kh',   name: '남기훈', org: '기술본부',     role: '시스템 관리자' },
@@ -99,13 +114,21 @@
   let permDraft = {};   // 권한 모달 편집 중 상태
 
   function row(no) { return DATA.filter(function (r) { return r.no === no; })[0]; }
-  function usersOf(name) { return USERS.filter(function (u) { return u.role === name; }); }
-  function permCount(r) { return Object.keys(r.perms).filter(function (k) { return r.perms[k]; }).length; }
+  function usersOf(name) {
+    return USERS.filter(function (u) {
+      return u.role === name && (window.umsIsHost || !u.sys);
+    });
+  }
+  function permCount(r) {
+    const keys = visibleKeys();
+    return keys.filter(function (k) { return r.perms[k]; }).length;
+  }
 
   // ---- 목록 ----
   function filtered() {
     const kw = (document.getElementById('q').value || '').trim();
     const rows = DATA.filter(function (r) {
+      if (!window.umsIsHost && r.hostOnly) return false;
       return !kw || r.name.indexOf(kw) >= 0 || r.desc.indexOf(kw) >= 0;
     }).map(function (r) {
       r.users = usersOf(r.name).length;
@@ -139,9 +162,9 @@
             +   (r.isDefault ? ' <span class="badge badge-default">기본</span>' : '')
             + '</td>'
             + '<td>' + r.desc + '</td>'
-            + '<td>' + (cnt === ALL_KEYS.length
+            + '<td>' + (cnt === visibleKeys().length
                   ? '<span class="perm-all">전체</span>'
-                  : '<span class="perm-count">' + cnt + ' / ' + ALL_KEYS.length + '</span>') + '</td>'
+                  : '<span class="perm-count">' + cnt + ' / ' + visibleKeys().length + '</span>') + '</td>'
             + '<td>' + r.users + '</td>'
             + '</tr>';
         }).join('')
@@ -243,13 +266,13 @@
     permDraft = {};
     Object.keys(r.perms).forEach(function (k) { permDraft[k] = r.perms[k]; });
     document.getElementById('pTitle').textContent = r.name + ' — 권한';
-    document.getElementById('permTotal').textContent = ALL_KEYS.length;
+    document.getElementById('permTotal').textContent = visibleKeys().length;
     renderPerm();
     show('permModal');
   }
 
   function renderPerm() {
-    document.getElementById('permList').innerHTML = PERM_GROUPS.map(function (g) {
+    document.getElementById('permList').innerHTML = visibleGroups().map(function (g) {
       const on  = g.items.filter(function (i) { return permDraft[i.key]; }).length;
       const all = (on === g.items.length);
       return '<div class="perm-group">'
@@ -266,27 +289,33 @@
         + '</div></div>';
     }).join('');
     document.getElementById('permCount').textContent =
-      ALL_KEYS.filter(function (k) { return permDraft[k]; }).length;
+      visibleKeys().filter(function (k) { return permDraft[k]; }).length;
   }
 
   function permOne(key, on) { permDraft[key] = on; renderPerm(); }
 
   function permGroup(gkey, on) {
-    const g = PERM_GROUPS.filter(function (x) { return x.key === gkey; })[0];
+    const g = visibleGroups().filter(function (x) { return x.key === gkey; })[0];
     g.items.forEach(function (i) { permDraft[i.key] = on; });
     renderPerm();
   }
 
   function permAll(on) {
-    ALL_KEYS.forEach(function (k) { permDraft[k] = on; });
+    visibleKeys().forEach(function (k) { permDraft[k] = on; });
     renderPerm();
   }
 
   function permSave() {
     const r = row(editNo);
     if (r) {
-      r.perms = {};
-      ALL_KEYS.forEach(function (k) { if (permDraft[k]) r.perms[k] = true; });
+      // 화면에 보이지 않는(호스트 전용) 권한은 건드리지 않는다
+      const shown = visibleKeys();
+      const kept = {};
+      Object.keys(r.perms).forEach(function (k) {
+        if (shown.indexOf(k) < 0 && r.perms[k]) kept[k] = true;
+      });
+      r.perms = kept;
+      shown.forEach(function (k) { if (permDraft[k]) r.perms[k] = true; });
     }
     hide('permModal');
     renderGrid();

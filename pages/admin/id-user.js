@@ -9,7 +9,8 @@
 
   // uname / email / role / org 는 조직 화면의 구성원 매핑과 일치
   const DATA = [
-    { no: 1,  uname: 'admin',    email: 'admin@eteverse.com',    role: '시스템 관리자', org: '-',
+    // sys: 1 = 호스트 시스템 계정 (고객 모드에서는 보이지 않는다)
+    { no: 1,  uname: 'admin',    email: 'admin@eteverse.com',    role: '시스템 관리자', org: '-', sys: 1,
       phone: '02-1234-5678',  first: 'admin', last: '',     active: 1, locked: 0, mailok: 1, tfa: 1, fail: 0,
       created: '2026-08-03 17:33:54', last_login: '2026-09-04 09:30:46' },
     { no: 2,  uname: 'oh.yh',    email: 'oh.yh@eteverse.com',    role: '시스템 관리자', org: '경영지원본부',
@@ -152,6 +153,8 @@
 
     const rows = DATA.filter(function (r) {
       const name = r.last + r.first;
+      // 고객 모드에서는 호스트 시스템 계정을 제외한다
+      if (!window.umsIsHost && r.sys) return false;
       return (!kw   || r.uname.indexOf(kw) >= 0 || r.email.indexOf(kw) >= 0 || name.indexOf(kw) >= 0)
         && (!role || r.role === role)
         && (!org  || r.org === org)
