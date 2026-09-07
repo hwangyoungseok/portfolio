@@ -56,6 +56,7 @@
       { label: 'SaaS 관리', children: [
         { label: '테넌트',              page: 'saas/tenant' },
         { label: '에디션',              page: 'saas/edition' },
+        { label: '구독 요청',           page: 'saas/subscribe-request' },
       ]},
       { label: '관리', children: [
         { label: 'ID 관리', children: [
@@ -152,6 +153,7 @@
     'admin/job-detail',
     'subscribe/status',
     'subscribe/requests',
+    'saas/subscribe-request',
   ];
   const DONE_KIM = [
     'facility/ups-list',
