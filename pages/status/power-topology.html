@@ -13,15 +13,14 @@
   화면: 설비현황 > 전력계통
   설명: 이 화면이 다루는 설비(PDU/UPS/칠러/배터리)만으로 구성한 계통도. PDU가 최상위이며
         그 아래 UPS/칠러가 형제로, UPS 아래에 배터리가 자식으로 붙는다. 위치 구분 없이 등록된
-        전체 설비를 한 트리로 보여준다. 트리에서 설비를 클릭하면 우측에 계통정보(주변 연결 미니
-        다이어그램)·배치정보(위치 breadcrumb)·상세정보(상태/알람/배터리 구성)가 표시된다.
+        전체 설비를 한 트리로 보여준다. 트리에서 설비를 클릭하면 우측에 전력계통정보(주변 연결
+        미니 다이어그램)·위치정보(위치 breadcrumb)·상세정보가 표시된다. 상세정보는 각 설비관리
+        페이지(ups-list.js 등)에서 해당 row를 클릭했을 때 나오는 상세 내용과 동일하다.
         읽기 전용(구조 변경은 각 설비 등록화면의 "소속" 필드에서 처리).
 -->
 
 <div id="umsContent">
   <div class="content">
-
-    <p class="topo-hint">전력분배장치(PDU), UPS, 배터리, 칠러 현황 요약입니다. 좌측 트리에서 설비를 클릭하면 우측에 계통정보 · 배치정보 · 상세정보가 표시됩니다.</p>
 
     <!-- KPI -->
     <div class="topo-kpi-grid" id="topoKpiGrid"></div>
@@ -31,35 +30,25 @@
       <!-- 좌측: 계통 트리 -->
       <div class="topo-col-left">
         <div class="grid-wrap topo-tree-panel">
-          <div class="toolbar">
-            <span style="font-size:11px;color:#98a2b3;">읽기 전용 — 구조 변경은 각 설비 등록화면의 "소속" 항목에서 처리됩니다.</span>
-          </div>
           <div class="topo-tree-body" id="topoTreeBody"></div>
         </div>
       </div>
 
-      <!-- 우측: 계통정보 / 배치정보 / 상세정보 -->
+      <!-- 우측: 전력계통정보 / 위치정보 / 상세정보 -->
       <div class="topo-col-right">
         <div class="topo-panel">
-          <h3>계통정보</h3>
+          <h3>전력계통정보</h3>
           <div class="topo-diagram-scroll"><div class="topo-diagram-inner" id="topoDiagramInner"></div></div>
         </div>
 
         <div class="topo-panel">
-          <h3>배치정보</h3>
+          <h3>위치정보</h3>
           <div id="topoZoneContent"></div>
         </div>
 
         <div class="topo-panel">
-          <div class="topo-panel-head">
-            <h3 style="margin:0;" id="topoInfoTitle">-</h3>
-            <span class="topo-status-badge" id="topoInfoStatus">-</span>
-          </div>
+          <h3 id="topoInfoTitle">-</h3>
           <div id="topoInfoRows"></div>
-          <div id="topoBatterySection"></div>
-          <div class="topo-panel-foot">
-            <a class="btn btn-primary" id="topoMgmtLink" href="#">관리 화면에서 보기</a>
-          </div>
         </div>
       </div>
 

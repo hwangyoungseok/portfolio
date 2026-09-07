@@ -1,15 +1,24 @@
 // 전력계통 페이지 스크립트 (목업 데이터, 읽기 전용)
 // 화면: 설비현황 > 전력계통
 // 구조 변경(소속 UPS 등)은 각 설비 등록화면에서 이루어지고, 이 화면은 그 관계를 트리 +
-// (계통정보/배치정보/상세정보) 3단 패널로 보여주기만 한다.
+// (전력계통정보/위치정보/상세정보) 3단 패널로 보여주기만 한다.
+// 상세정보 카드는 각 설비관리 페이지(ups-list.js 등)에서 row 클릭 시 나오는 상세와 완전히
+// 동일한 내용을 보여준다 — 그래서 그 페이지들의 DATA를 그대로 옮겨와 둔다(같은 값 유지 필수).
 (function () {
 
-  const UPS_LOC = {
-    'UPS-1F-A': '본사 IDC-1F', 'UPS-1F-B': '본사 IDC-1F', 'UPS-1F-C': '본사 IDC-1F',
-    'UPS-2F-A': '본사 IDC-2F', 'UPS-2F-B': '본사 IDC-2F',
-    'UPS-DR-1': '판교 DR센터', 'UPS-DR-2': '판교 DR센터',
+  // ---- UPS 관리(ups-list.js) DATA 전체(7건) ----
+  const UPS_DATA = {
+    'UPS-1F-A': { loc: '본사 IDC-1F', vendor: 'APC', model: 'Smart-UPS SRT 10K', sn: 'AS1934110021', kva: 10, comm: 'SNMP', gw: 'GW-IDC-01', link: 'on', op: 'ok', date: '2023-04-12', ip: '10.10.1.11', port: 161, community: 'public', memo: '', last: '2026-09-03 09:41:07', alarms: [] },
+    'UPS-1F-B': { loc: '본사 IDC-1F', vendor: 'APC', model: 'Smart-UPS SRT 10K', sn: 'AS1934110022', kva: 10, comm: 'SNMP', gw: 'GW-IDC-01', link: 'on', op: 'warn', date: '2023-04-12', ip: '10.10.1.12', port: 161, community: 'public', memo: '', last: '2026-09-03 09:41:03', alarms: ['출력 부하율 85% 초과 (경고)'] },
+    'UPS-2F-A': { loc: '본사 IDC-2F', vendor: 'Vertiv', model: 'Liebert APM 30K', sn: 'VT21008847', kva: 30, comm: 'SNMP', gw: 'GW-IDC-02', link: 'on', op: 'ok', date: '2022-11-30', ip: '10.10.2.11', port: 161, community: 'public', memo: '2023년 배터리 교체', last: '2026-09-03 09:40:58', alarms: [] },
+    'UPS-2F-B': { loc: '본사 IDC-2F', vendor: 'Vertiv', model: 'Liebert APM 30K', sn: 'VT21008848', kva: 30, comm: 'Modbus', gw: 'GW-IDC-02', link: 'off', op: 'major', date: '2022-11-30', ip: '10.10.2.12', port: 502, community: '-', memo: '', last: '2026-09-03 08:12:20', alarms: ['통신 두절', '배터리 스트링 전압 저하 (Major)'] },
+    'UPS-DR-1': { loc: '판교 DR센터', vendor: 'LS ELECTRIC', model: 'LSUPS-0020B', sn: 'LS200347711', kva: 20, comm: 'SNMP', gw: 'GW-DR-01', link: 'on', op: 'ok', date: '2024-02-08', ip: '10.20.1.11', port: 161, community: 'public', memo: '', last: '2026-09-03 09:41:11', alarms: [] },
+    'UPS-DR-2': { loc: '판교 DR센터', vendor: '삼성', model: 'SUP-0100', sn: 'SS99281120', kva: 10, comm: 'SNMP', gw: 'GW-DR-01', link: 'on', op: 'crit', date: '2024-02-08', ip: '10.20.1.12', port: 161, community: 'public', memo: '', last: '2026-09-03 09:41:09', alarms: ['배터리 룸 과온 (Critical)', 'UPS 바이패스 전환'] },
+    'UPS-1F-C': { loc: '본사 IDC-1F', vendor: 'APC', model: 'Smart-UPS SRT 15K', sn: 'AS2011550310', kva: 15, comm: 'SNMP', gw: 'GW-IDC-01', link: 'on', op: 'ok', date: '2024-06-21', ip: '10.10.1.13', port: 161, community: 'public', memo: '', last: '2026-09-03 09:41:05', alarms: [] },
   };
-  const UPS_LIST = Object.keys(UPS_LOC);
+  const UPS_LIST = Object.keys(UPS_DATA);
+  const UPS_LOC = {};
+  UPS_LIST.forEach(function (u) { UPS_LOC[u] = UPS_DATA[u].loc; });
 
   // 위치 관리(location-manage.js) 트리와 동일한 경로로 맞춘 위치별 breadcrumb
   const LOC_BREADCRUMB = {
@@ -18,93 +27,93 @@
     '판교 DR센터': ['판교 DR센터', 'DR 전산실'],
   };
 
-  // UPS 관리(ups-list.js) DATA 전체(7건)와 운영상태(op)·알람을 한 건도 빠짐없이 동일하게 맞춤
-  const UPS_STATUS = { 'UPS-1F-B': 'warn', 'UPS-2F-B': 'major', 'UPS-DR-2': 'crit' };
-  const UPS_ALARMS = {
-    'UPS-1F-B': ['출력 부하율 85% 초과 (경고)'],
-    'UPS-2F-B': ['통신 두절', '배터리 스트링 전압 저하 (Major)'],
-    'UPS-DR-2': ['배터리 룸 과온 (Critical)', 'UPS 바이패스 전환'],
+  // ---- PDU 관리(pdu-list.js) DATA 전체(6건) ----
+  const PDU_DATA = {
+    'PDU-1F-01': { loc: '본사 IDC-1F', vendor: 'APC', model: 'AP8853', sn: 'AP8853-2211001', kind: '미터드-아웃렛', phase: '3상', outlet: 24, amp: 32, volt: 380, comm: 'SNMP', gw: 'GW-IDC-01', link: 'on', op: 'ok', src: 'UPS-1F-A', date: '2023-05-10', ip: '10.10.1.31', port: 161, community: 'public', memo: '', last: '2026-09-03 09:41:07', alarms: [] },
+    'PDU-1F-02': { loc: '본사 IDC-1F', vendor: 'Vertiv', model: 'MPH2', sn: 'MPH2-1902204', kind: '스위치드', phase: '3상', outlet: 24, amp: 32, volt: 380, comm: 'SNMP', gw: 'GW-IDC-01', link: 'on', op: 'warn', src: 'UPS-1F-B', date: '2023-05-10', ip: '10.10.1.32', port: 161, community: 'public', memo: '', last: '2026-09-03 09:41:02', alarms: ['분기전류 정격 90% 초과 (경고)'] },
+    'PDU-2F-01': { loc: '본사 IDC-2F', vendor: 'Raritan', model: 'PX3-5190R', sn: 'PX3-2005511', kind: '미터드', phase: '단상', outlet: 20, amp: 16, volt: 220, comm: 'SNMP', gw: 'GW-IDC-02', link: 'on', op: 'ok', src: 'UPS-2F-A', date: '2022-12-01', ip: '10.10.2.31', port: 161, community: 'public', memo: '', last: '2026-09-03 09:40:58', alarms: [] },
+    'PDU-2F-02': { loc: '본사 IDC-2F', vendor: 'Raritan', model: 'PX3-5190R', sn: 'PX3-2005512', kind: '미터드', phase: '단상', outlet: 20, amp: 16, volt: 220, comm: 'Modbus', gw: 'GW-IDC-02', link: 'off', op: 'major', src: 'UPS-2F-A', date: '2022-12-01', ip: '10.10.2.32', port: 502, community: '-', memo: '', last: '2026-09-03 08:05:11', alarms: ['통신 두절'] },
+    'PDU-DR-01': { loc: '판교 DR센터', vendor: 'APC', model: 'AP8858', sn: 'AP8858-2401007', kind: '모니터드', phase: '3상', outlet: 42, amp: 32, volt: 380, comm: 'SNMP', gw: 'GW-DR-01', link: 'on', op: 'ok', src: 'UPS-DR-1', date: '2024-02-08', ip: '10.20.1.31', port: 161, community: 'public', memo: '', last: '2026-09-03 09:41:11', alarms: [] },
+    'PDU-DR-02': { loc: '판교 DR센터', vendor: 'APC', model: 'AP8858', sn: 'AP8858-2401008', kind: '미터드-아웃렛', phase: '3상', outlet: 42, amp: 32, volt: 380, comm: 'SNMP', gw: 'GW-DR-01', link: 'on', op: 'ok', src: 'PDU-DR-01', date: '2024-02-08', ip: '10.20.1.32', port: 161, community: 'public', memo: '2차 분전', last: '2026-09-03 09:41:05', alarms: [] },
   };
+  const PDU_LIST = Object.keys(PDU_DATA);
+  const PDU_LOC = {};
+  PDU_LIST.forEach(function (p) { PDU_LOC[p] = PDU_DATA[p].loc; });
 
-  // 전력분배장치(PDU): 위치당 여러 개. UPS/칠러는 이중화 등을 위해 PDU를 1개 이상 물 수 있다(다대다).
-  const PDU_LIST = ['PDU-1F-1', 'PDU-1F-2', 'PDU-2F-1', 'PDU-2F-2', 'PDU-DR-1', 'PDU-DR-2'];
-  const PDU_LOC = {
-    'PDU-1F-1': '본사 IDC-1F', 'PDU-1F-2': '본사 IDC-1F',
-    'PDU-2F-1': '본사 IDC-2F', 'PDU-2F-2': '본사 IDC-2F',
-    'PDU-DR-1': '판교 DR센터', 'PDU-DR-2': '판교 DR센터',
-  };
-  // PDU 자체 상태(하위 UPS/칠러 상태와는 무관한 장치 자체 고장/과부하 등).
-  const PDU_STATUS = { 'PDU-DR-2': 'warn', 'PDU-2F-2': 'crit' };
-  const PDU_ALARMS = {
-    'PDU-DR-2': ['주회로 차단기 과부하 경고'],
-    'PDU-2F-2': ['주 차단기 과부하 트립 - 전원 공급 중단'],
-  };
   // 설비(UPS/칠러) id -> 연결된 PDU id 배열. 2개면 이중화(양쪽 PDU에서 동시 수전).
   const UNIT_PDU = {
-    'UPS-1F-A': ['PDU-1F-1'],
-    'UPS-1F-B': ['PDU-1F-1', 'PDU-1F-2'],
-    'UPS-1F-C': ['PDU-1F-2'],
-    'UPS-2F-A': ['PDU-2F-1'],
-    'UPS-2F-B': ['PDU-2F-1', 'PDU-2F-2'],
-    'UPS-DR-1': ['PDU-DR-1'],
-    'UPS-DR-2': ['PDU-DR-1', 'PDU-DR-2'],
-    'CH-1F-01': ['PDU-1F-1'],
-    'CH-1F-02': ['PDU-1F-2'],
-    'CH-2F-01': ['PDU-2F-2'],
-    'CH-DR-01': ['PDU-DR-2'],
+    'UPS-1F-A': ['PDU-1F-01'],
+    'UPS-1F-B': ['PDU-1F-01', 'PDU-1F-02'],
+    'UPS-1F-C': ['PDU-1F-02'],
+    'UPS-2F-A': ['PDU-2F-01'],
+    'UPS-2F-B': ['PDU-2F-01', 'PDU-2F-02'],
+    'UPS-DR-1': ['PDU-DR-01'],
+    'UPS-DR-2': ['PDU-DR-01', 'PDU-DR-02'],
+    'CH-1F-01': ['PDU-1F-01'],
+    'CH-1F-02': ['PDU-1F-02'],
+    'CH-2F-01': ['PDU-2F-02'],
+    'CH-2F-02': ['PDU-2F-01'],
+    'CH-DR-01': ['PDU-DR-02'],
   };
 
-  const BATTERIES = [
-    { id: 'BAT-1F-A-1', ups: 'UPS-1F-A' },
-    { id: 'BAT-1F-B-1', ups: 'UPS-1F-B' },
-    { id: 'BAT-1F-B-2', ups: 'UPS-1F-B' },
-    { id: 'BAT-1F-C-1', ups: 'UPS-1F-C' },
-    { id: 'BAT-2F-A-1', ups: 'UPS-2F-A' },
-    { id: 'BAT-2F-B-1', ups: 'UPS-2F-B' },
-    { id: 'BAT-2F-B-2', ups: 'UPS-2F-B' },
-    { id: 'BAT-DR-1-1', ups: 'UPS-DR-1' },
-    { id: 'BAT-DR-2-1', ups: 'UPS-DR-2' },
-  ];
-  // 배터리 관리(battery-list.js) 목업과 동일하게 SOH 기준 상태 맞춤
-  const BAT_STATUS = { 'BAT-1F-B-2': 'warn', 'BAT-2F-B-2': 'crit' };
-  const BAT_ALARMS = {
-    'BAT-1F-B-2': ['방전 이력 잦음, 모니터링 필요 (경고)'],
-    'BAT-2F-B-2': ['SOH 76.5% 저하 - 교체 필요 (위험)'],
+  // ---- 배터리 관리(battery-list.js) DATA 전체(9건) ----
+  const BAT_DATA = {
+    'BAT-1F-A-1': { ups: 'UPS-1F-A', maker: '삼성SDI', type: '리튬이온', cap: 100, date: '2023-04-12', soh: 96.4, memo: '', alarms: [] },
+    'BAT-1F-B-1': { ups: 'UPS-1F-B', maker: '삼성SDI', type: '리튬이온', cap: 100, date: '2023-04-12', soh: 96.5, memo: '', alarms: [] },
+    'BAT-1F-B-2': { ups: 'UPS-1F-B', maker: '삼성SDI', type: '리튬이온', cap: 100, date: '2023-04-12', soh: 82.1, memo: '', alarms: ['방전 이력 잦음, 모니터링 필요 (경고)'] },
+    'BAT-1F-C-1': { ups: 'UPS-1F-C', maker: 'LG에너지솔루션', type: '리튬이온', cap: 150, date: '2024-06-21', soh: 93.8, memo: '', alarms: [] },
+    'BAT-2F-A-1': { ups: 'UPS-2F-A', maker: 'CSB', type: '납축', cap: 200, date: '2022-11-30', soh: 93.3, memo: '2023년 일부 셀 점검', alarms: [] },
+    'BAT-2F-B-1': { ups: 'UPS-2F-B', maker: 'CSB', type: '납축', cap: 200, date: '2022-11-30', soh: 94.0, memo: '', alarms: [] },
+    'BAT-2F-B-2': { ups: 'UPS-2F-B', maker: 'CSB', type: '납축', cap: 200, date: '2022-11-30', soh: 76.5, memo: '', alarms: ['SOH 76.5% 저하 - 교체 필요 (위험)'] },
+    'BAT-DR-1-1': { ups: 'UPS-DR-1', maker: 'Vertiv', type: '리튬이온', cap: 120, date: '2024-02-08', soh: 93.4, memo: '', alarms: [] },
+    'BAT-DR-2-1': { ups: 'UPS-DR-2', maker: 'Vertiv', type: '리튬이온', cap: 120, date: '2024-02-08', soh: 92.1, memo: '', alarms: [] },
   };
+  const BATTERIES = Object.keys(BAT_DATA).map(function (id) { return { id: id, ups: BAT_DATA[id].ups }; });
+  function batStatusOf(soh) { if (soh < 80) return 'crit'; if (soh < 90) return 'warn'; return 'ok'; }
 
-  const CHILLERS = [
-    { id: 'CH-1F-01', loc: '본사 IDC-1F' },
-    { id: 'CH-1F-02', loc: '본사 IDC-1F' },
-    { id: 'CH-2F-01', loc: '본사 IDC-2F' },
-    { id: 'CH-DR-01', loc: '판교 DR센터' },
-  ];
-  // 티켓(ticket-all.js)의 'CH-1F-01 응축기 압력 경고' 건과 동일하게 맞춤
-  const CH_STATUS = { 'CH-1F-01': 'warn', 'CH-2F-01': 'crit' };
-  const CH_ALARMS = {
-    'CH-1F-01': ['응축기 압력 경고'],
-    'CH-2F-01': ['냉각 시스템 정지 - 즉시 점검 필요'],
+  // ---- 칠러 관리(chiller-list.js) DATA 전체(5건) ----
+  const CH_DATA = {
+    'CH-1F-01': { loc: '본사 IDC-1F', vendor: 'Carrier', model: '30XA-1002', sn: 'CR30XA-210011', rt: 300, ref: 'R-134a', comm: 'BACnet', gw: 'GW-IDC-01', link: 'on', op: 'ok', date: '2022-08-20', ip: '10.10.1.41', port: 47808, memo: '', last: '2026-09-03 09:41:07', alarms: [] },
+    'CH-1F-02': { loc: '본사 IDC-1F', vendor: 'Trane', model: 'RTAC-300', sn: 'TR-RTAC-200544', rt: 300, ref: 'R-513A', comm: 'BACnet', gw: 'GW-IDC-01', link: 'on', op: 'ok', date: '2022-08-20', ip: '10.10.1.42', port: 47808, memo: '예비기', last: '2026-09-03 09:41:03', alarms: [] },
+    'CH-2F-01': { loc: '본사 IDC-2F', vendor: 'York', model: 'YVAA-0250', sn: 'YK-YVAA-199877', rt: 250, ref: 'R-1234ze', comm: 'Modbus', gw: 'GW-IDC-02', link: 'on', op: 'warn', date: '2021-11-05', ip: '10.10.2.41', port: 502, memo: '', last: '2026-09-03 09:40:58', alarms: ['냉수 출구온도 12℃ 초과 (경고)'] },
+    'CH-2F-02': { loc: '본사 IDC-2F', vendor: 'York', model: 'YVAA-0250', sn: 'YK-YVAA-199878', rt: 250, ref: 'R-1234ze', comm: 'Modbus', gw: 'GW-IDC-02', link: 'off', op: 'major', date: '2021-11-05', ip: '10.10.2.42', port: 502, memo: '', last: '2026-09-03 07:55:20', alarms: ['통신 두절', '압축기 트립 (Major)'] },
+    'CH-DR-01': { loc: '판교 DR센터', vendor: 'LG', model: 'RCUW-0200', sn: 'LG-RCUW-240033', rt: 200, ref: 'R-134a', comm: 'BACnet', gw: 'GW-DR-01', link: 'on', op: 'ok', date: '2024-02-08', ip: '10.20.1.41', port: 47808, memo: '', last: '2026-09-03 09:41:11', alarms: [] },
   };
+  const CHILLERS = Object.keys(CH_DATA).map(function (id) { return { id: id, loc: CH_DATA[id].loc }; });
 
-  // 설비 종류마다 상태 단계 수·명칭이 다르다. UPS·배터리는 각 관리 화면(ups-list.js /
-  // battery-list.js)의 실제 표기와 완전히 동일하게 맞췄다. PDU·칠러는 아직 별도 관리 화면이
-  // 없어 그 화면이 생기기 전까지 쓸 잠정값이다 — 화면이 생기면 그 표기에 맞춰 갱신할 것.
+  // 설비 종류마다 상태 단계 수·명칭이 다르다. UPS·PDU·칠러는 각 관리 화면의 검색바 "운영상태"
+  // 옵션과 동일하게 4단계(정상/경고/Major/Critical)다. 배터리만 3단계(정상/경고/교체필요).
   const STATUS_LABELS = {
-    UPS:  { ok: '정상', warn: '경고', major: 'Major', crit: 'Critical' },  // ups-list.js OP_BADGE 그대로
-    배터리: { ok: '정상', warn: '경고', crit: '교체필요' },                   // battery-list.js STATUS_LABEL 그대로
-    PDU:  { ok: '정상', warn: '경고', crit: '심각' },                       // 잠정 — PDU 관리 화면 생기면 맞출 것
-    칠러:  { ok: '정상', warn: '경고', crit: '심각' },                       // 잠정 — 칠러 관리 화면 생기면 맞출 것
+    UPS:  { ok: '정상', warn: '경고', major: 'Major', crit: 'Critical' },
+    배터리: { ok: '정상', warn: '경고', crit: '교체필요' },
+    PDU:  { ok: '정상', warn: '경고', major: 'Major', crit: 'Critical' },
+    칠러:  { ok: '정상', warn: '경고', major: 'Major', crit: 'Critical' },
   };
   function statusLabel(type, s) {
     const map = STATUS_LABELS[type] || STATUS_LABELS.PDU;
     return map[s] || s;
   }
-  // 화면에 보여줄 설비 종류 이름. PDU는 "분전반"이 아니라 "전력분배장치"가 맞는 명칭이다.
-  const TYPE_LABEL = { UPS: 'UPS', PDU: '전력분배장치', 칠러: '칠러', 배터리: '배터리' };
   function statusColor(s) {
     return s === 'crit' ? '#c62828' : s === 'major' ? '#d84315' : s === 'warn' ? '#b76e00' : '#1e7e34';
   }
 
-  // ---- 노드 상세/관리화면 링크 조회용 인덱스 ----
+  // ---- 상세정보 렌더용 배지/행 — 각 설비관리 페이지(ups-list.js 등)와 완전히 동일한 방식 ----
+  const LINK_BADGE = { on: ['badge-on', '온라인'], off: ['badge-off', '오프라인'] };
+  const OP_BADGE = { ok: ['badge-ok', '정상'], warn: ['badge-warn', '경고'], major: ['badge-major', 'Major'], crit: ['badge-crit', 'Critical'] };
+  const BAT_BADGE = { ok: 'badge-ok', warn: 'badge-warn', crit: 'badge-major' };
+  function badge(map, key) { const p = map[key] || ['badge-off', key]; return '<span class="badge ' + p[0] + '">' + p[1] + '</span>'; }
+  function alarmsHtml(alarms) {
+    return (alarms && alarms.length) ? '<ul>' + alarms.map(function (a) { return '<li>' + a + '</li>'; }).join('') + '</ul>' : '<span style="color:#8a97a5;">없음</span>';
+  }
+  function dvRow(label, val, multi) {
+    return '<div class="dv-row' + (multi ? ' multi' : '') + '">'
+      + '<span class="dv-label">' + label + '</span>'
+      + '<div class="dv-box' + (multi ? ' multi' : '') + '">' + val + '</div></div>';
+  }
+  function dvGroup(rows) { return '<div class="dv-group">' + rows + '</div>'; }
+  const DASH = '<span style="color:#8a97a5;">-</span>';
+
+  // ---- 노드 상세/트리 조회용 인덱스 ----
   const NODE_INDEX = {};
   function registerNode(id, data) { NODE_INDEX[id] = data; }
 
@@ -113,21 +122,25 @@
   // ================= KPI =================
   function renderKpi() {
     const groups = [
-      { label: '전력분배장치(PDU)', type: 'PDU', ids: PDU_LIST, statusOf: function (id) { return PDU_STATUS[id] || 'ok'; } },
-      { label: 'UPS', type: 'UPS', ids: UPS_LIST, statusOf: function (id) { return UPS_STATUS[id] || 'ok'; } },
-      { label: '배터리', type: '배터리', ids: BATTERIES.map(function (b) { return b.id; }), statusOf: function (id) { return BAT_STATUS[id] || 'ok'; } },
-      { label: '칠러', type: '칠러', ids: CHILLERS.map(function (c) { return c.id; }), statusOf: function (id) { return CH_STATUS[id] || 'ok'; } },
+      { label: 'PDU', type: 'PDU', ids: PDU_LIST, statusOf: function (id) { return PDU_DATA[id].op; } },
+      { label: 'UPS', type: 'UPS', ids: UPS_LIST, statusOf: function (id) { return UPS_DATA[id].op; } },
+      { label: '배터리', type: '배터리', ids: BATTERIES.map(function (b) { return b.id; }), statusOf: function (id) { return batStatusOf(BAT_DATA[id].soh); } },
+      { label: '칠러', type: '칠러', ids: CHILLERS.map(function (c) { return c.id; }), statusOf: function (id) { return CH_DATA[id].op; } },
     ];
     document.getElementById('topoKpiGrid').innerHTML = groups.map(function (g) {
       const counts = {};
       g.ids.forEach(function (id) { const s = g.statusOf(id); counts[s] = (counts[s] || 0) + 1; });
       let acc = 0;
       const gradientParts = [];
-      const rows = ['ok', 'warn', 'major', 'crit'].filter(function (s) { return counts[s]; }).map(function (s) {
-        const pct = (counts[s] / g.ids.length) * 100;
-        gradientParts.push(statusColor(s) + ' ' + acc + '% ' + (acc + pct) + '%');
-        acc += pct;
-        return '<div class="topo-kpi-stat">' + dot(s) + '<span>' + statusLabel(g.type, s) + '</span><b>' + counts[s] + '</b></div>';
+      // 단계는 해당 설비 종류의 상태 체계(STATUS_LABELS) 전부를 항상 보여준다 — 건수 0이어도 레이블은 표시.
+      const rows = Object.keys(STATUS_LABELS[g.type] || STATUS_LABELS.PDU).map(function (s) {
+        const count = counts[s] || 0;
+        if (count) {
+          const pct = (count / g.ids.length) * 100;
+          gradientParts.push(statusColor(s) + ' ' + acc + '% ' + (acc + pct) + '%');
+          acc += pct;
+        }
+        return '<div class="topo-kpi-stat">' + dot(s) + '<span>' + statusLabel(g.type, s) + '</span><b>' + count + '</b></div>';
       });
       return '<div class="topo-kpi-card">'
         + '<div class="topo-kpi-top">'
@@ -168,24 +181,20 @@
   function buildUnitNode(kind, u, loc, pduId, pduIdx, pduCount) {
     const isUps = kind === 'UPS';
     const id = (isUps ? 'ups:' : 'ch:') + u;
-    const status = (isUps ? UPS_STATUS[u] : CH_STATUS[u]) || 'ok';
+    const status = isUps ? UPS_DATA[u].op : CH_DATA[u].op;
     const dual = pduCount > 1;
     const sub = kind + (dual ? ' · 급전 ' + pduIdx + '/' + pduCount : '');
 
     if (!NODE_INDEX[id]) {
-      registerNode(id, {
-        type: kind, label: u, loc: loc, status: status,
-        mgmt: isUps ? '../facility/ups-list.html' : '../facility/chiller-list.html',
-        alarms: (isUps ? UPS_ALARMS[u] : CH_ALARMS[u]) || [],
-      });
+      registerNode(id, { type: kind, label: u, loc: loc, status: status });
     }
 
     let children = [];
     if (isUps) {
       children = BATTERIES.filter(function (b) { return b.ups === u; }).map(function (b) {
         const bid = 'bat:' + b.id;
-        const bst = BAT_STATUS[b.id] || 'ok';
-        registerNode(bid, { type: '배터리', label: b.id, loc: loc, status: bst, mgmt: '../facility/battery-list.html', alarms: BAT_ALARMS[b.id] || [] });
+        const bst = batStatusOf(BAT_DATA[b.id].soh);
+        registerNode(bid, { type: '배터리', label: b.id, loc: loc, status: bst });
         return { id: bid, label: b.id, sub: '배터리', status: bst };
       });
     }
@@ -208,9 +217,9 @@
         const idx = conns.indexOf(pduId) + 1;
         return buildUnitNode(un.kind, un.id, un.loc, pduId, idx, conns.length);
       });
-      const pduStatus = PDU_STATUS[pduId] || 'ok';
-      registerNode('pdu:' + pduId, { type: 'PDU', label: pduId, loc: PDU_LOC[pduId], status: pduStatus, mgmt: '../facility/pdu-list.html', alarms: PDU_ALARMS[pduId] || [] });
-      return { id: 'pdu:' + pduId, label: pduId, sub: '전력분배장치', status: pduStatus, clickable: true, children: children };
+      const pduStatus = PDU_DATA[pduId].op;
+      registerNode('pdu:' + pduId, { type: 'PDU', label: pduId, loc: PDU_LOC[pduId], status: pduStatus });
+      return { id: 'pdu:' + pduId, label: pduId, sub: 'PDU', status: pduStatus, clickable: true, children: children };
     });
 
     document.getElementById('topoTreeBody').innerHTML = pduNodes.map(function (n) { return renderRow(n, 0); }).join('');
@@ -222,11 +231,11 @@
     }
   }
 
-  // ================= 계통정보 (선택 설비 주변 미니 다이어그램) =================
-  function pduBox(pduId) { return { id: 'pdu:' + pduId, label: pduId, status: PDU_STATUS[pduId] || 'ok' }; }
-  function upsBox(u) { return { id: 'ups:' + u, label: u, status: UPS_STATUS[u] || 'ok' }; }
-  function chBox(c) { return { id: 'ch:' + c, label: c, status: CH_STATUS[c] || 'ok' }; }
-  function batBox(b) { return { id: 'bat:' + b, label: b, status: BAT_STATUS[b] || 'ok' }; }
+  // ================= 전력계통정보 (선택 설비 주변 미니 다이어그램) =================
+  function pduBox(pduId) { return { id: 'pdu:' + pduId, label: pduId, status: PDU_DATA[pduId].op }; }
+  function upsBox(u) { return { id: 'ups:' + u, label: u, status: UPS_DATA[u].op }; }
+  function chBox(c) { return { id: 'ch:' + c, label: c, status: CH_DATA[c].op }; }
+  function batBox(b) { return { id: 'bat:' + b, label: b, status: batStatusOf(BAT_DATA[b].soh) }; }
 
   function buildLevels(type, key) {
     if (type === 'UPS') {
@@ -274,10 +283,12 @@
       });
       html += '</div>';
     });
-    html += '<svg class="topo-diagram-svg" id="topoDiagramSvg"></svg>';
+    // 박스(행)만 먼저 넣고 크기를 잰다 — <svg>를 미리 넣어두면 width/height 속성이 없는 동안
+    // 브라우저 기본 크기(300x150)를 차지해 아직 없는 콘텐츠 기준으로 크기를 잘못 잴 수 있다.
     inner.innerHTML = html;
+    const w = inner.scrollWidth;
+    const h = inner.scrollHeight;
 
-    const svg = document.getElementById('topoDiagramSvg');
     let lines = '';
     for (let l = 1; l < levels.length; l++) {
       levels[l].forEach(function (item, b) {
@@ -296,12 +307,17 @@
         });
       });
     }
+    // width/height를 처음부터 지정해서 넣는다 — 뒤늦게 setAttribute 하면 그 사이에 잰 크기가 어긋난다.
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('class', 'topo-diagram-svg');
+    svg.setAttribute('id', 'topoDiagramSvg');
+    svg.setAttribute('width', w);
+    svg.setAttribute('height', h);
     svg.innerHTML = lines;
-    svg.setAttribute('width', inner.scrollWidth);
-    svg.setAttribute('height', inner.scrollHeight);
+    inner.appendChild(svg);
   }
 
-  // ================= 배치정보 (위치 breadcrumb) =================
+  // ================= 위치정보 (위치 breadcrumb) =================
   function crumbHtml(list) {
     return list.map(function (c, i) { return (i > 0 ? '<span class="topo-crumb-sep">&rsaquo;</span>' : '') + '<span class="topo-crumb">' + c + '</span>'; }).join('');
   }
@@ -313,6 +329,7 @@
     let html = locRow(n.label + ' 위치', n.loc);
     if (n.type === 'UPS') {
       (UNIT_PDU[n.label] || []).forEach(function (p) { html += locRow(p + ' 위치', PDU_LOC[p]); });
+      BATTERIES.filter(function (b) { return b.ups === n.label; }).forEach(function (b) { html += locRow(b.id + ' 위치', n.loc); });
     } else if (n.type === 'PDU') {
       UPS_LIST.filter(function (u) { return (UNIT_PDU[u] || []).indexOf(n.label) >= 0; }).forEach(function (u) { html += locRow(u + ' 위치', UPS_LOC[u]); });
       CHILLERS.filter(function (c) { return (UNIT_PDU[c.id] || []).indexOf(n.label) >= 0; }).forEach(function (c) { html += locRow(c.id + ' 위치', c.loc); });
@@ -326,50 +343,64 @@
   }
 
   // ================= 상세정보 =================
+  // 각 설비관리 페이지(ups-list.js/pdu-list.js/chiller-list.js/battery-list.js)에서 row를
+  // 클릭했을 때 나오는 상세 드로어와 완전히 동일한 그룹/행 구성을 그대로 재현한다.
+  function renderInfoUPS(r) {
+    return dvGroup(
+        dvRow('위치', r.loc) + dvRow('Vendor', r.vendor) + dvRow('모델명', r.model)
+        + dvRow('S/N', r.sn) + dvRow('용량', r.kva + ' kVA') + dvRow('설치일자', r.date))
+      + dvGroup(
+          dvRow('통신방식', r.comm) + dvRow('IP', r.ip) + dvRow('Port', r.port)
+          + dvRow('Community', r.community) + dvRow('연결 G/W', r.gw)
+          + dvRow('통신상태', badge(LINK_BADGE, r.link)) + dvRow('최근 수신', r.last))
+      + dvGroup(
+          dvRow('운영상태', badge(OP_BADGE, r.op)) + dvRow('활성 알람', alarmsHtml(r.alarms), true))
+      + dvGroup(dvRow('비고', r.memo || DASH, true));
+  }
+  function renderInfoPDU(r) {
+    return dvGroup(
+        dvRow('위치', r.loc) + dvRow('Vendor', r.vendor) + dvRow('모델명', r.model) + dvRow('S/N', r.sn)
+        + dvRow('유형', r.kind) + dvRow('상', r.phase) + dvRow('아웃렛 수', r.outlet)
+        + dvRow('정격전류', r.amp + ' A') + dvRow('정격전압', r.volt + ' V')
+        + dvRow('상위전원', r.src) + dvRow('설치일자', r.date))
+      + dvGroup(
+          dvRow('통신방식', r.comm) + dvRow('IP', r.ip) + dvRow('Port', r.port)
+          + dvRow('Community', r.community) + dvRow('연결 G/W', r.gw)
+          + dvRow('통신상태', badge(LINK_BADGE, r.link)) + dvRow('최근 수신', r.last))
+      + dvGroup(
+          dvRow('운영상태', badge(OP_BADGE, r.op)) + dvRow('활성 알람', alarmsHtml(r.alarms), true))
+      + dvGroup(dvRow('비고', r.memo || DASH, true));
+  }
+  function renderInfoCH(r) {
+    return dvGroup(
+        dvRow('위치', r.loc) + dvRow('Vendor', r.vendor) + dvRow('모델명', r.model) + dvRow('S/N', r.sn)
+        + dvRow('냉각능력', r.rt + ' RT') + dvRow('냉매종류', r.ref) + dvRow('설치일자', r.date))
+      + dvGroup(
+          dvRow('통신방식', r.comm) + dvRow('IP', r.ip) + dvRow('Port', r.port) + dvRow('연결 G/W', r.gw)
+          + dvRow('통신상태', badge(LINK_BADGE, r.link)) + dvRow('최근 수신', r.last))
+      + dvGroup(
+          dvRow('운영상태', badge(OP_BADGE, r.op)) + dvRow('활성 알람', alarmsHtml(r.alarms), true))
+      + dvGroup(dvRow('비고', r.memo || DASH, true));
+  }
+  function renderInfoBAT(r) {
+    const st = batStatusOf(r.soh);
+    return dvGroup(
+        dvRow('소속 UPS', r.ups) + dvRow('위치', UPS_LOC[r.ups]) + dvRow('제조사', r.maker)
+        + dvRow('종류', r.type) + dvRow('용량', r.cap + ' Ah') + dvRow('설치일자', r.date))
+      + dvGroup(
+          dvRow('SOH', r.soh + '%') + dvRow('상태', '<span class="badge ' + BAT_BADGE[st] + '">' + statusLabel('배터리', st) + '</span>'))
+      + dvGroup(dvRow('활성 알람', alarmsHtml(r.alarms), true))
+      + dvGroup(dvRow('비고', r.memo || DASH, true));
+  }
+
   function renderInfo(id, n) {
-    document.getElementById('topoInfoTitle').textContent = n.label;
-    const badge = document.getElementById('topoInfoStatus');
-    badge.textContent = statusLabel(n.type, n.status);
-    badge.className = 'topo-status-badge ' + n.status;
-
-    const rows = [['구분', TYPE_LABEL[n.type] || n.type], ['위치', n.loc]];
-    if (n.type === 'UPS') {
-      const pduIds = UNIT_PDU[n.label] || [];
-      rows.push(['연결 전력분배장치', pduIds.join(', ') + (pduIds.length > 1 ? ' (이중수전)' : ' (단독수전)')]);
-    } else if (n.type === 'PDU') {
-      const connected = UPS_LIST.filter(function (u) { return (UNIT_PDU[u] || []).indexOf(n.label) >= 0; })
-        .concat(CHILLERS.filter(function (c) { return (UNIT_PDU[c.id] || []).indexOf(n.label) >= 0; }).map(function (c) { return c.id; }));
-      rows.push(['연결 설비 수', connected.length + '개']);
-      rows.push(['연결 설비', connected.join(', ') || '-']);
-    } else if (n.type === '칠러') {
-      rows.push(['연결 전력분배장치', (UNIT_PDU[n.label] || []).join(', ') || '-']);
-    } else { // 배터리
-      const b = BATTERIES.filter(function (x) { return x.id === n.label; })[0];
-      rows.push(['소속 UPS', b ? b.ups : '-']);
-    }
-
-    const alarms = n.alarms || [];
-    document.getElementById('topoInfoRows').innerHTML = rows.map(function (r) {
-      return '<div class="topo-info-row"><span>' + r[0] + '</span><span>' + r[1] + '</span></div>';
-    }).join('')
-      + '<div class="topo-alarm-block"><p class="topo-loc-label">활성 알람</p>'
-      + (alarms.length ? '<ul>' + alarms.map(function (a) { return '<li>' + a + '</li>'; }).join('') + '</ul>' : '<span style="color:#98a2b3;font-size:12px;">없음</span>')
-      + '</div>';
-
-    const battEl = document.getElementById('topoBatterySection');
-    if (n.type === 'UPS') {
-      const batts = BATTERIES.filter(function (b) { return b.ups === n.label; });
-      battEl.innerHTML = '<p class="topo-loc-label" style="margin-top:12px;">배터리 구성 (' + batts.length + '개)</p>'
-        + '<div class="topo-batt-grid">' + batts.map(function (b) {
-            const st = BAT_STATUS[b.id] || 'ok';
-            return '<div class="topo-batt-card ' + st + '"><p class="topo-batt-name">' + b.id + '</p>'
-              + '<div class="topo-batt-val"><span>상태</span><span>' + statusLabel('배터리', st) + '</span></div></div>';
-          }).join('') + '</div>';
-    } else {
-      battEl.innerHTML = '';
-    }
-
-    document.getElementById('topoMgmtLink').href = n.mgmt || '#';
+    document.getElementById('topoInfoTitle').textContent = n.label + ' 상세';
+    let body;
+    if (n.type === 'UPS') body = renderInfoUPS(UPS_DATA[n.label]);
+    else if (n.type === 'PDU') body = renderInfoPDU(PDU_DATA[n.label]);
+    else if (n.type === '칠러') body = renderInfoCH(CH_DATA[n.label]);
+    else body = renderInfoBAT(BAT_DATA[n.label]);
+    document.getElementById('topoInfoRows').innerHTML = '<div class="dv">' + body + '</div>';
   }
 
   // ================= 선택 =================

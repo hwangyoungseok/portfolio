@@ -27,8 +27,6 @@
 
 .topo-panel { background: #fff; border: 1px solid #dde1e7; border-radius: 8px; padding: 14px 16px; }
 .topo-panel h3 { font-size: 13px; font-weight: bold; color: #1a1a2e; margin: 0 0 10px; }
-.topo-panel-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-.topo-panel-foot { margin-top: 12px; padding-top: 10px; border-top: 1px solid #eee; text-align: right; }
 
 /* ---------- 트리 (location-manage.js 위치 트리와 동일한 패턴) ---------- */
 .topo-tree-body { flex: 1; overflow: auto; padding: 6px 0; }
@@ -45,7 +43,7 @@
 .topo-row.major .topo-name { color: #d84315; }
 .topo-row.crit  .topo-name { color: #c62828; }
 
-/* ---------- 배치정보 (위치 breadcrumb) ---------- */
+/* ---------- 위치정보 (위치 breadcrumb) ---------- */
 .topo-loc-row { margin-bottom: 10px; }
 .topo-loc-row:last-child { margin-bottom: 0; }
 .topo-loc-label { font-size: 11px; color: #98a2b3; margin: 0 0 4px; }
@@ -53,8 +51,8 @@
 .topo-crumb { font-size: 12px; padding: 4px 9px; border-radius: 6px; background: #eef4fc; color: #1a6ed8; font-weight: bold; }
 .topo-crumb-sep { color: #c3c9d1; font-size: 12px; }
 
-/* ---------- 계통정보 (선택 설비 주변 미니 다이어그램) ---------- */
-.topo-diagram-scroll { overflow-x: auto; }
+/* ---------- 전력계통정보 (선택 설비 주변 미니 다이어그램) ---------- */
+.topo-diagram-scroll { overflow-x: auto; overflow-y: hidden; }
 .topo-diagram-inner { position: relative; padding: 6px 4px; min-width: min-content; }
 .topo-diagram-row { display: flex; justify-content: center; gap: 14px; margin-bottom: 30px; }
 .topo-diagram-row:last-child { margin-bottom: 4px; }
@@ -62,26 +60,3 @@
 .topo-diagram-box.selected { border-color: #1a6ed8; border-width: 2px; font-weight: bold; color: #1a6ed8; }
 .topo-diagram-svg { position: absolute; top: 0; left: 0; overflow: visible; }
 .topo-diagram-svg line { stroke: #c8ced6; stroke-width: 1.5; }
-
-/* ---------- 상세정보 ---------- */
-.topo-status-badge { font-size: 12px; padding: 3px 10px; border-radius: 6px; font-weight: bold; }
-.topo-status-badge.ok    { background: #e6f4ea; color: #1e7e34; }
-.topo-status-badge.warn  { background: #fff4e5; color: #b76e00; }
-.topo-status-badge.major { background: #fde7de; color: #d84315; }
-.topo-status-badge.crit  { background: #fdecea; color: #c62828; }
-
-.topo-info-row { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; padding: 7px 0; border-top: 1px solid #f0f0f0; }
-.topo-info-row:first-child { border-top: none; }
-.topo-info-row span:first-child { color: #98a2b3; flex-shrink: 0; }
-.topo-info-row span:last-child { text-align: right; }
-
-.topo-alarm-block { margin-top: 10px; }
-.topo-alarm-block ul { margin: 4px 0 0; padding-left: 16px; font-size: 12px; color: #333; }
-.topo-alarm-block ul li { margin: 2px 0; }
-
-.topo-batt-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; margin-top: 10px; }
-.topo-batt-card { border: 1px solid #dde1e7; border-radius: 8px; padding: 8px 10px; }
-.topo-batt-card.warn { border-color: #b76e00; background: #fffaf3; }
-.topo-batt-card.crit { border-color: #c62828; background: #fff8f7; }
-.topo-batt-name { font-size: 12px; font-weight: bold; margin: 0 0 4px; }
-.topo-batt-val { font-size: 11px; color: #666; display: flex; justify-content: space-between; }
