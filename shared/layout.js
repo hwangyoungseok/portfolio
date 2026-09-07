@@ -158,6 +158,9 @@
   const DONE_KIM = [
     'facility/ups-list',
     'facility/location-manage',
+    'facility/pdu-list',
+    'facility/chiller-list',
+    'facility/battery-history',
     'alarm/alarm-rule',
     'alarm/alarm-manage',
     'alarm/alarm-history',

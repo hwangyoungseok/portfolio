@@ -1,2 +1,8 @@
-/* 칠러 관리 전용 스타일 (공통은 shared/common.css)
-   화면: 설비관리 > 칠러 관리 */
+/* 칠러 관리 전용 스타일 (공통은 shared/common.css) */
+
+#chlModal .modal { max-width: 600px; }
+
+.chl-table td:nth-child(2),
+.chl-table td:nth-child(5) { text-align: left; }
+.chl-table th:nth-child(2), .chl-table td:nth-child(2) { min-width: 100px; }
+.chl-table th:nth-child(5), .chl-table td:nth-child(5) { min-width: 130px; }
