@@ -22,14 +22,14 @@
 .mv-canvas-col { flex: 1 1 auto; display: flex; flex-direction: column; min-width: 0; gap: 8px; }
 
 .mv-canvas {
-  /* 맵 관리 캔버스와 동일 비율(=샘플 도면 viewBox 1000x640). 좌표는 % 로 저장 */
-  position: relative; flex: 0 0 auto;
-  width: 100%; aspect-ratio: 1000 / 640;
+  /* 맵 관리 캔버스와 동일 규칙: 배경 크기에 맞게 감싸고, 넓으면 폭에 맞춰 축소. 좌표는 % */
+  position: relative; flex: 0 0 auto; align-self: flex-start;
+  max-width: 100%;
   background: #fff; border: 1px solid #dde1e7; border-radius: 6px; overflow: hidden;
 }
-.mv-bg { position: absolute; inset: 0; }
-.mv-bg.img { background-size: contain; background-position: center; background-repeat: no-repeat; }
-.mv-bg svg { display: block; width: 100%; height: 100%; }
+.mv-bg { display: block; }
+.mv-bg > img, .mv-bg > svg { display: block; max-width: 100%; height: auto; }
+.mv-bg > svg { width: 1000px; }   /* 샘플 도면 기준폭 (viewBox 1000x640 로 비율 유지) */
 
 .mv-legend { display: flex; gap: 16px; font-size: 11.5px; color: #667; padding: 2px 4px; }
 .mv-legend span { display: flex; align-items: center; gap: 5px; }

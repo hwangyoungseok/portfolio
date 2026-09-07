@@ -130,11 +130,7 @@
   function renderBg() {
     const bg = $('mvBg');
     const b = (maps[cur] && maps[cur].bg) || { type: 'sample' };
-    if (b.type === 'image' && b.data) {
-      bg.classList.add('img'); bg.style.backgroundImage = 'url(' + b.data + ')'; bg.innerHTML = '';
-    } else {
-      bg.classList.remove('img'); bg.style.backgroundImage = 'none'; bg.innerHTML = sampleSvg();
-    }
+    bg.innerHTML = (b.type === 'image' && b.data) ? '<img src="' + b.data + '" alt="">' : sampleSvg();
   }
 
   function renderNodes() {
