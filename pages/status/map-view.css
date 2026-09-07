@@ -1,2 +1,111 @@
-/* 맵 전용 스타일 (공통은 shared/common.css)
+/* 맵(상태 모니터링) 전용 스타일 (공통은 shared/common.css)
    화면: 설비현황 > 맵 */
+
+.mv-content { padding: 12px 14px; }
+
+/* ---- 상단 바 ---- */
+.mv-top { display: flex; align-items: center; gap: 12px; padding: 4px 2px 10px; flex-wrap: wrap; }
+.mv-map-sel { min-width: 160px; }
+.mv-summary { display: flex; gap: 6px; }
+.mv-chip { font-size: 11.5px; padding: 3px 9px; border-radius: 11px; font-weight: bold; }
+.mv-chip b { font-weight: bold; }
+.mv-chip.c-ok    { background: #e6f4ea; color: #1e7e34; }
+.mv-chip.c-warn  { background: #fff4e5; color: #b76e00; }
+.mv-chip.c-danger{ background: #fdecea; color: #c62828; }
+.mv-chip.c-off   { background: #eef1f4; color: #7b8794; }
+.mv-updated { font-size: 11.5px; color: #98a2b3; }
+.mv-updated b { color: #667; }
+.mv-auto { font-size: 12px; color: #555; display: flex; align-items: center; gap: 5px; cursor: pointer; }
+
+/* ---- 본문 ---- */
+.mv-wrap { display: flex; gap: 12px; flex: 1 1 auto; min-height: 0; }
+.mv-canvas-col { flex: 1 1 auto; display: flex; flex-direction: column; min-width: 0; gap: 8px; }
+
+.mv-canvas {
+  /* 맵 관리 캔버스와 동일 비율(=샘플 도면 viewBox 1000x640). 좌표는 % 로 저장 */
+  position: relative; flex: 0 0 auto;
+  width: 100%; aspect-ratio: 1000 / 640;
+  background: #fff; border: 1px solid #dde1e7; border-radius: 6px; overflow: hidden;
+}
+.mv-bg { position: absolute; inset: 0; }
+.mv-bg.img { background-size: contain; background-position: center; background-repeat: no-repeat; }
+.mv-bg svg { display: block; width: 100%; height: 100%; }
+
+.mv-legend { display: flex; gap: 16px; font-size: 11.5px; color: #667; padding: 2px 4px; }
+.mv-legend span { display: flex; align-items: center; gap: 5px; }
+.mv-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+
+/* 상태 색 (범례 점에만 — 노드 바깥 상자에 안 먹도록 .mv-dot 로 한정) */
+.mv-dot.s-ok    { background: #27ae60; }
+.mv-dot.s-warn  { background: #e08a1e; }
+.mv-dot.s-major { background: #e74c3c; }
+.mv-dot.s-crit  { background: #c0392b; }
+.mv-dot.s-off   { background: #98a2b3; }
+
+/* ---- 배치된 설비 노드 ---- */
+.mv-node {
+  position: absolute; transform: translate(-50%, -50%);
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  cursor: pointer; user-select: none; z-index: 2;
+}
+.mv-node.selected .mv-node-ic { box-shadow: 0 0 0 3px rgba(26,110,216,0.4); }
+.mv-node-ic {
+  position: relative;
+  width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: bold; color: #fff; border: 2px solid #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
+.mv-node.s-ok    .mv-node-ic { background: #27ae60; }
+.mv-node.s-warn  .mv-node-ic { background: #e08a1e; }
+.mv-node.s-major .mv-node-ic { background: #e74c3c; }
+.mv-node.s-crit  .mv-node-ic { background: #c0392b; }
+.mv-node.s-off   .mv-node-ic { background: #98a2b3; }
+.mv-node-lb {
+  font-size: 10px; color: #1a2330; background: rgba(255,255,255,0.85);
+  padding: 0 4px; border-radius: 3px; white-space: nowrap; max-width: 120px;
+  overflow: hidden; text-overflow: ellipsis;
+}
+
+/* 유형별 모양 */
+.shape-ups { border-radius: 4px; }
+.shape-pdu { border-radius: 50%; }
+.shape-chl { border-radius: 4px; transform: rotate(45deg); }
+.shape-chl > span:first-child { transform: rotate(-45deg); }
+.shape-bat { border-radius: 50% 50% 50% 4px; }
+
+/* 위험 상태 펄스 */
+@keyframes mv-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(231,76,60,0.55); }
+  70%  { box-shadow: 0 0 0 13px rgba(231,76,60,0); }
+  100% { box-shadow: 0 0 0 0 rgba(231,76,60,0); }
+}
+.mv-node.s-major .mv-node-ic,
+.mv-node.s-crit  .mv-node-ic { animation: mv-pulse 1.5s infinite; }
+
+/* 알람 뱃지 */
+.mv-node-badge {
+  position: absolute; top: -7px; right: -7px;
+  min-width: 15px; height: 15px; padding: 0 3px; box-sizing: border-box;
+  background: #c0392b; color: #fff; border: 1px solid #fff; border-radius: 8px;
+  font-size: 9px; font-weight: bold; line-height: 13px; text-align: center;
+}
+.shape-chl .mv-node-badge { transform: rotate(-45deg); }
+
+/* ---- 우측 상태 카드 ---- */
+.mv-side { width: 280px; flex-shrink: 0; background: #fff; border: 1px solid #dde1e7; border-radius: 6px; padding: 14px; overflow-y: auto; }
+.mv-side-empty { color: #98a2b3; font-size: 12px; text-align: center; padding: 40px 10px; line-height: 1.8; }
+
+.mv-card-head { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.mv-card-title { font-size: 15px; font-weight: bold; color: #1a1a2e; }
+.mv-card-type { font-size: 11px; color: #7b8794; background: #f0f2f5; padding: 1px 7px; border-radius: 4px; }
+.mv-row { display: flex; font-size: 12px; padding: 6px 0; border-bottom: 1px solid #f0f0f0; }
+.mv-row .k { width: 78px; color: #8a97a5; flex-shrink: 0; }
+.mv-row .v { color: #333; }
+.mv-alarms { margin-top: 10px; }
+.mv-alarms-t { font-size: 12px; font-weight: bold; color: #33506e; margin-bottom: 6px; }
+.mv-alarms ul { margin: 0; padding-left: 16px; }
+.mv-alarms li { font-size: 12px; color: #c0392b; line-height: 1.7; }
+.mv-alarms .none { font-size: 12px; color: #8a97a5; }
+
+/* ---- 맵 없음 ---- */
+.mv-nomap { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; color: #98a2b3; font-size: 13px; text-align: center; line-height: 1.7; }

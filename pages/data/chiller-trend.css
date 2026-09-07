@@ -1,2 +1,17 @@
 /* 칠러 Trend 차트 전용 스타일 (공통은 shared/common.css)
    화면: 데이터 조회 > 칠러 Trend 차트 */
+
+.trend-card { background: #fff; border: 1px solid #dde1e7; border-radius: 6px; padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; flex: 1 1 auto; min-height: 380px; }
+.trend-toolbar { display: flex; align-items: center; gap: 8px; }
+.trend-hint { font-size: 11px; color: #98a2b3; }
+
+.trend-body { display: flex; gap: 16px; flex: 1; min-height: 0; }
+.trend-chart-wrap { flex: 1; position: relative; border: 1px solid #eee; border-radius: 6px; overflow: hidden; cursor: crosshair; user-select: none; min-height: 320px; }
+.trend-chart-wrap svg { display: block; width: 100%; height: 100%; }
+.trend-zoom-box { display: none; position: absolute; top: 0; bottom: 0; background: rgba(26,110,216,0.14); border-left: 1px solid #1a6ed8; border-right: 1px solid #1a6ed8; pointer-events: none; }
+
+.trend-legend { width: 160px; flex-shrink: 0; display: flex; flex-direction: column; gap: 2px; padding-top: 4px; overflow-y: auto; }
+.trend-legend-item { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #333; cursor: pointer; padding: 5px 7px; border-radius: 4px; }
+.trend-legend-item:hover { background: #f5f7fa; }
+.trend-legend-item.off { color: #b7bec7; text-decoration: line-through; }
+.trend-legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }

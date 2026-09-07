@@ -72,12 +72,15 @@
         + '<td>' + r.action + '</td>'
         + '<td><span class="toggle-pill ' + (r.on ? 'on' : 'off') + '" onclick="crToggle(' + f.no + ',' + r.id + ')">'
         +   (r.on ? '사용' : '미사용') + '</span></td>'
-        + '<td><button class="icon-btn" title="수정" onclick="crEditRule(' + f.no + ',' + r.id + ')">&#9998;</button></td>'
+        + '<td><span class="col-act">'
+        +   '<button class="icon-btn" title="수정" onclick="crEditRule(' + f.no + ',' + r.id + ')">&#9998;</button>'
+        +   '<button class="icon-btn del" title="삭제" onclick="crDeleteRule(' + f.no + ',' + r.id + ')">&#10005;</button>'
+        + '</span></td>'
         + '</tr>';
     }).join('');
     return '<div class="sub-wrap"><table class="sub-table">'
       + '<thead><tr><th style="width:90px;">레벨</th><th>조건식</th><th style="width:34%;">Action</th>'
-      +   '<th style="width:80px;">사용여부</th><th style="width:56px;">수정</th></tr></thead>'
+      +   '<th style="width:80px;">사용여부</th><th style="width:84px;">관리</th></tr></thead>'
       + '<tbody>' + rows + '</tbody></table></div>';
   }
 
@@ -123,7 +126,38 @@
     umsToast(r.on ? '룰을 사용으로 전환했습니다.' : '룰을 미사용으로 전환했습니다.');
   }
 
-  function crEditRule() { /* 목업 — 동작 없음 */ }
+  // 서브테이블 연필: 등록 모달을 그 룰 내용으로 채워서 연다 (목업 — 저장 시 독립 룰 생성)
+  function crEditRule(facNo, ruleId) {
+    crAddRule(facNo);
+    const f = FAC.filter(function (x) { return x.no === facNo; })[0];
+    const r = f && f.rules.filter(function (x) { return x.id === ruleId; })[0];
+    if (r) crFillFromRule(r);
+  }
+
+  // 서브테이블 X: 룰 삭제 (확인 후)
+  let crDelTarget = null;
+  function crDeleteRule(facNo, ruleId) {
+    const f = FAC.filter(function (x) { return x.no === facNo; })[0];
+    const r = f && f.rules.filter(function (x) { return x.id === ruleId; })[0];
+    if (!r) return;
+    crDelTarget = { facNo: facNo, ruleId: ruleId };
+    document.getElementById('crDelName').textContent = f.name + ' / ' + r.expr;
+    document.getElementById('crDelModal').classList.add('show');
+  }
+  function crDelClose() { document.getElementById('crDelModal').classList.remove('show'); }
+  function crDelConfirm() {
+    if (crDelTarget) {
+      const f = FAC.filter(function (x) { return x.no === crDelTarget.facNo; })[0];
+      if (f) {
+        const i = f.rules.findIndex(function (x) { return x.id === crDelTarget.ruleId; });
+        if (i >= 0) f.rules.splice(i, 1);
+      }
+      crDelTarget = null;
+    }
+    crDelClose();
+    crRender();
+    umsToast('룰을 삭제했습니다.');
+  }
 
   // ===================================================================
   //  B단계: 체크 룰 등록 모달
@@ -389,15 +423,20 @@
     }).filter(Boolean);
   }
 
-  function crCopyPick(facNo, ruleId) {
-    const f = FAC.filter(function (x) { return x.no === facNo; })[0];
-    const r = f && f.rules.filter(function (x) { return x.id === ruleId; })[0];
-    if (!r) return;
+  // 룰 객체 내용으로 등록 폼(레벨/조건식/Action)을 채운다
+  function crFillFromRule(r) {
     document.querySelectorAll('input[name=crLevel]').forEach(function (rd) { rd.checked = (rd.value === r.level); });
     el('crmExpr').value = r.expr;
     crmActs = parseActionSummary(r.action);
     crmActResetEdit();
     crmActRenderList();
+  }
+
+  function crCopyPick(facNo, ruleId) {
+    const f = FAC.filter(function (x) { return x.no === facNo; })[0];
+    const r = f && f.rules.filter(function (x) { return x.id === ruleId; })[0];
+    if (!r) return;
+    crFillFromRule(r);
     crCopyClose();
     umsToast('룰 내용을 불러왔습니다.');
   }
@@ -436,6 +475,9 @@
   window.crToggle       = crToggle;
   window.crAddRule      = crAddRule;
   window.crEditRule     = crEditRule;
+  window.crDeleteRule   = crDeleteRule;
+  window.crDelClose     = crDelClose;
+  window.crDelConfirm   = crDelConfirm;
   window.crmClose        = crmClose;
   window.crmInsertParam  = crmInsertParam;
   window.crmInsertOp     = crmInsertOp;
