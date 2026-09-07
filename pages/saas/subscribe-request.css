@@ -1,5 +1,5 @@
-/* 구독 요청 전용 스타일 (공통은 shared/common.css)
-   화면: SaaS 관리 > 구독 요청 */
+/* 구독 요청 관리 전용 스타일 (공통은 shared/common.css)
+   화면: SaaS 관리 > 구독 요청 관리 */
 
 /* 상단 처리 현황 요약 */
 .sum-row { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; flex-shrink: 0; }
