@@ -1,2 +1,89 @@
 /* 맵 관리 전용 스타일 (공통은 shared/common.css)
    화면: 설비현황 > 맵 관리 */
+
+.mm-content { padding: 12px 14px; }
+.mm-wrap { display: flex; gap: 12px; flex: 1 1 auto; min-height: 0; }
+
+/* ---- 좌: 캔버스 ---- */
+.mm-canvas-col { flex: 1 1 auto; display: flex; flex-direction: column; min-width: 0; }
+.mm-canvas-toolbar { display: flex; align-items: center; gap: 8px; padding: 6px 2px 10px; flex-wrap: wrap; }
+.mm-map-sel { min-width: 150px; }
+.mm-name-input { border: 1px solid #ccc; border-radius: 4px; padding: 6px 10px; font-size: 13px; width: 220px; }
+.mm-name-input:focus { outline: none; border-color: #1a6ed8; box-shadow: 0 0 0 2px rgba(26,110,216,0.12); }
+.mm-hint { font-size: 11px; color: #98a2b3; }
+
+.mm-canvas {
+  /* 맵 관리 / 맵 조회 캔버스는 동일 비율(=샘플 도면 viewBox 1000x640). 좌표는 % 로 저장 */
+  position: relative; flex: 0 0 auto;
+  width: 100%; aspect-ratio: 1000 / 640;
+  background: #fff; border: 1px solid #dde1e7; border-radius: 6px; overflow: hidden;
+}
+.mm-bg { position: absolute; inset: 0; }
+.mm-bg.img { background-size: contain; background-position: center; background-repeat: no-repeat; }
+.mm-bg svg { display: block; width: 100%; height: 100%; }
+.mm-canvas.drag-over { border-color: #1a6ed8; box-shadow: inset 0 0 0 2px rgba(26,110,216,0.18); }
+
+/* 배치된 설비 노드 */
+.mm-node {
+  position: absolute; transform: translate(-50%, -50%);
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  cursor: grab; user-select: none; z-index: 2;
+}
+.mm-node.dragging { cursor: grabbing; z-index: 5; }
+.mm-node.selected .mm-node-ic { box-shadow: 0 0 0 3px rgba(26,110,216,0.35); }
+.mm-node-ic {
+  width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: bold; color: #fff; border: 2px solid #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.28);
+}
+.mm-node-lb {
+  font-size: 10.5px; color: #1a2330; background: rgba(255,255,255,0.85);
+  padding: 0 4px; border-radius: 3px; white-space: nowrap; max-width: 120px;
+  overflow: hidden; text-overflow: ellipsis;
+}
+
+/* 유형별 아이콘 모양/색 */
+.ic-ups   { background: #1a6ed8; border-radius: 4px; }                 /* 사각 */
+.ic-pdu   { background: #e08a1e; border-radius: 50%; }                 /* 원 */
+.ic-chl   { background: #16a085; border-radius: 4px; transform: rotate(45deg); }
+.ic-chl > span { transform: rotate(-45deg); }
+.ic-bat   { background: #27ae60; border-radius: 50% 50% 50% 4px; }     /* 물방울 */
+
+/* ---- 우: 사이드 ---- */
+.mm-side {
+  width: 288px; flex-shrink: 0; display: flex; flex-direction: column; gap: 10px;
+  background: #fff; border: 1px solid #dde1e7; border-radius: 6px; padding: 12px;
+}
+.mm-side-sec { display: flex; flex-direction: column; gap: 8px; }
+.mm-side-grow { flex: 1 1 auto; min-height: 0; }
+.mm-side-title { font-size: 12px; font-weight: bold; color: #33506e; }
+.mm-side-sub { font-weight: normal; color: #98a2b3; font-size: 11px; margin-left: 4px; }
+.mm-btn-row { display: flex; gap: 6px; }
+.mm-btn-wide { flex: 1; }
+.mm-pal-type { width: 100%; }
+.mm-count-line { font-size: 11px; color: #667; }
+
+.mm-palette { flex: 1 1 auto; overflow-y: auto; border: 1px solid #eef1f4; border-radius: 4px; padding: 4px; display: flex; flex-direction: column; gap: 3px; min-height: 120px; }
+.mm-pal-item {
+  display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 4px;
+  font-size: 12px; color: #333; cursor: grab; border: 1px solid transparent;
+}
+.mm-pal-item:hover { background: #f0f6ff; border-color: #d6e4f7; }
+.mm-pal-item.placed { opacity: 0.45; cursor: default; }
+.mm-pal-item.placed:hover { background: transparent; border-color: transparent; }
+.mm-pal-ic {
+  width: 20px; height: 20px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: bold; color: #fff;
+}
+.mm-pal-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mm-pal-tag { font-size: 10px; color: #98a2b3; }
+
+/* ---- 노드 편집 팝오버 ---- */
+.mm-pop {
+  position: fixed; z-index: 200; background: #fff; border: 1px solid #cfd6de;
+  border-radius: 6px; box-shadow: 0 8px 24px rgba(0,0,0,0.18); padding: 10px; width: 220px;
+}
+.mm-pop-row { display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }
+.mm-pop-row label { font-size: 11px; color: #667; }
+.mm-pop-row input { border: 1px solid #ccc; border-radius: 4px; padding: 5px 8px; font-size: 12px; }
+.mm-pop-actions { display: flex; justify-content: space-between; gap: 6px; }
