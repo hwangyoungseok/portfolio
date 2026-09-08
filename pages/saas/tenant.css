@@ -42,3 +42,12 @@
 
 /* 연결 문자열 모달의 읽기전용 박스 */
 #connModal .dv-box { min-height: 32px; font-size: 12px; }
+
+/* 그리드 테넌트명 — 클릭하면 상세 Offcanvas */
+.name-link { border: 0; background: none; padding: 0; font: inherit; color: #1a6ed8;
+  font-weight: bold; cursor: pointer; text-align: left; }
+.name-link:hover { text-decoration: underline; }
+
+/* 상세 Offcanvas — 라벨이 길어 기본 100px 로는 줄바꿈된다 */
+#tenantDrawer .dv-row { grid-template-columns: 110px 1fr; }
+#tenantDrawer .dv-box .hint { margin-left: 2px; }

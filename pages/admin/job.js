@@ -27,7 +27,9 @@
       kind: 'cron',     sched: '0 0 3 * * ?', state: 'err',  next: '2026-09-05 03:00', last: '2026-09-04 03:00' },
     { no: 11, name: 'Ums.Report.MonthlyUsageReportWorker',                          group: 'DEFAULT',
       kind: 'cron',     sched: '0 0 6 1 * ?', state: 'wait', next: '2026-10-01 06:00', last: '2026-09-01 06:00' },
-    { no: 12, name: 'manual',                                                       group: 'demo',
+    { no: 12, name: 'Ums.Subscription.ExpiryWorker',                                 group: 'DEFAULT',
+      kind: 'cron',     sched: '0 30 0 * * ?', state: 'wait', next: '2026-09-05 00:30', last: '2026-09-04 00:30' },
+    { no: 13, name: 'manual',                                                       group: 'demo',
       kind: 'manual',   sched: '',           state: 'wait', next: '-',              last: '-' },
   ];
 
@@ -49,6 +51,11 @@
       { at: '2026-09-04 11:30:00', dur: '00:00:06', ok: 1, msg: 'SLA 임박 티켓 3건 에스컬레이션' },
       { at: '2026-09-04 11:15:00', dur: '00:00:04', ok: 1, msg: 'SLA 임박 티켓 없음' },
     ],
+    12: [
+      { at: '2026-09-04 00:30:01', dur: '00:00:02', ok: 1, msg: '만료 전환 0건 / 만료 임박(D-7 이내) 고지 1건: 세종클라우드' },
+      { at: '2026-09-03 00:30:01', dur: '00:00:02', ok: 1, msg: '만료 전환 0건 / 만료 임박 고지 0건' },
+      { at: '2026-08-16 00:30:02', dur: '00:00:03', ok: 1, msg: '만료 전환 1건: 미래네트웍스 — 기능 차단 적용' },
+    ],
   };
 
   function defaultHist(r) {
@@ -66,7 +73,6 @@
   let sortAsc = true;
   let page    = 1;
   let menuNo  = null;
-  let delNo   = null;
 
   function row(no) { return DATA.filter(function (r) { return r.no === no; })[0]; }
 
@@ -207,7 +213,6 @@
         renderGrid();
         break;
       case 'history': gotoHistory(r); break;
-      case 'delete':  askDelete(r.no); break;
     }
   }
 
@@ -219,25 +224,6 @@
 
   function gotoHistory(r) { location.href = histHref(r); }
 
-  // ---- 스케줄 삭제 ----
-  function askDelete(no) {
-    const r = row(no);
-    if (!r) return;
-    delNo = no;
-    document.getElementById('d-msg').innerHTML =
-      '<span class="confirm-hl">' + r.name + '</span><br>작업의 스케줄을 삭제하시겠습니까?';
-    show('delModal');
-  }
-
-  function scheduleDelete() {
-    const r = row(delNo);
-    hide('delModal');
-    if (r) { r.kind = 'manual'; r.sched = ''; r.next = '-'; renderGrid(); }
-    umsToast('스케줄을 삭제했습니다. (목업)');
-  }
-
-  function show(id) { document.getElementById(id).classList.add('show'); }
-  function hide(id) { document.getElementById(id).classList.remove('show'); }
 
   // ---- 초기화 ----
   renderGrid();
@@ -247,7 +233,7 @@
   });
   document.addEventListener('keydown', function (e) {
     if (e.key !== 'Escape') return;
-    closeMenu(); hide('delModal');
+    closeMenu();
   });
   document.addEventListener('scroll', closeMenu, true);
 
@@ -257,7 +243,5 @@
   window.go             = go;
   window.openMenu       = openMenu;
   window.menuAct        = menuAct;
-  window.scheduleDelete = scheduleDelete;
-  window.delModalClose  = function () { hide('delModal'); };
 
 })();

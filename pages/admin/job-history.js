@@ -16,6 +16,7 @@
     { name: 'Ums.Ticket.SlaEscalationWorker',                               every: 15,    base: 320,   count: 12  },
     { name: 'Ums.Facility.BatteryHealthCheckWorker',                        every: 1440,  base: 68000, count: 5, failFirst: 1 },
     { name: 'Eteverse.Abp.AuditLogging.ExpiredAuditLogDeleterWorker',       every: 1440,  base: 4100,  count: 5   },
+    { name: 'Ums.Subscription.ExpiryWorker',                                every: 1440,  base: 1500,  count: 5   },
     { name: 'Ums.Report.MonthlyUsageReportWorker',                          every: 43200, base: 22000, count: 2   },
     { name: 'report',                                                       every: 240,   base: 10001, count: 8   },
   ];
