@@ -98,7 +98,7 @@
             + '<td>' + r.due + '</td>'
             + '<td>' + r.updated + '</td>'
             + '<td>' + (r.assignee || '<span style="color:#98a2b3;">미할당</span>') + '</td>'
-            + '<td><button class="btn" onclick="event.stopPropagation();tkOpenAssign(' + r.no + ')">담당자 지정</button></td>'
+            + '<td class="host-only"><button class="btn" onclick="event.stopPropagation();tkOpenAssign(' + r.no + ')">담당자 지정</button></td>'
             + '</tr>';
         }).join('')
       : '<tr><td colspan="11" style="padding:30px;color:#98a2b3;">조회 결과가 없습니다.</td></tr>';

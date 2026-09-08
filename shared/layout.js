@@ -29,7 +29,7 @@
     },
     customer: {
       label: '고객',
-      brand: 'UMS 고객 포털',
+      brand: 'UMS 통합 관리 시스템',
       user:  '고객사님',
       avatar: '고',
       avatarBg: '#27ae60',
@@ -318,7 +318,8 @@
     const cfg = ROLES[ROLE];
     document.body.setAttribute('data-role', ROLE);
 
-    const meta = PAGE_META[key] || { category: '', label: (document.title || 'UMS').replace(/\s*-\s*UMS$/, '') };
+    // key가 없으면(= data-page 속성이 없는 index.html, 홈 화면) 브레드크럼 타이틀은 "{모드} 대시보드"로 고정.
+    const meta = PAGE_META[key] || { category: '', label: key ? (document.title || 'UMS').replace(/\s*-\s*UMS$/, '') : cfg.label + ' 대시보드' };
 
     // 현재 모드 메뉴에 없는 화면이면 안내 배너를 띄운다 (프로토타입 수준의 접근 안내)
     const foreign = (key && !PAGE_META[key]) ? findInOtherRoles(key) : null;

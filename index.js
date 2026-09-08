@@ -35,18 +35,15 @@
   function today() { return new Date().toISOString().slice(0, 10); }
   function isOverdue(r) { return r.status !== 'done' && r.due < today(); }
 
+  // 카드 자체는 host-only/customer-only(shared/common.css)로 모드별로 숨겨지지만, 값 채우는
+  // 로직은 모드 구분 없이 다 채워둔다 — 숨겨진 카드는 그냥 안 보일 뿐 계산엔 문제 없다.
   function renderKpi() {
     document.getElementById('kpiOpen').innerHTML       = DATA.filter(function (r) { return r.status !== 'done'; }).length + '<span class="unit">건</span>';
     document.getElementById('kpiUnassigned').innerHTML = DATA.filter(function (r) { return !r.assignee; }).length + '<span class="unit">건</span>';
     document.getElementById('kpiPending').innerHTML    = DATA.filter(function (r) { return r.status === 'pending'; }).length + '<span class="unit">건</span>';
     document.getElementById('kpiProgress').innerHTML   = DATA.filter(function (r) { return r.status === 'progress'; }).length + '<span class="unit">건</span>';
+    document.getElementById('kpiClosed').innerHTML     = DATA.filter(function (r) { return r.status === 'done'; }).length + '<span class="unit">건</span>';
     document.getElementById('kpiOverdue').innerHTML    = DATA.filter(isOverdue).length + '<span class="unit">건</span>';
-    document.getElementById('kpiTotal').innerHTML      = DATA.length + '<span class="unit">건</span>';
-
-    ['warning', 'minor', 'major', 'critical'].forEach(function (p) {
-      document.getElementById('kpi' + p.charAt(0).toUpperCase() + p.slice(1)).innerHTML =
-        DATA.filter(function (r) { return r.pri === p; }).length + '<span class="unit">건</span>';
-    });
   }
 
   renderKpi();

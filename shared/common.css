@@ -276,6 +276,7 @@ body[data-role="host"] .customer-only { display: none !important; }
 /* 사이드바 로고 옆 현재 모드 배지 */
 .sidebar-logo { display: flex; align-items: center; gap: 8px; }
 .sidebar-role { font-size: 10px; font-weight: normal; letter-spacing: 0; padding: 2px 6px; border-radius: 10px; background: #3d5166; color: #cfd3e0; }
+body[data-role="host"] .sidebar-role { background: #3498db; color: #fff; }
 body[data-role="customer"] .sidebar-role { background: #1e7a4a; color: #eaf7f0; }
 
 /* 헤더 모드 전환 스위치 (프로토타입 시연용) */

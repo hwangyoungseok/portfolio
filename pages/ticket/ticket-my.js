@@ -2,12 +2,18 @@
 // 화면: 티켓 > 내 티켓
 (function () {
 
-  const ME = '관리자';
+  // 호스트/고객 모드 구분. layout.js가 buildChrome()에서 <body data-role="host|customer">를
+  // 이 스크립트가 실행되기 전에 이미 붙여 놓는다(같은 </body> 앞에서 layout.js가 먼저 로드됨).
+  const IS_CUSTOMER = document.body.getAttribute('data-role') === 'customer';
+  // 이 목업 티켓들의 실제 담당자(호스트 쪽 사람) — 보는 사람의 모드와 무관하게 항상 고정.
+  const ASSIGNEE = '관리자';
+  // 코멘트 작성자 이름은 "지금 이 화면을 보고 있는 사람"이라 모드에 따라 달라진다.
+  const ME = IS_CUSTOMER ? '고객사' : '관리자';
 
   const DATA = [
     { no: 1, ticketNo: 'TCK-20260901-014', title: 'UPS-1F-B 출력 부하율 85% 초과', target: 'UPS-1F-B', targetType: 'UPS',
       pri: 'minor', status: 'progress', reg: '2026-09-01', due: '2026-09-03', updated: '2026-09-02 10:20',
-      assignee: ME, desc: 'UPS-1F-B의 출력 부하율이 85%를 초과하여 경고 알람이 발생했습니다. 부하 분산 여부 확인이 필요합니다.',
+      assignee: ASSIGNEE, desc: 'UPS-1F-B의 출력 부하율이 85%를 초과하여 경고 알람이 발생했습니다. 부하 분산 여부 확인이 필요합니다.',
       history: [
         { time: '2026-09-01 09:12', text: '알람 기반 티켓 자동 생성' },
         { time: '2026-09-01 09:30', text: '담당자(관리자)에게 할당' },
@@ -19,7 +25,7 @@
       ] },
     { no: 2, ticketNo: 'TCK-20260902-021', title: 'GW-IDC-02 통신 두절', target: 'GW-IDC-02', targetType: 'GW',
       pri: 'major', status: 'pending', reg: '2026-09-02', due: '2026-09-02', updated: '2026-09-02 08:15',
-      assignee: ME, desc: 'GW-IDC-02와의 통신이 두절되었습니다. 네트워크 상태 및 GW 전원 확인이 필요합니다.',
+      assignee: ASSIGNEE, desc: 'GW-IDC-02와의 통신이 두절되었습니다. 네트워크 상태 및 GW 전원 확인이 필요합니다.',
       history: [
         { time: '2026-09-02 08:15', text: '알람 기반 티켓 자동 생성' },
         { time: '2026-09-02 08:20', text: '담당자(관리자)에게 할당' },
@@ -27,7 +33,7 @@
       comments: [] },
     { no: 3, ticketNo: 'TCK-20260830-005', title: 'CH-1F-01 응축기 압력 경고', target: 'CH-1F-01', targetType: '칠러',
       pri: 'warning', status: 'pending', reg: '2026-08-30', due: '2026-09-05', updated: '2026-08-30 14:02',
-      assignee: ME, desc: '칠러 CH-1F-01의 응축기 압력이 임계치에 근접했습니다. 정기 점검 시 확인 바랍니다.',
+      assignee: ASSIGNEE, desc: '칠러 CH-1F-01의 응축기 압력이 임계치에 근접했습니다. 정기 점검 시 확인 바랍니다.',
       history: [
         { time: '2026-08-30 14:02', text: '알람 기반 티켓 자동 생성' },
         { time: '2026-08-30 14:10', text: '담당자(관리자)에게 할당' },
@@ -35,7 +41,7 @@
       comments: [] },
     { no: 4, ticketNo: 'TCK-20260825-002', title: 'BAT-DR-02 배터리 스트링 전압 저하', target: 'BAT-DR-02', targetType: '배터리',
       pri: 'critical', status: 'done', reg: '2026-08-25', due: '2026-08-27', updated: '2026-08-28 16:40',
-      assignee: ME, desc: '배터리 BAT-DR-02의 스트링 전압이 기준치 이하로 저하되었습니다.',
+      assignee: ASSIGNEE, desc: '배터리 BAT-DR-02의 스트링 전압이 기준치 이하로 저하되었습니다.',
       history: [
         { time: '2026-08-25 11:03', text: '알람 기반 티켓 자동 생성' },
         { time: '2026-08-25 11:10', text: '담당자(관리자)에게 할당' },
@@ -48,7 +54,7 @@
       ] },
     { no: 5, ticketNo: 'TCK-20260828-009', title: 'PDU-2F-A 회로 과부하', target: 'PDU-2F-A', targetType: 'PDU',
       pri: 'minor', status: 'progress', reg: '2026-08-28', due: '2026-09-01', updated: '2026-08-29 13:11',
-      assignee: ME, desc: 'PDU-2F-A 3번 회로의 부하가 정격 대비 90%를 초과했습니다.',
+      assignee: ASSIGNEE, desc: 'PDU-2F-A 3번 회로의 부하가 정격 대비 90%를 초과했습니다.',
       history: [
         { time: '2026-08-28 09:40', text: '알람 기반 티켓 자동 생성' },
         { time: '2026-08-28 09:50', text: '담당자(관리자)에게 할당' },
@@ -65,13 +71,20 @@
   function today() { return new Date().toISOString().slice(0, 10); }
   function isOverdue(r) { return r.status !== 'done' && r.due < today(); }
 
+  function statusBadge(st) {
+    const cls = st === 'pending' ? 'status-pending' : (st === 'progress' ? 'status-progress' : 'status-done');
+    return '<span class="status-badge ' + cls + '">' + STATUS_LABEL[st] + '</span>';
+  }
+
+  // 고객 모드는 상태를 읽기만 가능하다(변경 불가) — 그리드도 인라인 select 대신 배지만 보여준다.
   function statusSelect(r) {
+    const overdue = isOverdue(r) ? '<span class="status-badge status-overdue">기한초과</span>' : '';
+    if (IS_CUSTOMER) return statusBadge(r.status) + overdue;
     return '<select class="inline-status" onclick="event.stopPropagation();" onchange="tkStatusChange(' + r.no + ', this.value)">'
       + Object.keys(STATUS_LABEL).map(function (k) {
           return '<option value="' + k + '"' + (r.status === k ? ' selected' : '') + '>' + STATUS_LABEL[k] + '</option>';
         }).join('')
-      + '</select>'
-      + (isOverdue(r) ? '<span class="status-badge status-overdue">기한초과</span>' : '');
+      + '</select>' + overdue;
   }
 
   function renderGrid() {
@@ -186,6 +199,13 @@
       +   '<button class="btn btn-primary" onclick="tkAddComment()">등록</button>'
       + '</div></div>';
 
+    // 고객 모드는 상태를 읽기만 가능하다 — 상태변경 컨트롤 대신 읽기 전용 배지 행을 보여준다.
+    const statusRowHtml = IS_CUSTOMER
+      ? dvRow('상태', statusBadge(r.status) + (isOverdue(r) ? ' <span class="status-badge status-overdue">기한초과</span>' : ''))
+      : dvRow('상태변경', '<div class="status-change-row"><select class="form-select" id="tk-status-sel" style="width:140px;">'
+          + Object.keys(STATUS_LABEL).map(function (k) { return '<option value="' + k + '"' + (r.status === k ? ' selected' : '') + '>' + STATUS_LABEL[k] + '</option>'; }).join('')
+          + '</select><button class="btn btn-primary" onclick="tkStatusChangeFromModal(' + r.no + ')">저장</button></div>');
+
     document.getElementById('dBody').innerHTML =
       '<div class="dv">'
       + dvGroup(
@@ -195,10 +215,7 @@
           + dvRow('최근 업데이트', r.updated))
       + dvGroup(
           dvRow('설명', r.desc, true))
-      + dvGroup(
-          dvRow('상태변경', '<div class="status-change-row"><select class="form-select" id="tk-status-sel" style="width:140px;">'
-            + Object.keys(STATUS_LABEL).map(function (k) { return '<option value="' + k + '"' + (r.status === k ? ' selected' : '') + '>' + STATUS_LABEL[k] + '</option>'; }).join('')
-            + '</select><button class="btn btn-primary" onclick="tkStatusChangeFromModal(' + r.no + ')">저장</button></div>'))
+      + dvGroup(statusRowHtml)
       + dvGroup(
           dvRow('처리이력', historyHtml, true))
       + dvGroup(

@@ -11,20 +11,15 @@
 <div id="umsContent">
   <div class="content">
 
-    <!-- 티켓 KPI 카드 (티켓 > 전체 티켓 페이지에서 이동) -->
+    <!-- 티켓 KPI 카드 (티켓 > 전체 티켓 페이지에서 이동). 호스트/고객 모드에 따라 일부 카드만
+         노출한다 — host-only/customer-only는 shared/common.css의 body[data-role=..] 규칙이 처리. -->
     <div class="kpi-row">
-      <div class="kpi-card"><div class="kpi-card-label">오픈</div><div class="kpi-card-value" id="kpiOpen">0<span class="unit">건</span></div></div>
+      <div class="kpi-card host-only"><div class="kpi-card-label">오픈</div><div class="kpi-card-value" id="kpiOpen">0<span class="unit">건</span></div></div>
       <div class="kpi-card"><div class="kpi-card-label">미할당</div><div class="kpi-card-value" id="kpiUnassigned">0<span class="unit">건</span></div></div>
       <div class="kpi-card"><div class="kpi-card-label">대기 중</div><div class="kpi-card-value" id="kpiPending">0<span class="unit">건</span></div></div>
       <div class="kpi-card"><div class="kpi-card-label">진행 중</div><div class="kpi-card-value" id="kpiProgress">0<span class="unit">건</span></div></div>
+      <div class="kpi-card customer-only"><div class="kpi-card-label">종료됨</div><div class="kpi-card-value" id="kpiClosed">0<span class="unit">건</span></div></div>
       <div class="kpi-card"><div class="kpi-card-label">기한초과</div><div class="kpi-card-value" id="kpiOverdue">0<span class="unit">건</span></div></div>
-      <div class="kpi-card"><div class="kpi-card-label">총 건수</div><div class="kpi-card-value" id="kpiTotal">0<span class="unit">건</span></div></div>
-    </div>
-    <div class="kpi-row">
-      <div class="kpi-card sev-warning"><div class="kpi-card-label">Warning</div><div class="kpi-card-value" id="kpiWarning">0<span class="unit">건</span></div></div>
-      <div class="kpi-card sev-minor"><div class="kpi-card-label">Minor</div><div class="kpi-card-value" id="kpiMinor">0<span class="unit">건</span></div></div>
-      <div class="kpi-card sev-major"><div class="kpi-card-label">Major</div><div class="kpi-card-value" id="kpiMajor">0<span class="unit">건</span></div></div>
-      <div class="kpi-card sev-critical"><div class="kpi-card-label">Critical</div><div class="kpi-card-value" id="kpiCritical">0<span class="unit">건</span></div></div>
     </div>
 
     <div class="placeholder-card">
