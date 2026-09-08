@@ -11,18 +11,12 @@
 
 <!--
   화면: 티켓 > 내 티켓
-  설명: 나에게 할당된 티켓 목록·처리. 상단 KPI 카드(대기중/진행중/기한초과) + 검색바 + 그리드 + 상세(설명/댓글/처리이력/상태변경).
+  설명: 나에게 할당된 티켓 목록·처리. 검색바 + 그리드 + 상세 모달(설명/코멘트/처리이력/상태변경).
+        상세는 큰 모달로 열리고, 코멘트는 처리이력과 같은 라벨-박스 행 안에 목록과 작성창(첨부파일 포함)이 함께 담긴다.
 -->
 
 <div id="umsContent">
   <div class="content">
-
-    <!-- KPI 카드 -->
-    <div class="kpi-row">
-      <div class="kpi-card"><div class="kpi-card-label">대기 중</div><div class="kpi-card-value" id="kpiPending">0<span class="unit">건</span></div></div>
-      <div class="kpi-card"><div class="kpi-card-label">진행 중</div><div class="kpi-card-value" id="kpiProgress">0<span class="unit">건</span></div></div>
-      <div class="kpi-card"><div class="kpi-card-label">기한초과</div><div class="kpi-card-value" id="kpiOverdue">0<span class="unit">건</span></div></div>
-    </div>
 
     <!-- 검색조건 -->
     <div class="search-bar">
@@ -80,18 +74,20 @@
 
   </div>
 
-  <!-- 우측 상세 패널 -->
-  <div class="drawer-mask" id="tkMask" onclick="tkDetailClose()"></div>
-  <aside class="drawer" id="tkDrawer">
-    <div class="drawer-header">
-      <h3 id="dTitle">티켓 상세</h3>
-      <button class="modal-close" onclick="tkDetailClose()">&#10005;</button>
+  <!-- 상세 모달 -->
+  <div class="modal-overlay" id="tkModal">
+    <div class="modal tk-modal">
+      <div class="modal-header">
+        <h3 id="dTitle">티켓 상세</h3>
+        <button class="modal-close" onclick="tkDetailClose()">&#10005;</button>
+      </div>
+      <div class="modal-body" id="dBody"></div>
+
+      <div class="modal-footer">
+        <button class="btn" onclick="tkDetailClose()">닫기</button>
+      </div>
     </div>
-    <div class="drawer-body" id="dBody"></div>
-    <div class="drawer-footer">
-      <button class="btn btn-primary" onclick="tkDetailClose()">닫기</button>
-    </div>
-  </aside>
+  </div>
 </div>
 
 <script src="../../shared/layout.js"></script>

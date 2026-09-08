@@ -15,6 +15,7 @@
       ],
       comments: [
         { author: '관리자', time: '2026-09-02 10:21', text: '현장 점검 예정. 부하 분산 작업 진행하겠습니다.' },
+        { author: '김설비', time: '2026-09-02 11:05', text: '부하 분산 전 배전반 차단기 상태도 같이 확인 부탁드립니다.' },
       ] },
     { no: 2, ticketNo: 'TCK-20260902-021', title: 'GW-IDC-02 통신 두절', target: 'GW-IDC-02', targetType: 'GW',
       pri: 'major', status: 'pending', reg: '2026-09-02', due: '2026-09-02', updated: '2026-09-02 08:15',
@@ -73,15 +74,6 @@
       + (isOverdue(r) ? '<span class="status-badge status-overdue">기한초과</span>' : '');
   }
 
-  function renderKpi() {
-    const pending  = DATA.filter(function (r) { return r.status === 'pending'; }).length;
-    const progress = DATA.filter(function (r) { return r.status === 'progress'; }).length;
-    const overdue  = DATA.filter(isOverdue).length;
-    document.getElementById('kpiPending').innerHTML  = pending  + '<span class="unit">건</span>';
-    document.getElementById('kpiProgress').innerHTML = progress + '<span class="unit">건</span>';
-    document.getElementById('kpiOverdue').innerHTML  = overdue  + '<span class="unit">건</span>';
-  }
-
   function renderGrid() {
     const kw     = (document.getElementById('q').value || '').trim();
     const fStat  = document.getElementById('fStatus').value;
@@ -114,7 +106,6 @@
       : '<tr><td colspan="9" style="padding:30px;color:#98a2b3;">조회 결과가 없습니다.</td></tr>';
 
     document.getElementById('gridCount').textContent = rows.length;
-    renderKpi();
   }
 
   function resetSearch() {
@@ -144,6 +135,7 @@
   }
 
   let detailNo = null;
+  let pendingFiles = []; // 코멘트 작성창에서 첨부 대기 중인 파일명 목록
 
   function dvRow(label, val, multi) {
     return '<div class="dv-row' + (multi ? ' multi' : '') + '">'
@@ -156,12 +148,15 @@
     document.querySelectorAll('#gridBody tr').forEach(function (tr) {
       tr.classList.toggle('selected', Number(tr.dataset.no) === no);
     });
+    pendingFiles = [];
     tkDetailOpen(no);
   }
 
   function tkDetailOpen(no) {
     const r = DATA.filter(function (x) { return x.no === no; })[0];
     if (!r) return;
+    // 상태변경 저장/코멘트 등록 뒤에도 dBody를 다시 그리므로, 그 사이 입력해 둔 코멘트 초안은 남겨둔다.
+    const prevInput = detailNo === no ? (document.getElementById('tk-cmt-input') || {}).value || '' : '';
     detailNo = no;
     document.getElementById('dTitle').textContent = r.ticketNo + ' 상세';
 
@@ -173,9 +168,23 @@
 
     const commentsHtml = r.comments.length
       ? '<div class="cmt-list">' + r.comments.map(function (c) {
-          return '<div class="cmt-item"><div class="cmt-head"><span class="cmt-author">' + c.author + '</span><span>' + c.time + '</span></div><div class="cmt-text">' + c.text + '</div></div>';
+          const files = (c.attachments && c.attachments.length)
+            ? '<div class="cmt-attachments">' + c.attachments.map(function (f) { return '<span class="cmt-file-chip">&#128206; ' + f + '</span>'; }).join('') + '</div>'
+            : '';
+          return '<div class="cmt-item"><div class="cmt-head"><span class="cmt-author">' + c.author + '</span><span>' + c.time + '</span></div><div class="cmt-text">' + c.text + '</div>' + files + '</div>';
         }).join('') + '</div>'
-      : '<div class="cmt-list"><span style="color:#8a97a5;">등록된 댓글이 없습니다.</span></div>';
+      : '<div class="cmt-list"><span style="color:#8a97a5;">등록된 코멘트가 없습니다.</span></div>';
+
+    // 코멘트 작성창은 "코멘트" dv-box 안, 목록 바로 아래에 함께 들어간다(처리이력과 같은 라벨-박스
+    // 구조를 쓰되, 그 박스 자체에 목록 + 작성창을 같이 담는다).
+    const composerHtml = '<div class="tk-cmt-composer">'
+      + '<textarea class="form-textarea" id="tk-cmt-input" rows="2" placeholder="코멘트를 입력하세요."></textarea>'
+      + '<div class="tk-cmt-composer-row">'
+      +   '<label class="btn tk-attach-btn">&#128206; 첨부파일<input type="file" id="tk-cmt-file" multiple hidden onchange="tkFilePick(event)"></label>'
+      +   '<div class="tk-attach-chips" id="tkAttachChips"></div>'
+      +   '<span class="toolbar-spacer"></span>'
+      +   '<button class="btn btn-primary" onclick="tkAddComment()">등록</button>'
+      + '</div></div>';
 
     document.getElementById('dBody').innerHTML =
       '<div class="dv">'
@@ -189,39 +198,57 @@
       + dvGroup(
           dvRow('상태변경', '<div class="status-change-row"><select class="form-select" id="tk-status-sel" style="width:140px;">'
             + Object.keys(STATUS_LABEL).map(function (k) { return '<option value="' + k + '"' + (r.status === k ? ' selected' : '') + '>' + STATUS_LABEL[k] + '</option>'; }).join('')
-            + '</select><button class="btn btn-primary" onclick="tkStatusChangeFromDrawer(' + r.no + ')">저장</button></div>'))
+            + '</select><button class="btn btn-primary" onclick="tkStatusChangeFromModal(' + r.no + ')">저장</button></div>'))
       + dvGroup(
           dvRow('처리이력', historyHtml, true))
       + dvGroup(
-          dvRow('댓글', commentsHtml
-            + '<div class="cmt-input"><textarea class="form-textarea" id="tk-cmt-input" rows="2" placeholder="댓글을 입력하세요."></textarea>'
-            + '<button class="btn btn-primary" onclick="tkAddComment(' + r.no + ')">등록</button></div>', true))
+          dvRow('코멘트', '<div class="tk-cmt-block">' + commentsHtml + composerHtml + '</div>', true))
       + '</div>';
 
-    document.getElementById('tkMask').classList.add('show');
-    document.getElementById('tkDrawer').classList.add('show');
+    document.getElementById('tk-cmt-input').value = prevInput;
+    renderAttachChips();
+
+    document.getElementById('tkModal').classList.add('show');
   }
 
   function tkDetailClose() {
-    document.getElementById('tkMask').classList.remove('show');
-    document.getElementById('tkDrawer').classList.remove('show');
+    document.getElementById('tkModal').classList.remove('show');
   }
 
-  function tkStatusChangeFromDrawer(no) {
+  function tkStatusChangeFromModal(no) {
     const sel = document.getElementById('tk-status-sel');
     tkStatusChange(no, sel.value);
     tkDetailOpen(no);
   }
 
-  function tkAddComment(no) {
-    const r = DATA.filter(function (x) { return x.no === no; })[0];
+  function renderAttachChips() {
+    document.getElementById('tkAttachChips').innerHTML = pendingFiles.map(function (name, i) {
+      return '<span class="tk-file-chip">&#128206; ' + name + ' <button type="button" onclick="tkRemoveFile(' + i + ')">&times;</button></span>';
+    }).join('');
+  }
+
+  function tkFilePick(e) {
+    Array.from(e.target.files || []).forEach(function (f) { pendingFiles.push(f.name); });
+    e.target.value = '';
+    renderAttachChips();
+  }
+
+  function tkRemoveFile(i) {
+    pendingFiles.splice(i, 1);
+    renderAttachChips();
+  }
+
+  function tkAddComment() {
+    const r = DATA.filter(function (x) { return x.no === detailNo; })[0];
     if (!r) return;
     const input = document.getElementById('tk-cmt-input');
     const text = input.value.trim();
-    if (!text) { umsToast('댓글 내용을 입력하세요.'); return; }
-    r.comments.push({ author: ME, time: nowStr(), text: text });
-    tkDetailOpen(no);
-    umsToast('댓글이 등록되었습니다.');
+    if (!text && !pendingFiles.length) { umsToast('코멘트 내용을 입력하거나 첨부파일을 추가하세요.'); return; }
+    r.comments.push({ author: ME, time: nowStr(), text: text, attachments: pendingFiles.slice() });
+    input.value = '';
+    pendingFiles = [];
+    tkDetailOpen(detailNo);
+    umsToast('코멘트가 등록되었습니다.');
   }
 
   // ---- 초기화 ----
@@ -231,8 +258,10 @@
   window.resetSearch = resetSearch;
   window.tkRowClick  = tkRowClick;
   window.tkStatusChange = tkStatusChange;
-  window.tkStatusChangeFromDrawer = tkStatusChangeFromDrawer;
+  window.tkStatusChangeFromModal = tkStatusChangeFromModal;
   window.tkAddComment = tkAddComment;
+  window.tkFilePick = tkFilePick;
+  window.tkRemoveFile = tkRemoveFile;
   window.tkDetailClose = tkDetailClose;
 
 })();

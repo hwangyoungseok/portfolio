@@ -68,20 +68,6 @@
   function today() { return new Date().toISOString().slice(0, 10); }
   function isOverdue(r) { return r.status !== 'done' && r.due < today(); }
 
-  function renderKpi() {
-    document.getElementById('kpiOpen').innerHTML       = DATA.filter(function (r) { return r.status !== 'done'; }).length + '<span class="unit">건</span>';
-    document.getElementById('kpiUnassigned').innerHTML = DATA.filter(function (r) { return !r.assignee; }).length + '<span class="unit">건</span>';
-    document.getElementById('kpiPending').innerHTML    = DATA.filter(function (r) { return r.status === 'pending'; }).length + '<span class="unit">건</span>';
-    document.getElementById('kpiProgress').innerHTML   = DATA.filter(function (r) { return r.status === 'progress'; }).length + '<span class="unit">건</span>';
-    document.getElementById('kpiOverdue').innerHTML    = DATA.filter(isOverdue).length + '<span class="unit">건</span>';
-    document.getElementById('kpiTotal').innerHTML      = DATA.length + '<span class="unit">건</span>';
-
-    ['warning', 'minor', 'major', 'critical'].forEach(function (p) {
-      document.getElementById('kpi' + p.charAt(0).toUpperCase() + p.slice(1)).innerHTML =
-        DATA.filter(function (r) { return r.pri === p; }).length + '<span class="unit">건</span>';
-    });
-  }
-
   function renderGrid() {
     const fAssignee = document.getElementById('fAssignee').value;
     const fStatus   = document.getElementById('fStatus').value;
@@ -118,7 +104,6 @@
       : '<tr><td colspan="11" style="padding:30px;color:#98a2b3;">조회 결과가 없습니다.</td></tr>';
 
     document.getElementById('gridCount').textContent = rows.length;
-    renderKpi();
   }
 
   function resetSearch() {

@@ -3,3 +3,23 @@
 
 .grid-table th:nth-child(3),
 .grid-table td:nth-child(3) { min-width: 220px; }
+
+/* ---------- 상세 모달 (기본 .modal보다 큰 버전) ---------- */
+.tk-modal { width: 92vw; max-width: 980px; max-height: 88vh; }
+
+/* ---------- 코멘트: dv-box는 기본 display:flex(행) 라서 자식 두 개(목록/작성창)를 그냥
+   넣으면 가로로 나란히 붙는다. 감싸서 세로로 쌓는다. ---------- */
+.tk-cmt-block { flex: 1; min-width: 0; }
+
+/* ---------- 코멘트 작성창: "코멘트" dv-box 안, 목록 바로 아래에 함께 담는다 ---------- */
+.tk-cmt-composer { margin-top: 12px; padding-top: 12px; border-top: 1px dashed #e2e6ea; }
+.tk-cmt-composer textarea { width: 100%; resize: vertical; }
+.tk-cmt-composer-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+.tk-attach-btn { cursor: pointer; }
+.tk-attach-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.tk-file-chip { display: inline-flex; align-items: center; gap: 4px; background: #eef1f4; border-radius: 12px; padding: 3px 8px; font-size: 12px; color: #333; }
+.tk-file-chip button { border: none; background: none; cursor: pointer; color: #98a2b3; font-size: 13px; line-height: 1; padding: 0; }
+
+/* ---------- 등록된 코멘트의 첨부파일 표시 ---------- */
+.cmt-attachments { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 6px; }
+.cmt-file-chip { display: inline-block; background: #eef4fc; color: #1a6ed8; border-radius: 10px; padding: 3px 9px; font-size: 11px; }

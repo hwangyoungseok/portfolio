@@ -74,21 +74,13 @@
       ]},
     ],
 
-    // ↓↓↓ 고객 모드 — 설비현황 / 설비관리 / 데이터 조회 / 알람 / GW
+    // ↓↓↓ 고객 모드 — 설비현황 / 데이터 조회 / 알람 / 설비관리 / 티켓 / GW / 관리 / 구독
     customer: [
       { label: '설비현황', children: [
         { label: '전력계통',            page: 'status/power-topology' },
         { label: '위치계통',            page: 'status/location-status' },
         { label: '맵',                  page: 'status/map-view' },
         { label: '맵 관리',             page: 'status/map-manage' },
-      ]},
-      { label: '설비관리', children: [
-        { label: '위치 관리',           page: 'facility/location-manage' },
-        { label: 'UPS 관리',            page: 'facility/ups-list' },
-        { label: 'PDU 관리',            page: 'facility/pdu-list' },
-        { label: '칠러 관리',           page: 'facility/chiller-list' },
-        { label: '배터리 관리',         page: 'facility/battery-list' },
-        { label: '배터리 교체 이력',    page: 'facility/battery-history' },
       ]},
       { label: '데이터 조회', children: [
         { label: 'UPS 데이터 조회',     page: 'data/ups-data' },
@@ -106,6 +98,14 @@
         { label: '알람 관리',           page: 'alarm/alarm-manage' },
         { label: '알람 이력 조회',      page: 'alarm/alarm-history' },
       ]},
+      { label: '설비관리', children: [
+        { label: '위치 관리',           page: 'facility/location-manage' },
+        { label: 'UPS 관리',            page: 'facility/ups-list' },
+        { label: 'PDU 관리',            page: 'facility/pdu-list' },
+        { label: '칠러 관리',           page: 'facility/chiller-list' },
+        { label: '배터리 관리',         page: 'facility/battery-list' },
+        { label: '배터리 교체 이력',    page: 'facility/battery-history' },
+      ]},
       { label: '티켓', children: [
         { label: '내 티켓',             page: 'ticket/ticket-my' },
         { label: '전체 티켓',           page: 'ticket/ticket-all' },
@@ -114,11 +114,6 @@
         { label: 'GW 관리',             page: 'gw/gw-list' },
         { label: 'GW 상태 모니터링',    page: 'gw/gw-status' },
         { label: 'GW 서버 상태 모니터링', page: 'gw/gw-server' },
-      ]},
-      // 구독: 고객이 자기 에디션 정보를 보고 변경/연장을 요청하는 고객 전용 메뉴
-      { label: '구독', children: [
-        { label: '구독 현황',           page: 'subscribe/status' },
-        { label: '요청 내역',           page: 'subscribe/requests' },
       ]},
       // 관리 메뉴는 호스트와 같은 화면을 쓰되, 작업 관리(스케줄러)는 호스트 전용이라 제외
       { label: '관리', children: [
@@ -130,6 +125,11 @@
         { label: '템플릿 관리',         page: 'admin/template' },
         { label: '감사로그',            page: 'admin/audit-log' },
         { label: '설정',                page: 'admin/setting' },
+      ]},
+      // 구독: 고객이 자기 에디션 정보를 보고 변경/연장을 요청하는 고객 전용 메뉴
+      { label: '구독', children: [
+        { label: '구독 현황',           page: 'subscribe/status' },
+        { label: '요청 내역',           page: 'subscribe/requests' },
       ]},
     ],
 
