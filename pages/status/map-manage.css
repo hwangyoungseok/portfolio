@@ -13,14 +13,15 @@
 .mm-hint { font-size: 11px; color: #98a2b3; }
 
 .mm-canvas {
-  /* 맵 관리 / 맵 조회 캔버스는 동일 비율(=샘플 도면 viewBox 1000x640). 좌표는 % 로 저장 */
-  position: relative; flex: 0 0 auto;
-  width: 100%; aspect-ratio: 1000 / 640;
+  /* 캔버스는 배경(이미지/샘플) 크기에 맞게 감쌈. 배경이 컬럼보다 넓으면 폭에 맞춰 축소(확대 안 함).
+     설비 좌표는 % 로 저장 → 편집/보기에서 같은 위치 */
+  position: relative; flex: 0 0 auto; align-self: flex-start;
+  max-width: 100%;
   background: #fff; border: 1px solid #dde1e7; border-radius: 6px; overflow: hidden;
 }
-.mm-bg { position: absolute; inset: 0; }
-.mm-bg.img { background-size: contain; background-position: center; background-repeat: no-repeat; }
-.mm-bg svg { display: block; width: 100%; height: 100%; }
+.mm-bg { display: block; }
+.mm-bg > img, .mm-bg > svg { display: block; max-width: 100%; height: auto; }
+.mm-bg > svg { width: 1000px; }   /* 샘플 도면 기준폭 (viewBox 1000x640 로 비율 유지) */
 .mm-canvas.drag-over { border-color: #1a6ed8; box-shadow: inset 0 0 0 2px rgba(26,110,216,0.18); }
 
 /* 배치된 설비 노드 */

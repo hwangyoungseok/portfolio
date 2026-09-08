@@ -78,7 +78,7 @@
     customer: [
       { label: '설비현황', children: [
         { label: '전력계통',            page: 'status/power-topology' },
-        { label: '위치',                page: 'status/location-status' },
+        { label: '위치계통',            page: 'status/location-status' },
         { label: '맵',                  page: 'status/map-view' },
         { label: '맵 관리',             page: 'status/map-manage' },
       ]},
@@ -184,6 +184,8 @@
     'data/battery-trend',
     'data/battery-realtime',
     'facility/battery-list',
+    'status/power-topology',
+    'status/location-status',
   ];
   const DONE = new Set([].concat(DONE_OH, DONE_KIM, DONE_HWANG));
 

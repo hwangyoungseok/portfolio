@@ -135,15 +135,7 @@
   function renderBg() {
     const bg = $('mmBg');
     const b = map().bg || { type: 'sample' };
-    if (b.type === 'image' && b.data) {
-      bg.classList.add('img');
-      bg.style.backgroundImage = 'url(' + b.data + ')';
-      bg.innerHTML = '';
-    } else {
-      bg.classList.remove('img');
-      bg.style.backgroundImage = 'none';
-      bg.innerHTML = sampleSvg();
-    }
+    bg.innerHTML = (b.type === 'image' && b.data) ? '<img src="' + b.data + '" alt="">' : sampleSvg();
   }
   function mmUseSample() { map().bg = { type: 'sample' }; renderBg(); }
 
