@@ -26,11 +26,12 @@
     <!-- 검색조건 -->
     <div class="search-bar">
       <div class="search-field"><label>에디션</label><select class="search-select" id="fEdition"></select></div>
-      <div class="search-field"><label>활성화 상태</label>
+      <div class="search-field"><label>상태</label>
         <select class="search-select" id="fActive">
           <option value="">전체</option>
           <option value="on">활성</option>
-          <option value="off">비활성</option>
+          <option value="suspended">정지 (구독 만료)</option>
+          <option value="off">비활성 (강제 차단)</option>
         </select>
       </div>
       <div class="search-field"><label>만료</label>
@@ -42,7 +43,7 @@
         </select>
       </div>
       <div class="search-field"><label>검색어</label>
-        <input class="search-input" id="q" placeholder="테넌트명 / 도메인 / 관리자"
+        <input class="search-input" id="q" placeholder="테넌트명 / 도메인 / 관리자 / 전화"
                onkeyup="if(event.key==='Enter')renderGrid()">
       </div>
       <div class="search-actions">
@@ -70,7 +71,8 @@
               <th class="sortable" data-sort="end"     onclick="sortBy('end')">에디션 만료일(UTC)<span class="sort-ind"></span></th>
               <th>도메인</th>
               <th>관리자</th>
-              <th class="sortable" data-sort="active"  onclick="sortBy('active')">활성화 상태<span class="sort-ind"></span></th>
+              <th>담당자 전화</th>
+              <th class="sortable" data-sort="active"  onclick="sortBy('active')">상태<span class="sort-ind"></span></th>
             </tr>
           </thead>
           <tbody id="gridBody"></tbody>
@@ -103,6 +105,20 @@
   </div>
 
   <!-- 등록/수정 모달 -->
+  <!-- 테넌트 상세 Offcanvas (그리드에서 테넌트명 클릭) -->
+  <div class="drawer-mask" id="tenantMask" onclick="tenantDetailClose()"></div>
+  <aside class="drawer" id="tenantDrawer">
+    <div class="drawer-header">
+      <h3 id="dTitle">테넌트 상세</h3>
+      <button class="modal-close" onclick="tenantDetailClose()">&#10005;</button>
+    </div>
+    <div class="drawer-body" id="dBody"></div>
+    <div class="drawer-footer">
+      <button class="btn" onclick="tenantEditFromDetail()">수정</button>
+      <button class="btn btn-primary" onclick="tenantDetailClose()">닫기</button>
+    </div>
+  </aside>
+
   <div class="modal-overlay" id="tenantModal">
     <div class="modal">
       <div class="modal-header">
@@ -117,15 +133,21 @@
             <input class="form-input" id="m-domain" placeholder="tenant-code">
             <span class="hint">.ums.eteverse.com</span>
           </div>
-          <div class="form-label req">에디션</div><select class="form-select" id="m-edition"></select>
-          <div class="form-label">에디션 만료일(UTC)</div><input class="form-input" id="m-end" type="date">
           <div class="form-label">관리자 이메일</div><input class="form-input" id="m-admin" placeholder="admin@example.com">
+          <div class="form-label">담당자 전화번호</div><input class="form-input" id="m-phone" placeholder="02-1234-5678">
           <div class="form-label">활성화</div>
           <div class="switch-field">
             <label class="switch"><input type="checkbox" id="m-active" checked><span class="switch-track"></span></label>
             <span id="m-activeText">활성</span>
+            <span class="hint">끄면 로그인이 차단됩니다(강제 차단).</span>
           </div>
           <div class="form-label">비고</div><textarea class="form-textarea" id="m-memo" rows="2"></textarea>
+        </div>
+        <div class="hint" style="margin-top:12px;">
+          구독이 만료되면 목록에 <b>정지</b>로 표시됩니다. 이 경우 로그인과 [구독] 메뉴는 열려 있고
+          나머지 기능만 차단되므로, 위 [활성화] 스위치와는 다릅니다.<br>
+          등록 시 <b>Trial 에디션(30일)</b>이 자동 배정됩니다.
+          이후 에디션 변경/연장은 <b>구독 요청 승인</b>을 통해 처리됩니다.
         </div>
       </div>
       <div class="modal-footer">

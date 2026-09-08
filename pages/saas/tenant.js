@@ -6,18 +6,27 @@
   const TODAY    = new Date('2026-09-04');
 
   const DATA = [
-    { no: 1, name: '한빛데이터센터',   domain: 'hanbit',  edition: 'Enterprise',   end: '2027-03-31', admin: 'admin@hanbit-idc.co.kr',    active: 'on',  conn: '', memo: '본사 IDC + 판교 DR센터 2개 사이트' },
-    { no: 2, name: '세종클라우드',     domain: 'sejong',  edition: 'Professional', end: '2026-09-20', admin: 'it@sejongcloud.co.kr',      active: 'on',  conn: '', memo: '' },
-    { no: 3, name: '대성정보기술',     domain: 'daesung', edition: 'Enterprise',   end: '',           admin: 'ops@daesung-it.co.kr',      active: 'on',  conn: 'Server=db-ds;Database=ums_daesung;User Id=ums;Password=****', memo: '전용 DB 사용 (무기한 계약)' },
-    { no: 4, name: '미래네트웍스',     domain: 'mirae',   edition: 'Standard',     end: '2026-08-15', admin: 'admin@mirae-networks.co.kr', active: 'off', conn: '', memo: '계약 만료 — 갱신 협의 중' },
-    { no: 5, name: '정우텔레콤',       domain: 'jungwoo', edition: 'Standard',     end: '2026-09-30', admin: 'trial@jungwoo-telecom.co.kr', active: 'on', conn: '', memo: '30일 평가판' },
+    { no: 1, name: '한빛데이터센터',   domain: 'hanbit',  edition: 'Enterprise',   end: '2027-03-31', admin: 'admin@hanbit-idc.co.kr', phone: '02-3456-7890',    active: 'on',  conn: '', memo: '본사 IDC + 판교 DR센터 2개 사이트' },
+    { no: 2, name: '세종클라우드',     domain: 'sejong',  edition: 'Professional', end: '2026-09-20', admin: 'it@sejongcloud.co.kr', phone: '044-123-4567',      active: 'on',  conn: '', memo: '' },
+    { no: 3, name: '대성정보기술',     domain: 'daesung', edition: 'Enterprise',   end: '',           admin: 'ops@daesung-it.co.kr', phone: '031-777-1234',      active: 'on',  conn: 'Server=db-ds;Database=ums_daesung;User Id=ums;Password=****', memo: '전용 DB 사용 (무기한 계약)' },
+    { no: 4, name: '미래네트웍스',     domain: 'mirae',   edition: 'Standard',     end: '2026-08-15', admin: 'admin@mirae-networks.co.kr', phone: '02-555-1234', active: 'on',  conn: '', memo: '계약 만료 — 갱신 협의 중' },
+    { no: 5, name: '정우텔레콤',       domain: 'jungwoo', edition: 'Standard',     end: '2026-09-30', admin: 'trial@jungwoo-telecom.co.kr', phone: '051-880-3300', active: 'on', conn: '', memo: '30일 평가판' },
   ];
 
-  const ACTIVE_BADGE = { on: ['badge-on', '활성'], off: ['badge-off', '비활성'] };
+  // 상태 = 3단계.
+  //  - off       : 호스트가 강제 차단 (ABP ActivationState = Passive). 로그인 불가
+  //  - suspended : 구독 만료로 인한 서비스 정지. 로그인/[구독] 메뉴는 열려 있음 (파생값)
+  //  - on        : 정상
+  const STATE_BADGE = {
+    on:        ['badge-on',   '활성'],
+    suspended: ['badge-warn', '정지'],
+    off:       ['badge-off',  '비활성'],
+  };
 
   let sortKey = 'name';
   let sortAsc = true;
   let menuNo  = null;   // 현재 [작업] 메뉴가 열려 있는 행
+  let detailNo = null;  // 상세 Offcanvas 대상 행
   let editNo  = null;   // 편집/연결문자열 대상 행
 
   function badge(map, key) {
@@ -33,6 +42,13 @@
   function daysLeft(end) {
     if (!end) return null;
     return Math.round((new Date(end) - TODAY) / 86400000);
+  }
+
+  // 구독 만료 여부에서 상태를 파생한다. (별도 상태 컬럼을 두지 않는다)
+  function stateOf(r) {
+    if (r.active === 'off') return 'off';
+    const d = daysLeft(r.end);
+    return (d !== null && d < 0) ? 'suspended' : 'on';
   }
 
   function endCell(end) {
@@ -62,15 +78,16 @@
         || (fExp === 'none' && d === null)
         || (fExp === 'over' && d !== null && d < 0)
         || (fExp === 'soon' && d !== null && d >= 0 && d <= 30);
-      return (!kw || r.name.indexOf(kw) >= 0 || r.domain.indexOf(kw) >= 0 || r.admin.indexOf(kw) >= 0)
+      return (!kw || r.name.indexOf(kw) >= 0 || r.domain.indexOf(kw) >= 0 || r.admin.indexOf(kw) >= 0 || (r.phone || '').indexOf(kw) >= 0)
         && (!fEd  || r.edition === fEd)
-        && (!fAct || r.active === fAct)
+        && (!fAct || stateOf(r) === fAct)
         && expOk;
     });
 
     rows.sort(function (a, b) {
       let va = a[sortKey], vb = b[sortKey];
       if (sortKey === 'end') { va = va || '9999-12-31'; vb = vb || '9999-12-31'; }
+      if (sortKey === 'active') { va = stateOf(a); vb = stateOf(b); }
       if (va === vb) return 0;
       return (va > vb ? 1 : -1) * (sortAsc ? 1 : -1);
     });
@@ -80,15 +97,16 @@
           return '<tr data-no="' + r.no + '">'
             + '<td><button class="act-menu-btn" onclick="openMenu(event,' + r.no + ')">'
             +   '&#9881; 작업 <span class="caret">&#9662;</span></button></td>'
-            + '<td>' + r.name + '</td>'
+            + '<td><button class="name-link" onclick="tenantDetailOpen(' + r.no + ')">' + r.name + '</button></td>'
             + '<td>' + r.edition + '</td>'
             + '<td>' + endCell(r.end) + '</td>'
             + '<td>' + r.domain + '.ums.eteverse.com</td>'
             + '<td>' + r.admin + '</td>'
-            + '<td>' + badge(ACTIVE_BADGE, r.active) + '</td>'
+            + '<td>' + (r.phone || '<span style="color:#98a2b3;">-</span>') + '</td>'
+            + '<td>' + badge(STATE_BADGE, stateOf(r)) + '</td>'
             + '</tr>';
         }).join('')
-      : '<tr><td colspan="7" style="padding:30px;color:#98a2b3;">조회 결과가 없습니다.</td></tr>';
+      : '<tr><td colspan="8" style="padding:30px;color:#98a2b3;">조회 결과가 없습니다.</td></tr>';
 
     document.getElementById('gridCount').textContent = rows.length;
 
@@ -154,16 +172,72 @@
     }
   }
 
+  // ---- 상세 Offcanvas ----
+  function dvRow(label, val, multi) {
+    return '<div class="dv-row' + (multi ? ' multi' : '') + '">'
+      + '<span class="dv-label">' + label + '</span>'
+      + '<div class="dv-box' + (multi ? ' multi' : '') + '">' + val + '</div></div>';
+  }
+  function dvGroup(rows) { return '<div class="dv-group">' + rows + '</div>'; }
+  function dash(v) { return v ? v : '<span style="color:#8a97a5;">-</span>'; }
+
+  function tenantDetailOpen(no) {
+    const r = row(no);
+    if (!r) return;
+    detailNo = no;
+    document.getElementById('dTitle').textContent = r.name;
+
+    // 정지 사유를 상세에서 한 줄로 설명한다 (배지만으로는 구분이 안 되므로)
+    const st = stateOf(r);
+    const stNote = st === 'suspended'
+      ? ' <span class="hint">구독 만료 — 로그인과 [구독] 메뉴만 열려 있습니다.</span>'
+      : (st === 'off' ? ' <span class="hint">호스트가 강제 차단 — 로그인 불가.</span>' : '');
+
+    document.getElementById('dBody').innerHTML =
+      '<div class="dv">'
+      + dvGroup(
+          dvRow('테넌트명', r.name)
+          + dvRow('도메인', r.domain + '.ums.eteverse.com')
+          + dvRow('상태', badge(STATE_BADGE, st) + stNote))
+      + dvGroup(
+          dvRow('에디션', r.edition)
+          + dvRow('만료일(UTC)', endCell(r.end)))
+      + dvGroup(
+          dvRow('관리자 이메일', dash(r.admin))
+          + dvRow('담당자 전화', dash(r.phone)))
+      + dvGroup(
+          dvRow('DB 연결문자열', r.conn
+              ? '<span style="font-size:12px;">' + r.conn + '</span>'
+              : '<span style="color:#8a97a5;">공용 DB 사용</span>', true))
+      + dvGroup(dvRow('비고', dash(r.memo), true))
+      + '</div>';
+
+    document.getElementById('tenantMask').classList.add('show');
+    document.getElementById('tenantDrawer').classList.add('show');
+  }
+
+  function tenantDetailClose() {
+    document.getElementById('tenantMask').classList.remove('show');
+    document.getElementById('tenantDrawer').classList.remove('show');
+    detailNo = null;
+  }
+
+  function tenantEditFromDetail() {
+    const no = detailNo;
+    tenantDetailClose();
+    if (no != null) tenantOpen(no);
+  }
+
   // ---- 등록/수정 ----
   function tenantOpen(no) {
+    tenantDetailClose();
     const r = (no == null) ? null : row(no);
     editNo = r ? r.no : null;
     document.getElementById('mTitle').textContent = r ? '테넌트 수정' : '테넌트 등록';
     document.getElementById('m-name').value    = r ? r.name : '';
     document.getElementById('m-domain').value  = r ? r.domain : '';
-    document.getElementById('m-edition').value = r ? r.edition : EDITIONS[0];
-    document.getElementById('m-end').value     = r ? r.end : '';
     document.getElementById('m-admin').value   = r ? r.admin : '';
+    document.getElementById('m-phone').value   = r ? (r.phone || '') : '';
     document.getElementById('m-memo').value    = r ? r.memo : '';
     const active = r ? (r.active === 'on') : true;
     document.getElementById('m-active').checked = active;
@@ -199,7 +273,6 @@
 
   // ---- 초기화 ----
   fillSelect('fEdition', EDITIONS, true);
-  fillSelect('m-edition', EDITIONS, false);
   renderGrid();
 
   document.getElementById('m-active').addEventListener('change', function () {
@@ -210,7 +283,11 @@
   document.addEventListener('click', function (e) {
     if (!e.target.closest('#tenantMenu') && !e.target.closest('.act-menu-btn')) closeMenu();
   });
-  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeMenu(); });
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Escape') return;
+    closeMenu();
+    tenantDetailClose();
+  });
   document.addEventListener('scroll', closeMenu, true);
 
   // 인라인 onclick 에서 호출되므로 전역 노출
@@ -223,6 +300,9 @@
   window.tenantSave        = tenantSave;
   window.tenantDelete      = tenantDelete;
   window.connSave          = connSave;
+  window.tenantDetailOpen  = tenantDetailOpen;
+  window.tenantDetailClose = tenantDetailClose;
+  window.tenantEditFromDetail = tenantEditFromDetail;
   window.tenantModalClose  = function () { hide('tenantModal'); };
   window.connModalClose    = function () { hide('connModal'); };
   window.delModalClose     = function () { hide('delModal'); };

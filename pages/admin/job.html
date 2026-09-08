@@ -12,7 +12,7 @@
 <!--
   화면: 관리 > 작업   (호스트 모드 전용)
   설명: 백그라운드 작업(스케줄러) 목록과 제어.
-        행마다 [작업] 드롭다운으로 일시중지/재개 · 즉시 실행 · 취소 · 이력 보기 · 스케줄 삭제.
+        행마다 [작업] 드롭다운으로 일시중지/재개 · 즉시 실행 · 취소 · 이력 보기.
         작업 이름 / [이력 보기] 는 별도 페이지(admin/job-history)로 이동한다.
   ---------------------------------------------------------------------
    - 공통 컴포넌트(.search-bar / .grid-wrap / .grid-table / .modal-overlay+.modal /
@@ -70,20 +70,8 @@
     <div class="tmenu-item" onclick="menuAct('run')"><span class="mi-ico">&#9889;</span> 즉시 실행</div>
     <div class="tmenu-item" onclick="menuAct('cancel')"><span class="mi-ico">&#128683;</span> 취소</div>
     <div class="tmenu-item" onclick="menuAct('history')"><span class="mi-ico">&#9776;</span> 이력 보기</div>
-    <div class="tmenu-sep"></div>
-    <div class="tmenu-item danger" onclick="menuAct('delete')"><span class="mi-ico">&#128465;</span> 스케줄 삭제</div>
   </div>
 
-  <!-- 삭제 확인 -->
-  <div class="modal-overlay" id="delModal">
-    <div class="confirm-modal">
-      <p id="d-msg"></p>
-      <div class="confirm-btns">
-        <button class="btn btn-primary" onclick="scheduleDelete()">예</button>
-        <button class="btn btn-danger" onclick="delModalClose()">아니오</button>
-      </div>
-    </div>
-  </div>
 </div>
 
 <script src="../../shared/layout.js"></script>
