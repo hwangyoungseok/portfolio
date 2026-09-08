@@ -110,24 +110,40 @@
           <div class="cr-field-label">Action</div>
           <div class="cr-actions">
             <div class="cr-act-edit">
-              <select class="form-select" id="crmActKind" onchange="crmActKindChange()" style="min-width:104px;">
+              <select class="form-select cr-act-kind-sel" id="crmActKind" onchange="crmActKindChange()">
                 <option value="notify">알림</option>
                 <option value="ticket">티켓생성</option>
               </select>
-              <span class="cr-act-sub" data-sub="notify">
-                채널
-                <label><input type="checkbox" id="crmChEmail" checked> 이메일</label>
-                <label><input type="checkbox" id="crmChSms"> SMS</label>
-                <label><input type="checkbox" id="crmChKakao"> 카카오</label>
-                &nbsp; 대상
-                <select class="form-select cr-act-tg" id="crmActTargets" multiple size="3"></select>
-              </span>
-              <span class="cr-act-sub" data-sub="ticket" hidden>
-                우선순위
-                <select class="form-select" id="crmActPri"><option>낮음</option><option selected>보통</option><option>높음</option></select>
-              </span>
-              <button class="btn btn-primary" type="button" id="crmActApplyBtn" onclick="crmActApply()">+ 추가</button>
-              <button class="btn" type="button" id="crmActCancelBtn" onclick="crmActCancelEdit()" hidden>취소</button>
+
+              <div class="cr-act-sub" data-sub="notify">
+                <div class="cr-act-row">
+                  <span class="cr-act-rlabel">채널</span>
+                  <div class="cr-act-chs">
+                    <label><input type="checkbox" id="crmChEmail" checked> 이메일</label>
+                    <label><input type="checkbox" id="crmChSms"> SMS</label>
+                    <label><input type="checkbox" id="crmChKakao"> 카카오</label>
+                  </div>
+                </div>
+                <div class="cr-act-row">
+                  <span class="cr-act-rlabel top">대상</span>
+                  <div class="cr-act-tgbox">
+                    <input class="cr-act-tg-q" id="crmActTargetQ" placeholder="대상 검색" oninput="crmActTargetFilter()">
+                    <select class="form-select cr-act-tg" id="crmActTargets" multiple size="5"></select>
+                  </div>
+                </div>
+              </div>
+
+              <div class="cr-act-sub" data-sub="ticket" hidden>
+                <div class="cr-act-row">
+                  <span class="cr-act-rlabel">우선순위</span>
+                  <select class="form-select" id="crmActPri"><option>낮음</option><option selected>보통</option><option>높음</option></select>
+                </div>
+              </div>
+
+              <div class="cr-act-row cr-act-btns">
+                <button class="btn btn-primary" type="button" id="crmActApplyBtn" onclick="crmActApply()">+ 추가</button>
+                <button class="btn" type="button" id="crmActCancelBtn" onclick="crmActCancelEdit()" hidden>취소</button>
+              </div>
             </div>
             <div class="cr-act-list" id="crmActList"></div>
           </div>

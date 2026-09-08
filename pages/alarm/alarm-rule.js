@@ -264,10 +264,20 @@
     el('crmChSms').checked = false;
     el('crmChKakao').checked = false;
     Array.prototype.forEach.call(el('crmActTargets').options, function (o) { o.selected = false; });
+    if (el('crmActTargetQ')) el('crmActTargetQ').value = '';
+    crmActTargetFilter();
     el('crmActPri').value = '보통';
     el('crmActApplyBtn').textContent = '+ 추가';
     el('crmActCancelBtn').hidden = true;
     crmActKindChange();
+  }
+
+  // 대상 멀티셀렉트 실시간 필터 (선택된 항목은 필터에 안 걸려도 계속 표시)
+  function crmActTargetFilter() {
+    const q = (el('crmActTargetQ') && el('crmActTargetQ').value || '').trim().toLowerCase();
+    Array.prototype.forEach.call(el('crmActTargets').options, function (o) {
+      o.hidden = !!q && !o.selected && o.value.toLowerCase().indexOf(q) < 0;
+    });
   }
   function crmActReadEdit() {
     const kind = el('crmActKind').value;
@@ -482,6 +492,7 @@
   window.crmInsertParam  = crmInsertParam;
   window.crmInsertOp     = crmInsertOp;
   window.crmActKindChange = crmActKindChange;
+  window.crmActTargetFilter = crmActTargetFilter;
   window.crmActApply      = crmActApply;
   window.crmActEdit       = crmActEdit;
   window.crmActDel        = crmActDel;
