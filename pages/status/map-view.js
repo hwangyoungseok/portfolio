@@ -64,11 +64,26 @@
     const p = function (n) { return String(n).padStart(2, '0'); };
     return p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds());
   }
-  function alarmsFor(id, op) {
-    if (op === 'crit') return [id + ' 심각 알람 발생 (Critical)', id + ' 관련 임계치 초과'];
-    if (op === 'major') return [id + ' 주요 알람 발생 (Major)'];
-    if (op === 'warn') return Math.random() < 0.6 ? [id + ' 경고 (Warning)'] : [];
-    return [];
+  // 알람 발생시각 표시: 60분 이내는 "N분 전", 그 이상은 절대시각(MM-DD HH:MM:SS)
+  function agoLabel(atMs) {
+    const m = Math.floor((Date.now() - atMs) / 60000);
+    if (m < 1) return '방금';
+    if (m < 60) return m + '분 전';
+    const d = new Date(atMs);
+    const p = function (n) { return String(n).padStart(2, '0'); };
+    return p(d.getMonth() + 1) + '-' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds());
+  }
+  // 알람: {name, at(ms)}. 지속되면 at 유지, 새로 뜨면 1~180분 전으로
+  function alarmsFor(id, op, prev) {
+    const names = op === 'crit' ? [id + ' 심각 알람 발생 (Critical)', id + ' 관련 임계치 초과']
+      : op === 'major' ? [id + ' 주요 알람 발생 (Major)']
+      : op === 'warn' ? (Math.random() < 0.6 ? [id + ' 경고 (Warning)'] : [])
+      : [];
+    const pm = {};
+    (prev || []).forEach(function (a) { pm[a.name] = a.at; });
+    return names.map(function (nm) {
+      return { name: nm, at: pm[nm] || (Date.now() - (1 + Math.floor(Math.random() * 179)) * 60000) };
+    });
   }
 
   const STATUS = {};   // id -> { op, link, last, alarms }
@@ -79,7 +94,7 @@
       const r = Math.random();
       const op = r < 0.7 ? 'ok' : (r < 0.86 ? 'warn' : (r < 0.95 ? 'major' : 'crit'));
       const link = Math.random() < 0.06 ? 'off' : 'on';
-      STATUS[id] = { op: op, link: link, last: nowT(), alarms: alarmsFor(id, op) };
+      STATUS[id] = { op: op, link: link, last: nowT(), alarms: alarmsFor(id, op, null) };
     });
   }
   seedStatus();
@@ -99,7 +114,12 @@
       s.op = LEVELS[li];
       if (Math.random() < 0.05) s.link = (s.link === 'on' ? 'off' : 'on');
       else if (s.link === 'off' && Math.random() < 0.4) s.link = 'on';
-      s.alarms = s.link === 'off' ? [id + ' 통신 두절'] : alarmsFor(id, s.op);
+      if (s.link === 'off') {
+        const prevOff = (s.alarms || []).filter(function (a) { return /통신 두절/.test(a.name); })[0];
+        s.alarms = [{ name: id + ' 통신 두절', at: prevOff ? prevOff.at : Date.now() - (1 + Math.floor(Math.random() * 20)) * 60000 }];
+      } else {
+        s.alarms = alarmsFor(id, s.op, s.alarms);
+      }
     }
     ids.forEach(function (id) { if (STATUS[id].link === 'on') STATUS[id].last = nowT(); });
   }
@@ -183,7 +203,7 @@
       + '<div class="mv-row"><span class="k">최근 수신</span><span class="v">' + s.last + '</span></div>'
       + '<div class="mv-alarms"><div class="mv-alarms-t">활성 알람</div>'
       + (s.alarms && s.alarms.length
-          ? '<ul>' + s.alarms.map(function (a) { return '<li>' + a + '</li>'; }).join('') + '</ul>'
+          ? '<ul>' + s.alarms.map(function (a) { return '<li>' + a.name + ' <span class="mv-al-time">' + agoLabel(a.at) + '</span></li>'; }).join('') + '</ul>'
           : '<div class="none">없음</div>')
       + '</div>';
   }

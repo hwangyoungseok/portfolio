@@ -105,6 +105,7 @@
 .mv-alarms-t { font-size: 12px; font-weight: bold; color: #33506e; margin-bottom: 6px; }
 .mv-alarms ul { margin: 0; padding-left: 16px; }
 .mv-alarms li { font-size: 12px; color: #c0392b; line-height: 1.7; }
+.mv-alarms .mv-al-time { color: #8a97a5; font-size: 11px; margin-left: 4px; }
 .mv-alarms .none { font-size: 12px; color: #8a97a5; }
 
 /* ---- 맵 없음 ---- */
