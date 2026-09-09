@@ -5,28 +5,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>UMS 통합 관리 시스템</title>
 <link rel="stylesheet" href="shared/common.css">
+<link rel="stylesheet" href="index.css">
 </head>
 <body>
 
+<!--
+  홈(대시보드). window.umsRole (host/customer) 로 내용을 통째로 분기한다.
+  - 호스트: 티켓 현황 + 전 테넌트 GW 헬스 + 테넌트/구독 요약
+  - 고객: 티켓 현황 + 인프라 헬스 + 활성 알람 + 핵심 지표
+  차트는 라이브러리 없이 인라인 SVG (데이터 조회 Trend 페이지와 동일 방식).
+-->
+
 <div id="umsContent">
   <div class="content">
-
-    <!-- 티켓 KPI 카드 (티켓 > 전체 티켓 페이지에서 이동). 호스트/고객 모드에 따라 일부 카드만
-         노출한다 — host-only/customer-only는 shared/common.css의 body[data-role=..] 규칙이 처리. -->
-    <div class="kpi-row">
-      <div class="kpi-card host-only"><div class="kpi-card-label">오픈 티켓</div><div class="kpi-card-value" id="kpiOpen">0<span class="unit">건</span></div></div>
-      <div class="kpi-card"><div class="kpi-card-label">미할당 티켓</div><div class="kpi-card-value" id="kpiUnassigned">0<span class="unit">건</span></div></div>
-      <div class="kpi-card"><div class="kpi-card-label">대기 중 티켓</div><div class="kpi-card-value" id="kpiPending">0<span class="unit">건</span></div></div>
-      <div class="kpi-card"><div class="kpi-card-label">진행 중 티켓</div><div class="kpi-card-value" id="kpiProgress">0<span class="unit">건</span></div></div>
-      <div class="kpi-card customer-only"><div class="kpi-card-label">종료된 티켓</div><div class="kpi-card-value" id="kpiClosed">0<span class="unit">건</span></div></div>
-      <div class="kpi-card"><div class="kpi-card-label">기한초과 티켓</div><div class="kpi-card-value" id="kpiOverdue">0<span class="unit">건</span></div></div>
-    </div>
-
-    <div class="placeholder-card">
-      <b style="font-size:15px;color:#1a1a2e;">UMS 통합 관리 시스템</b><br><br>
-      좌측 메뉴에서 화면을 선택하세요.<br>
-      <span style="color:#bbb;">※ UI 프로토타입 &mdash; 목업 데이터로 동작합니다. 서버 없이 그대로 열림.</span>
-    </div>
+    <div id="dash"></div>
   </div>
 </div>
 

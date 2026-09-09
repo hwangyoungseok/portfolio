@@ -8,11 +8,11 @@
   // ---- 목업: 설비 기준. 각 설비가 자기 체크 룰 목록(rules)을 가짐 ----
   const FAC = [
     { no: 1, name: 'UPS-1F-A', type: 'UPS', loc: '본사 IDC-1F', rules: [
-      { id: 11, level: 'major', expr: '@outv > 260 OR @outv < 200', action: '알림(이메일, SMS) · 티켓생성', on: true },
-      { id: 12, level: 'warn',  expr: '@loadpct >= 85', action: '알림(이메일)', on: true },
+      { id: 11, level: 'major', expr: '@outv > 260 OR @outv < 200', action: '알림(이메일, SMS) · 티켓생성', alarmSup: 30, ticketSup: 120, on: true },
+      { id: 12, level: 'warn',  expr: '@loadpct >= 85', action: '알림(이메일)', alarmSup: 0, ticketSup: 0, on: true },
     ]},
     { no: 2, name: 'UPS-1F-B', type: 'UPS', loc: '본사 IDC-1F', rules: [
-      { id: 21, level: 'crit', expr: "@dischg = 'Y' AND @inv < 180", action: '알림(이메일, SMS, 카카오) · 티켓생성', on: true },
+      { id: 21, level: 'crit', expr: "@dischg = 'Y' AND @inv < 180", action: '알림(이메일, SMS, 카카오) · 티켓생성', alarmSup: 60, ticketSup: 180, on: true },
     ]},
     { no: 3, name: 'UPS-2F-A', type: 'UPS', loc: '본사 IDC-2F', rules: [] },
     { no: 4, name: 'PDU-1F-01', type: 'PDU', loc: '본사 IDC-1F', rules: [
@@ -60,6 +60,13 @@
     });
   }
 
+  function supTag(r) {
+    const a = [];
+    if (r.alarmSup) a.push('알람억제 ' + r.alarmSup + '분');
+    if (r.ticketSup) a.push('티켓억제 ' + r.ticketSup + '분');
+    return a.length ? ' <span class="cr-rearm-tag">' + a.join(' · ') + '</span>' : '';
+  }
+
   function subTable(f) {
     if (!f.rules.length) {
       return '<div class="sub-empty">등록된 체크 룰이 없습니다.'
@@ -69,7 +76,7 @@
       return '<tr>'
         + '<td>' + levelBadge(r.level) + '</td>'
         + '<td class="expr">' + r.expr + '</td>'
-        + '<td>' + r.action + '</td>'
+        + '<td>' + r.action + supTag(r) + '</td>'
         + '<td><span class="toggle-pill ' + (r.on ? 'on' : 'off') + '" onclick="crToggle(' + f.no + ',' + r.id + ')">'
         +   (r.on ? '사용' : '미사용') + '</span></td>'
         + '<td><span class="col-act">'
@@ -219,6 +226,8 @@
     }).join('');
     // 조건식 초기화
     el('crmExpr').value = '';
+    el('crmAlarmSup').value = '';
+    el('crmTicketSup').value = '';
     // Action 초기화: 대상 옵션 채우고, 입력영역/목록 리셋
     el('crmActTargets').innerHTML = NOTIFY_TARGETS.map(function (t) { return '<option>' + t + '</option>'; }).join('');
     crmActResetEdit();
@@ -437,6 +446,8 @@
   function crFillFromRule(r) {
     document.querySelectorAll('input[name=crLevel]').forEach(function (rd) { rd.checked = (rd.value === r.level); });
     el('crmExpr').value = r.expr;
+    el('crmAlarmSup').value = r.alarmSup || '';
+    el('crmTicketSup').value = r.ticketSup || '';
     crmActs = parseActionSummary(r.action);
     crmActResetEdit();
     crmActRenderList();
@@ -461,11 +472,13 @@
     // 저장 시에도 중복 재검증 (로직상) — 목업에서는 통과 처리
     const level = lvEl.value;
     const action = actionSummary() || '-';
+    const alarmSup = parseInt(el('crmAlarmSup').value, 10) || 0;
+    const ticketSup = parseInt(el('crmTicketSup').value, 10) || 0;
     const targets = [crmFacNo].concat(crmExtra);
     targets.forEach(function (no) {
       const f = FAC.filter(function (x) { return x.no === no; })[0];
       if (!f) return;
-      f.rules.push({ id: Date.now() % 100000 + f.rules.length, level: level, expr: expr, action: action, on: true });
+      f.rules.push({ id: Date.now() % 100000 + f.rules.length, level: level, expr: expr, action: action, alarmSup: alarmSup, ticketSup: ticketSup, on: true });
       expanded.add(no);
     });
     crmClose();

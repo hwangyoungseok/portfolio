@@ -1,0 +1,110 @@
+/* UMS 홈 대시보드 전용 스타일 (공통은 shared/common.css) */
+
+#dash { display: flex; flex-direction: column; gap: 16px; }
+
+/* ---------- 히어로 스트립 ---------- */
+.dash-hero {
+  position: relative; overflow: hidden;
+  border-radius: 10px; padding: 18px 22px;
+  background: linear-gradient(120deg, #1a2740 0%, #24406e 45%, #1a6ed8 100%);
+  color: #fff; box-shadow: 0 6px 20px rgba(26,64,110,0.25);
+}
+.dash-hero::after {
+  content: ""; position: absolute; right: -40px; top: -60px;
+  width: 220px; height: 220px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,0.14), rgba(255,255,255,0));
+}
+.dash-hero-top { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.dash-hero-title { font-size: 19px; font-weight: bold; letter-spacing: 0.3px; }
+.dash-hero-sub { font-size: 12px; color: rgba(255,255,255,0.7); }
+.dash-hero-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+.dash-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(255,255,255,0.14); border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 20px; padding: 5px 12px; font-size: 12px; backdrop-filter: blur(2px);
+}
+.dash-chip b { font-size: 13px; }
+.dash-chip .dot { width: 7px; height: 7px; border-radius: 50%; }
+.dot-ok { background: #38d39f; } .dot-warn { background: #ffcf5c; }
+.dot-bad { background: #ff6b6b; } .dot-info { background: #7db8ff; }
+
+/* ---------- 섹션 ---------- */
+.dash-sec { display: flex; flex-direction: column; gap: 10px; }
+.dash-sec-head { display: flex; align-items: center; gap: 9px; }
+.dash-sec-bar { width: 4px; height: 15px; border-radius: 2px; background: #1a6ed8; }
+.dash-sec-title { font-size: 13.5px; font-weight: bold; color: #1a1a2e; }
+.dash-sec-more { margin-left: auto; font-size: 11.5px; color: #1a6ed8; cursor: pointer; }
+.dash-sec-more:hover { text-decoration: underline; }
+
+/* ---------- 그리드 ---------- */
+.dash-grid { display: grid; gap: 12px; grid-template-columns: repeat(12, 1fr); }
+.dash-grid > * { min-width: 0; }
+.col-3 { grid-column: span 3; } .col-4 { grid-column: span 4; }
+.col-5 { grid-column: span 5; } .col-6 { grid-column: span 6; }
+.col-7 { grid-column: span 7; } .col-8 { grid-column: span 8; }
+.col-12 { grid-column: span 12; }
+@media (max-width: 1100px) {
+  .col-3, .col-4, .col-5 { grid-column: span 6; }
+  .col-6, .col-7, .col-8 { grid-column: span 12; }
+}
+@media (max-width: 640px) { .dash-grid > * { grid-column: span 12; } }
+
+/* ---------- 카드 ---------- */
+.d-card {
+  background: #fff; border: 1px solid #e4e8ee; border-radius: 9px; padding: 14px 16px;
+  box-shadow: 0 1px 3px rgba(20,30,50,0.05); display: flex; flex-direction: column; gap: 10px;
+}
+.d-card-t { font-size: 12px; font-weight: bold; color: #56606c; }
+
+/* KPI 카드 (스파크라인 + 델타) */
+.d-kpi { position: relative; }
+.d-kpi-val { font-size: 27px; font-weight: bold; color: #14213d; line-height: 1.1; }
+.d-kpi-val .u { font-size: 12px; font-weight: normal; color: #90979f; margin-left: 3px; }
+.d-kpi-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 8px; }
+.d-delta { font-size: 11px; font-weight: bold; padding: 1px 6px; border-radius: 9px; white-space: nowrap; }
+.d-delta.up   { background: #fdecea; color: #c0392b; }
+.d-delta.down { background: #e6f4ea; color: #1e7e34; }
+.d-delta.flat { background: #eef1f4; color: #78828d; }
+.d-spark { height: 30px; }
+.d-spark svg, .d-chart svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.d-chart { height: 132px; }
+.d-chart.tall { height: 160px; }
+
+/* 도넛 + 범례 */
+.d-donut-wrap { display: flex; align-items: center; gap: 14px; }
+.d-donut { width: 180px; height: 180px; flex-shrink: 0; }
+.d-legend { display: flex; flex-direction: column; gap: 6px; font-size: 12px; }
+.d-legend .li { display: flex; align-items: center; gap: 7px; color: #444; }
+.d-legend .sw { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+.d-legend .n { margin-left: auto; font-weight: bold; color: #14213d; }
+
+/* 유형별 상태 스택바 */
+.d-stack-row { display: grid; grid-template-columns: 66px 1fr 46px; align-items: center; gap: 10px; }
+.d-stack-label { font-size: 12px; color: #56606c; }
+.d-stack-bar { display: flex; height: 16px; border-radius: 4px; overflow: hidden; background: #eef1f4; }
+.d-stack-bar > span { display: block; }
+.d-stack-total { font-size: 12px; font-weight: bold; color: #14213d; text-align: right; }
+
+/* 미니 리스트 */
+.d-list { display: flex; flex-direction: column; }
+.d-list-row {
+  display: flex; align-items: center; gap: 8px; padding: 7px 2px; font-size: 12px;
+  border-bottom: 1px solid #f0f2f5;
+}
+.d-list-row:last-child { border-bottom: none; }
+.d-list-row .grow { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.d-list-row .muted { color: #8a929c; font-size: 11px; white-space: nowrap; }
+.d-list-empty { font-size: 12px; color: #98a2b3; padding: 14px 2px; }
+.d-tenant { font-size: 10.5px; color: #5a6b8a; background: #eef3fb; border: 1px solid #dbe6f7; border-radius: 3px; padding: 0 5px; white-space: nowrap; }
+
+/* 게이지 (가로 막대) */
+.d-gauge { display: flex; flex-direction: column; gap: 5px; }
+.d-gauge-top { display: flex; align-items: baseline; justify-content: space-between; }
+.d-gauge-v { font-size: 18px; font-weight: bold; color: #14213d; }
+.d-gauge-track { height: 8px; border-radius: 5px; background: #eef1f4; overflow: hidden; }
+.d-gauge-fill { height: 100%; border-radius: 5px; }
+
+/* 큰 숫자 강조 카드 */
+.d-big { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 6px 0; }
+.d-big-v { font-size: 30px; font-weight: bold; color: #14213d; }
+.d-big-l { font-size: 11.5px; color: #6b7480; }
