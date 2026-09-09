@@ -14,11 +14,11 @@
   const DATA = [
     { no: 1, id: 'BAT-1F-A-1', ups: 'UPS-1F-A', maker: '삼성SDI',          type: '리튬이온', cap: 100, date: '2023-04-12', soh: 96.4, memo: '', alarms: [] },
     { no: 2, id: 'BAT-1F-B-1', ups: 'UPS-1F-B', maker: '삼성SDI',          type: '리튬이온', cap: 100, date: '2023-04-12', soh: 96.5, memo: '', alarms: [] },
-    { no: 3, id: 'BAT-1F-B-2', ups: 'UPS-1F-B', maker: '삼성SDI',          type: '리튬이온', cap: 100, date: '2023-04-12', soh: 82.1, memo: '', alarms: ['방전 이력 잦음, 모니터링 필요 (경고)'] },
+    { no: 3, id: 'BAT-1F-B-2', ups: 'UPS-1F-B', maker: '삼성SDI',          type: '리튬이온', cap: 100, date: '2023-04-12', soh: 82.1, memo: '', alarms: [{ time: '2026-09-02 14:20', text: '방전 이력 잦음, 모니터링 필요 (경고)' }] },
     { no: 4, id: 'BAT-1F-C-1', ups: 'UPS-1F-C', maker: 'LG에너지솔루션',    type: '리튬이온', cap: 150, date: '2024-06-21', soh: 93.8, memo: '', alarms: [] },
     { no: 5, id: 'BAT-2F-A-1', ups: 'UPS-2F-A', maker: 'CSB',              type: '납축',     cap: 200, date: '2022-11-30', soh: 93.3, memo: '2023년 일부 셀 점검', alarms: [] },
     { no: 6, id: 'BAT-2F-B-1', ups: 'UPS-2F-B', maker: 'CSB',              type: '납축',     cap: 200, date: '2022-11-30', soh: 94.0, memo: '', alarms: [] },
-    { no: 7, id: 'BAT-2F-B-2', ups: 'UPS-2F-B', maker: 'CSB',              type: '납축',     cap: 200, date: '2022-11-30', soh: 76.5, memo: '', alarms: ['SOH 76.5% 저하 - 교체 필요 (위험)'] },
+    { no: 7, id: 'BAT-2F-B-2', ups: 'UPS-2F-B', maker: 'CSB',              type: '납축',     cap: 200, date: '2022-11-30', soh: 76.5, memo: '', alarms: [{ time: '2026-09-01 09:00', text: 'SOH 76.5% 저하 - 교체 필요 (위험)' }] },
     { no: 8, id: 'BAT-DR-1-1', ups: 'UPS-DR-1', maker: 'Vertiv',           type: '리튬이온', cap: 120, date: '2024-02-08', soh: 93.4, memo: '', alarms: [] },
     { no: 9, id: 'BAT-DR-2-1', ups: 'UPS-DR-2', maker: 'Vertiv',           type: '리튬이온', cap: 120, date: '2024-02-08', soh: 92.1, memo: '', alarms: [] },
   ];
@@ -37,6 +37,12 @@
   function statusBadge(soh) {
     const st = statusOf(soh);
     return '<span class="badge ' + STATUS_BADGE[st] + '">' + STATUS_LABEL[st] + '</span>';
+  }
+
+  function alarmsHtml(alarms) {
+    return (alarms && alarms.length)
+      ? '<ul>' + alarms.map(function (a) { return '<li>' + a.text + ' <span style="color:#98a2b3;font-size:11px;">(' + a.time + ')</span></li>'; }).join('') + '</ul>'
+      : '<span style="color:#8a97a5;">없음</span>';
   }
 
   function fillSelect(id, arr, withAll) {
@@ -148,9 +154,7 @@
       + dvGroup(
           dvRow('SOH', r.soh + '%') + dvRow('상태', statusBadge(r.soh)))
       + dvGroup(
-          dvRow('활성 알람', r.alarms.length
-              ? '<ul>' + r.alarms.map(function (a) { return '<li>' + a + '</li>'; }).join('') + '</ul>'
-              : '<span style="color:#8a97a5;">없음</span>', true))
+          dvRow('활성 알람', alarmsHtml(r.alarms), true))
       + dvGroup(
           dvRow('비고', r.memo || '<span style="color:#8a97a5;">-</span>', true))
       + '</div>';

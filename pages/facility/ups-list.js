@@ -8,11 +8,11 @@
 
   const DATA = [
     { no: 1, name: 'UPS-1F-A', loc: '본사 IDC-1F', vendor: 'APC',         model: 'Smart-UPS SRT 10K', sn: 'AS1934110021', kva: 10, comm: 'SNMP',   gw: 'GW-IDC-01', link: 'on',  op: 'ok',    date: '2023-04-12', ip: '10.10.1.11', port: 161, community: 'public', memo: '',                 last: '2026-09-03 09:41:07', alarms: [] },
-    { no: 2, name: 'UPS-1F-B', loc: '본사 IDC-1F', vendor: 'APC',         model: 'Smart-UPS SRT 10K', sn: 'AS1934110022', kva: 10, comm: 'SNMP',   gw: 'GW-IDC-01', link: 'on',  op: 'warn',  date: '2023-04-12', ip: '10.10.1.12', port: 161, community: 'public', memo: '',                 last: '2026-09-03 09:41:03', alarms: ['출력 부하율 85% 초과 (경고)'] },
+    { no: 2, name: 'UPS-1F-B', loc: '본사 IDC-1F', vendor: 'APC',         model: 'Smart-UPS SRT 10K', sn: 'AS1934110022', kva: 10, comm: 'SNMP',   gw: 'GW-IDC-01', link: 'on',  op: 'warn',  date: '2023-04-12', ip: '10.10.1.12', port: 161, community: 'public', memo: '',                 last: '2026-09-03 09:41:03', alarms: [{ time: '2026-09-03 07:15', text: '출력 부하율 85% 초과 (경고)' }] },
     { no: 3, name: 'UPS-2F-A', loc: '본사 IDC-2F', vendor: 'Vertiv',      model: 'Liebert APM 30K',   sn: 'VT21008847',   kva: 30, comm: 'SNMP',   gw: 'GW-IDC-02', link: 'on',  op: 'ok',    date: '2022-11-30', ip: '10.10.2.11', port: 161, community: 'public', memo: '2023년 배터리 교체', last: '2026-09-03 09:40:58', alarms: [] },
-    { no: 4, name: 'UPS-2F-B', loc: '본사 IDC-2F', vendor: 'Vertiv',      model: 'Liebert APM 30K',   sn: 'VT21008848',   kva: 30, comm: 'Modbus', gw: 'GW-IDC-02', link: 'off', op: 'major', date: '2022-11-30', ip: '10.10.2.12', port: 502, community: '-',      memo: '',                 last: '2026-09-03 08:12:20', alarms: ['통신 두절', '배터리 스트링 전압 저하 (Major)'] },
+    { no: 4, name: 'UPS-2F-B', loc: '본사 IDC-2F', vendor: 'Vertiv',      model: 'Liebert APM 30K',   sn: 'VT21008848',   kva: 30, comm: 'Modbus', gw: 'GW-IDC-02', link: 'off', op: 'major', date: '2022-11-30', ip: '10.10.2.12', port: 502, community: '-',      memo: '',                 last: '2026-09-03 08:12:20', alarms: [{ time: '2026-09-03 08:10', text: '통신 두절' }, { time: '2026-09-02 22:40', text: '배터리 스트링 전압 저하 (Major)' }] },
     { no: 5, name: 'UPS-DR-1', loc: '판교 DR센터', vendor: 'LS ELECTRIC', model: 'LSUPS-0020B',       sn: 'LS200347711',  kva: 20, comm: 'SNMP',   gw: 'GW-DR-01',  link: 'on',  op: 'ok',    date: '2024-02-08', ip: '10.20.1.11', port: 161, community: 'public', memo: '',                 last: '2026-09-03 09:41:11', alarms: [] },
-    { no: 6, name: 'UPS-DR-2', loc: '판교 DR센터', vendor: '삼성',        model: 'SUP-0100',          sn: 'SS99281120',   kva: 10, comm: 'SNMP',   gw: 'GW-DR-01',  link: 'on',  op: 'crit',  date: '2024-02-08', ip: '10.20.1.12', port: 161, community: 'public', memo: '',                 last: '2026-09-03 09:41:09', alarms: ['배터리 룸 과온 (Critical)', 'UPS 바이패스 전환'] },
+    { no: 6, name: 'UPS-DR-2', loc: '판교 DR센터', vendor: '삼성',        model: 'SUP-0100',          sn: 'SS99281120',   kva: 10, comm: 'SNMP',   gw: 'GW-DR-01',  link: 'on',  op: 'crit',  date: '2024-02-08', ip: '10.20.1.12', port: 161, community: 'public', memo: '',                 last: '2026-09-03 09:41:09', alarms: [{ time: '2026-09-03 03:20', text: '배터리 룸 과온 (Critical)' }, { time: '2026-09-03 03:22', text: 'UPS 바이패스 전환' }] },
     { no: 7, name: 'UPS-1F-C', loc: '본사 IDC-1F', vendor: 'APC',         model: 'Smart-UPS SRT 15K', sn: 'AS2011550310', kva: 15, comm: 'SNMP',   gw: 'GW-IDC-01', link: 'on',  op: 'ok',    date: '2024-06-21', ip: '10.10.1.13', port: 161, community: 'public', memo: '',                 last: '2026-09-03 09:41:05', alarms: [] },
   ];
 
@@ -22,6 +22,12 @@
   function badge(map, key) {
     const pair = map[key] || ['badge-off', key];
     return '<span class="badge ' + pair[0] + '">' + pair[1] + '</span>';
+  }
+
+  function alarmsHtml(alarms) {
+    return (alarms && alarms.length)
+      ? '<ul>' + alarms.map(function (a) { return '<li>' + a.text + ' <span style="color:#98a2b3;font-size:11px;">(' + a.time + ')</span></li>'; }).join('') + '</ul>'
+      : '<span style="color:#8a97a5;">없음</span>';
   }
 
   function fillSelect(id, arr, withAll) {
@@ -112,9 +118,7 @@
           + dvRow('통신상태', badge(LINK_BADGE, r.link)) + dvRow('최근 수신', r.last))
       + dvGroup(
           dvRow('운영상태', badge(OP_BADGE, r.op))
-          + dvRow('활성 알람', r.alarms.length
-              ? '<ul>' + r.alarms.map(function (a) { return '<li>' + a + '</li>'; }).join('') + '</ul>'
-              : '<span style="color:#8a97a5;">없음</span>', true))
+          + dvRow('활성 알람', alarmsHtml(r.alarms), true))
       + dvGroup(
           dvRow('비고', r.memo || '<span style="color:#8a97a5;">-</span>', true))
       + '</div>';
