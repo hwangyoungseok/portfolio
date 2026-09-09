@@ -1,51 +1,451 @@
-// UMS 홈 화면 스크립트 (목업 데이터)
-// 티켓 > 전체 티켓(ticket-all.js)에 있던 KPI 카드를 홈 화면으로 옮겨왔다. 카드 값 집계에
-// 필요한 DATA는 ticket-all.js의 DATA를 그대로 옮긴 것 — 티켓 목업 데이터가 바뀌면 여기도 같이 맞출 것.
+// UMS 홈 대시보드 (목업). window.umsRole 로 host / customer 분기.
+// 차트는 라이브러리 없이 인라인 SVG (데이터 조회 Trend 페이지와 동일 방식).
 (function () {
 
-  const DATA = [
-    { no: 1, ticketNo: 'TCK-20260903-002', title: 'UPS-2F-B 통신 두절', target: 'UPS-2F-B', targetType: 'UPS', loc: '본사 IDC-2F',
-      pri: 'major', status: 'pending', reg: '2026-09-03', due: '2026-09-04', updated: '2026-09-03 08:20', assignee: null },
-    { no: 2, ticketNo: 'TCK-20260903-001', title: 'GW-DR-02 서버 응답 없음', target: 'GW-DR-02', targetType: 'GW', loc: '판교 DR센터',
-      pri: 'critical', status: 'pending', reg: '2026-09-03', due: '2026-09-03', updated: '2026-09-03 07:55', assignee: null },
-    { no: 3, ticketNo: 'TCK-20260902-030', title: 'PDU-1F-C 출력 전류 이상', target: 'PDU-1F-C', targetType: 'PDU', loc: '본사 IDC-1F',
-      pri: 'minor', status: 'pending', reg: '2026-09-02', due: '2026-09-06', updated: '2026-09-02 19:41', assignee: null },
-    { no: 4, ticketNo: 'TCK-20260902-027', title: 'CH-2F-02 냉수 유량 저하', target: 'CH-2F-02', targetType: '칠러', loc: '본사 IDC-2F',
-      pri: 'warning', status: 'pending', reg: '2026-09-02', due: '2026-09-08', updated: '2026-09-02 15:10', assignee: null },
-    { no: 5, ticketNo: 'TCK-20260901-019', title: 'BAT-1F-01 셀 온도 상승', target: 'BAT-1F-01', targetType: '배터리', loc: '본사 IDC-1F',
-      pri: 'major', status: 'pending', reg: '2026-09-01', due: '2026-09-05', updated: '2026-09-01 21:03', assignee: null },
-    { no: 6, ticketNo: 'TCK-20260901-014', title: 'UPS-1F-B 출력 부하율 85% 초과', target: 'UPS-1F-B', targetType: 'UPS', loc: '본사 IDC-1F',
-      pri: 'minor', status: 'progress', reg: '2026-09-01', due: '2026-09-03', updated: '2026-09-02 10:20', assignee: '관리자' },
-    { no: 7, ticketNo: 'TCK-20260902-021', title: 'GW-IDC-02 통신 두절', target: 'GW-IDC-02', targetType: 'GW', loc: '본사 IDC-2F',
-      pri: 'major', status: 'pending', reg: '2026-09-02', due: '2026-09-02', updated: '2026-09-02 08:15', assignee: '관리자' },
-    { no: 8, ticketNo: 'TCK-20260830-005', title: 'CH-1F-01 응축기 압력 경고', target: 'CH-1F-01', targetType: '칠러', loc: '본사 IDC-1F',
-      pri: 'warning', status: 'pending', reg: '2026-08-30', due: '2026-09-05', updated: '2026-08-30 14:02', assignee: '관리자' },
-    { no: 9, ticketNo: 'TCK-20260825-002', title: 'BAT-DR-02 배터리 스트링 전압 저하', target: 'BAT-DR-02', targetType: '배터리', loc: '판교 DR센터',
-      pri: 'critical', status: 'done', reg: '2026-08-25', due: '2026-08-27', updated: '2026-08-28 16:40', assignee: '관리자' },
-    { no: 10, ticketNo: 'TCK-20260828-009', title: 'PDU-2F-A 회로 과부하', target: 'PDU-2F-A', targetType: 'PDU', loc: '본사 IDC-2F',
-      pri: 'minor', status: 'progress', reg: '2026-08-28', due: '2026-09-01', updated: '2026-08-29 13:11', assignee: '관리자' },
-    { no: 11, ticketNo: 'TCK-20260829-011', title: 'UPS-DR-1 배터리 자가진단 실패', target: 'UPS-DR-1', targetType: 'UPS', loc: '판교 DR센터',
-      pri: 'major', status: 'progress', reg: '2026-08-29', due: '2026-09-02', updated: '2026-08-30 09:00', assignee: '김민준' },
-    { no: 12, ticketNo: 'TCK-20260827-006', title: 'GW-IDC-01 인증서 만료 임박', target: 'GW-IDC-01', targetType: 'GW', loc: '본사 IDC-1F',
-      pri: 'warning', status: 'done', reg: '2026-08-27', due: '2026-08-30', updated: '2026-08-29 11:00', assignee: '이서연' },
-    { no: 13, ticketNo: 'TCK-20260826-004', title: 'PDU-DR-01 온도 센서 이상', target: 'PDU-DR-01', targetType: 'PDU', loc: '판교 DR센터',
-      pri: 'critical', status: 'progress', reg: '2026-08-26', due: '2026-08-29', updated: '2026-08-27 14:30', assignee: '박지훈' },
-  ];
+  const ROLE = window.umsRole || 'host';
+  const dash = document.getElementById('dash');
 
-  function today() { return new Date().toISOString().slice(0, 10); }
-  function isOverdue(r) { return r.status !== 'done' && r.due < today(); }
+  // ===== 공통 유틸 =====
+  function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
+  function el(tag, cls, html) { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; }
+  function dGo(key) {
+    const href = 'pages/' + key + '.html';
+    location.href = (window.umsLink ? window.umsLink(href) : href);
+  }
+  window.dGo = dGo;
 
-  // 카드 자체는 host-only/customer-only(shared/common.css)로 모드별로 숨겨지지만, 값 채우는
-  // 로직은 모드 구분 없이 다 채워둔다 — 숨겨진 카드는 그냥 안 보일 뿐 계산엔 문제 없다.
-  function renderKpi() {
-    document.getElementById('kpiOpen').innerHTML       = DATA.filter(function (r) { return r.status !== 'done'; }).length + '<span class="unit">건</span>';
-    document.getElementById('kpiUnassigned').innerHTML = DATA.filter(function (r) { return !r.assignee; }).length + '<span class="unit">건</span>';
-    document.getElementById('kpiPending').innerHTML    = DATA.filter(function (r) { return r.status === 'pending'; }).length + '<span class="unit">건</span>';
-    document.getElementById('kpiProgress').innerHTML   = DATA.filter(function (r) { return r.status === 'progress'; }).length + '<span class="unit">건</span>';
-    document.getElementById('kpiClosed').innerHTML     = DATA.filter(function (r) { return r.status === 'done'; }).length + '<span class="unit">건</span>';
-    document.getElementById('kpiOverdue').innerHTML    = DATA.filter(isOverdue).length + '<span class="unit">건</span>';
+  function countUp(node, to, unit) {
+    const uc = node.classList.contains('kpi-card-value') ? 'unit' : 'u';
+    const dur = 650, t0 = performance.now();
+    function step(now) {
+      const p = Math.min(1, (now - t0) / dur);
+      const v = Math.round(to * (1 - Math.pow(1 - p, 3)));
+      node.innerHTML = v + (unit ? '<span class="' + uc + '">' + unit + '</span>' : '');
+      if (p < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
   }
 
-  renderKpi();
+  // ===== SVG 차트 =====
+  function donut(segs, centerV, centerL) {
+    const R = 52, r = 34, cx = 60, cy = 60;
+    const total = segs.reduce(function (a, s) { return a + s.value; }, 0);
+    let body = '';
+    const nz = segs.filter(function (s) { return s.value > 0; });
+    if (total === 0) {
+      body = '<circle cx="60" cy="60" r="43" fill="none" stroke="#eef1f4" stroke-width="18"/>';
+    } else if (nz.length === 1) {
+      body = '<circle cx="60" cy="60" r="43" fill="none" stroke="' + nz[0].color + '" stroke-width="18"/>';
+    } else {
+      let a0 = -Math.PI / 2;
+      segs.forEach(function (s) {
+        if (s.value <= 0) return;
+        const a1 = a0 + (s.value / total) * Math.PI * 2;
+        const large = (a1 - a0) > Math.PI ? 1 : 0;
+        const x1 = cx + R * Math.cos(a0), y1 = cy + R * Math.sin(a0);
+        const x2 = cx + R * Math.cos(a1), y2 = cy + R * Math.sin(a1);
+        const x3 = cx + r * Math.cos(a1), y3 = cy + r * Math.sin(a1);
+        const x4 = cx + r * Math.cos(a0), y4 = cy + r * Math.sin(a0);
+        body += '<path d="M' + x1 + ' ' + y1 + ' A' + R + ' ' + R + ' 0 ' + large + ' 1 ' + x2 + ' ' + y2
+          + ' L' + x3 + ' ' + y3 + ' A' + r + ' ' + r + ' 0 ' + large + ' 0 ' + x4 + ' ' + y4 + ' Z" fill="' + s.color + '"/>';
+        a0 = a1;
+      });
+    }
+    return '<svg viewBox="0 0 120 120">' + body
+      + '<text x="60" y="' + (centerL ? 56 : 64) + '" text-anchor="middle" font-size="22" font-weight="bold" fill="#14213d">' + centerV + '</text>'
+      + (centerL ? '<text x="60" y="72" text-anchor="middle" font-size="10" fill="#8a929c">' + centerL + '</text>' : '')
+      + '</svg>';
+  }
+  function legend(segs) {
+    return '<div class="d-legend">' + segs.map(function (s) {
+      return '<div class="li"><span class="sw" style="background:' + s.color + '"></span>' + s.label + '<span class="n">' + s.value + '</span></div>';
+    }).join('') + '</div>';
+  }
+  function spark(vals, color) {
+    const W = 100, H = 30, mn = Math.min.apply(null, vals), mx = Math.max.apply(null, vals), sp = (mx - mn) || 1;
+    const pts = vals.map(function (v, i) {
+      return [(W * i) / (vals.length - 1), H - 3 - (H - 6) * (v - mn) / sp];
+    });
+    const line = pts.map(function (p, i) { return (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1); }).join(' ');
+    const area = line + ' L' + W + ' ' + H + ' L0 ' + H + ' Z';
+    return '<svg viewBox="0 0 100 30" preserveAspectRatio="none">'
+      + '<path d="' + area + '" fill="' + color + '" opacity="0.12"/>'
+      + '<path d="' + line + '" fill="none" stroke="' + color + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'
+      + '</svg>';
+  }
+  function bars(labels, series) {
+    // series: [{name,color,vals:[]}]
+    const W = 320, H = 130, padL = 6, padB = 18, padT = 6;
+    const n = labels.length, groups = series.length;
+    const all = [];
+    series.forEach(function (s) { s.vals.forEach(function (v) { all.push(v); }); });
+    const mx = Math.max.apply(null, all) || 1;
+    const gw = (W - padL * 2) / n;
+    const bw = Math.min(14, (gw - 6) / groups);
+    let body = '';
+    for (let g = 0; g < 4; g++) {
+      const y = padT + (H - padT - padB) * g / 3;
+      body += '<line x1="' + padL + '" y1="' + y + '" x2="' + (W - padL) + '" y2="' + y + '" stroke="#eef1f4"/>';
+    }
+    labels.forEach(function (lb, i) {
+      const gx = padL + gw * i + (gw - bw * groups) / 2;
+      series.forEach(function (s, si) {
+        const v = s.vals[i];
+        const h = (H - padT - padB) * v / mx;
+        body += '<rect x="' + (gx + bw * si) + '" y="' + (H - padB - h) + '" width="' + (bw - 2) + '" height="' + Math.max(0, h)
+          + '" rx="2" fill="' + s.color + '"/>';
+      });
+      body += '<text x="' + (padL + gw * i + gw / 2) + '" y="' + (H - 5) + '" text-anchor="middle" font-size="9" fill="#98a2b3">' + lb + '</text>';
+    });
+    return '<svg viewBox="0 0 ' + W + ' ' + H + '">' + body + '</svg>';
+  }
+  function stackBar(parts) {
+    return '<div class="d-stack-bar">' + parts.filter(function (p) { return p.value > 0; }).map(function (p) {
+      return '<span style="flex:' + p.value + ';background:' + p.color + '" title="' + p.label + ' ' + p.value + '"></span>';
+    }).join('') + '</div>';
+  }
+
+  // ===== 카드 빌더 =====
+  function sec(title, moreKey) {
+    const s = el('div', 'dash-sec');
+    const h = el('div', 'dash-sec-head',
+      '<span class="dash-sec-bar"></span><span class="dash-sec-title">' + title + '</span>'
+      + (moreKey ? '<span class="dash-sec-more" onclick="dGo(\'' + moreKey + '\')">더보기 &rsaquo;</span>' : ''));
+    s.appendChild(h);
+    const g = el('div', 'dash-grid');
+    s.appendChild(g);
+    s._grid = g;
+    return s;
+  }
+  function kpiCard(label, value, unit, deltaTxt, deltaCls, sparkVals, sparkColor, goKey) {
+    const c = el('div', 'd-card d-kpi col-3' + (goKey ? '' : ''));
+    if (goKey) { c.style.cursor = 'pointer'; c.onclick = function () { dGo(goKey); }; }
+    c.innerHTML =
+      '<div class="d-card-t">' + label + '</div>'
+      + '<div class="d-kpi-row"><div class="d-kpi-val" data-to="' + value + '" data-u="' + (unit || '') + '">0</div>'
+      + (deltaTxt ? '<span class="d-delta ' + deltaCls + '">' + deltaTxt + '</span>' : '') + '</div>'
+      + '<div class="d-spark">' + spark(sparkVals, sparkColor) + '</div>';
+    return c;
+  }
+  function donutCard(cls, title, segs, centerV, centerL) {
+    const c = el('div', 'd-card ' + cls);
+    c.innerHTML = '<div class="d-card-t">' + title + '</div><div class="d-donut-wrap"><div class="d-donut">'
+      + donut(segs, centerV, centerL) + '</div>' + legend(segs) + '</div>';
+    return c;
+  }
+  function chartCard(cls, title, svg, tall) {
+    const c = el('div', 'd-card ' + cls);
+    c.innerHTML = '<div class="d-card-t">' + title + '</div><div class="d-chart' + (tall ? ' tall' : '') + '">' + svg + '</div>';
+    return c;
+  }
+  function listCard(cls, title, rows, moreKey) {
+    const c = el('div', 'd-card ' + cls);
+    c.innerHTML = '<div class="d-card-t">' + title
+      + (moreKey ? '<span class="dash-sec-more" style="float:right;font-weight:normal" onclick="dGo(\'' + moreKey + '\')">전체 &rsaquo;</span>' : '')
+      + '</div><div class="d-list">'
+      + (rows.length ? rows.join('') : '<div class="d-list-empty">해당 항목 없음</div>') + '</div>';
+    return c;
+  }
+  function animateKpis(root) {
+    root.querySelectorAll('[data-to]').forEach(function (n) {
+      countUp(n, Number(n.dataset.to), n.dataset.u || '');
+    });
+  }
+
+  const SC = { ok: '#27ae60', warn: '#e08a1e', major: '#e74c3c', crit: '#c0392b', off: '#98a2b3' };
+
+  // ============================================================
+  //  호스트 대시보드
+  // ============================================================
+  function renderHost() {
+    // --- 목업: 티켓 ---
+    const TK = { open: 9, unassigned: 5, progress: 4, overdue: 3, dueToday: 2, done: 4 };
+    const unassignedList = [
+      { t: 'GW-DR-02 서버 응답 없음', ten: '대한IDC', pri: 'critical', ago: '12분' },
+      { t: 'UPS-2F-B 통신 두절', ten: '세종클라우드', pri: 'major', ago: '38분' },
+      { t: 'PDU-1F-C 출력 전류 이상', ten: '한빛전산', pri: 'minor', ago: '1시간' },
+      { t: 'CH-2F-02 냉수 유량 저하', ten: '세종클라우드', pri: 'warning', ago: '2시간' },
+      { t: 'BAT-1F-01 셀 온도 상승', ten: '미래테크', pri: 'major', ago: '3시간' },
+    ];
+
+    // --- 목업: GW (전 테넌트) ---
+    const GW = [
+      { ten: '세종클라우드', name: 'GW-IDC-01', on: true, cpu: 41, mem: 62, disk: 55, buf: 0, last: '방금' },
+      { ten: '세종클라우드', name: 'GW-IDC-02', on: true, cpu: 88, mem: 74, disk: 91, buf: 320, last: '방금' },
+      { ten: '세종클라우드', name: 'GW-DR-01', on: true, cpu: 33, mem: 48, disk: 40, buf: 0, last: '1분 전' },
+      { ten: '대한IDC', name: 'GW-DR-02', on: false, cpu: 0, mem: 0, disk: 0, buf: 0, last: '12분 전' },
+      { ten: '대한IDC', name: 'GW-A-01', on: true, cpu: 52, mem: 55, disk: 63, buf: 0, last: '방금' },
+      { ten: '한빛전산', name: 'GW-01', on: true, cpu: 47, mem: 91, disk: 72, buf: 1400, last: '방금' },
+      { ten: '한빛전산', name: 'GW-02', on: false, cpu: 0, mem: 0, disk: 0, buf: 0, last: '2시간 전' },
+      { ten: '미래테크', name: 'GW-MAIN', on: true, cpu: 29, mem: 44, disk: 38, buf: 0, last: '방금' },
+      { ten: '미래테크', name: 'GW-SUB', on: false, cpu: 0, mem: 0, disk: 0, buf: 0, last: '5분 전' },
+    ];
+    const gwOn = GW.filter(function (g) { return g.on; }).length;
+    const gwOff = GW.length - gwOn;
+    const resHigh = GW.filter(function (g) { return g.on && (g.cpu >= 85 || g.mem >= 85 || g.disk >= 85 || g.buf >= 1000); });
+    const offList = GW.filter(function (g) { return !g.on; });
+
+    // --- 목업: 테넌트/구독 ---
+    const TEN = { active: 12, newThisMonth: 2, expiringSoon: 3, pendingReq: 4 };
+    const edSeg = [
+      { label: 'Basic', value: 5, color: '#98a2b3' },
+      { label: 'Standard', value: 6, color: '#1a6ed8' },
+      { label: 'Pro', value: 3, color: '#7c4dff' },
+    ];
+    const expiring = [
+      { name: '한빛전산', ed: 'Standard', d: 8 },
+      { name: '미래테크', ed: 'Pro', d: 19 },
+      { name: '가온데이터', ed: 'Basic', d: 27 },
+    ];
+
+    // ----- 히어로 -----
+    dash.appendChild(el('div', 'dash-hero',
+      '<div class="dash-hero-top"><span class="dash-hero-title">운영 관제 현황</span>'
+      + '<span class="dash-hero-sub">' + new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' }) + '</span></div>'
+      + '<div class="dash-hero-chips">'
+      + '<span class="dash-chip"><span class="dot dot-bad"></span>미할당 <b>' + TK.unassigned + '</b></span>'
+      + '<span class="dash-chip"><span class="dot dot-bad"></span>SLA 초과 <b>' + TK.overdue + '</b></span>'
+      + '<span class="dash-chip"><span class="dot dot-warn"></span>오프라인 GW <b>' + gwOff + '</b></span>'
+      + '<span class="dash-chip"><span class="dot dot-info"></span>미처리 구독요청 <b>' + TEN.pendingReq + '</b></span>'
+      + '</div>'));
+
+    // ----- 섹션 1: 티켓 -----
+    const s1 = sec('티켓 현황', 'ticket/ticket-all');
+    s1._grid.appendChild(kpiCard('오픈 티켓', TK.open, '건', '▲ 2', 'up', [5, 7, 6, 8, 7, 9, 9], '#1a6ed8', 'ticket/ticket-all'));
+    s1._grid.appendChild(kpiCard('미할당', TK.unassigned, '건', '▲ 1', 'up', [2, 3, 3, 4, 3, 4, 5], '#c0392b', 'ticket/ticket-unassigned'));
+    s1._grid.appendChild(kpiCard('진행 중', TK.progress, '건', '─', 'flat', [4, 3, 5, 4, 4, 3, 4], '#e08a1e', 'ticket/ticket-all'));
+    s1._grid.appendChild(kpiCard('기한 초과', TK.overdue, '건', '▲ 1', 'up', [1, 2, 1, 2, 2, 3, 3], '#c0392b', 'ticket/ticket-all'));
+    s1._grid.appendChild(donutCard('col-6', '티켓 상태 분포',
+      [{ label: '대기중', value: TK.open - TK.progress, color: '#8a929c' }, { label: '진행중', value: TK.progress, color: '#1a6ed8' }, { label: '완료', value: TK.done, color: '#27ae60' }],
+      TK.open + TK.done, '전체'));
+    s1._grid.appendChild(listCard('col-6', '미할당 티켓', unassignedList.map(function (r) {
+      return '<div class="d-list-row"><span class="pri-badge pri-' + r.pri + '">' + r.pri.slice(0, 3).toUpperCase() + '</span>'
+        + '<span class="grow">' + esc(r.t) + '</span><span class="d-tenant">' + r.ten + '</span><span class="muted">' + r.ago + ' 전</span></div>';
+    }), 'ticket/ticket-unassigned'));
+    dash.appendChild(s1);
+
+    // ----- 섹션 2: GW 헬스 -----
+    const s2 = sec('GW 헬스', 'gw/gw-status');
+    s2._grid.appendChild(donutCard('col-4', 'GW 연결 상태',
+      [{ label: '온라인', value: gwOn, color: '#27ae60' }, { label: '오프라인', value: gwOff, color: '#c0392b' }],
+      GW.length, 'GW'));
+    s2._grid.appendChild(listCard('col-4', '오프라인 GW', offList.map(function (g) {
+      return '<div class="d-list-row"><span class="dot dot-bad" style="width:8px;height:8px;border-radius:50%"></span>'
+        + '<span class="grow">' + g.name + '</span><span class="d-tenant">' + g.ten + '</span><span class="muted">' + g.last + '</span></div>';
+    })));
+    s2._grid.appendChild(listCard('col-4', '리소스 경고 GW', resHigh.map(function (g) {
+      const worst = Math.max(g.cpu, g.mem, g.disk);
+      const lb = g.cpu === worst ? 'CPU' : g.mem === worst ? 'MEM' : 'DISK';
+      const col = worst >= 90 ? SC.crit : SC.warn;
+      return '<div class="d-list-row"><span class="grow">' + g.name + '</span><span class="d-tenant">' + g.ten + '</span>'
+        + '<span class="muted" style="color:' + col + ';font-weight:bold">' + lb + ' ' + worst + '%</span></div>';
+    })));
+    dash.appendChild(s2);
+
+    // ----- 섹션 3: 테넌트/구독 -----
+    const s3 = sec('테넌트 / 구독', 'saas/tenant');
+    s3._grid.appendChild(kpiCard('활성 테넌트', TEN.active, '', '▲ 2', 'up', [9, 10, 10, 11, 11, 12, 12], '#1a6ed8', 'saas/tenant'));
+    s3._grid.appendChild(kpiCard('이번 달 신규', TEN.newThisMonth, '', '', 'flat', [0, 1, 1, 1, 2, 2, 2], '#27ae60', 'saas/tenant'));
+    s3._grid.appendChild(kpiCard('만료 임박(30일)', TEN.expiringSoon, '', '▲ 1', 'up', [1, 1, 2, 2, 2, 3, 3], '#e08a1e', 'saas/tenant'));
+    s3._grid.appendChild(kpiCard('미처리 구독요청', TEN.pendingReq, '', '▲ 2', 'up', [1, 2, 2, 3, 3, 3, 4], '#c0392b', 'saas/subscribe-request'));
+    s3._grid.appendChild(donutCard('col-6', '에디션 분포', edSeg, edSeg.reduce(function (a, s) { return a + s.value; }, 0), '테넌트'));
+    s3._grid.appendChild(listCard('col-6', '구독 만료 임박', expiring.map(function (t) {
+      const col = t.d <= 10 ? SC.crit : t.d <= 20 ? SC.warn : '#8a929c';
+      return '<div class="d-list-row"><span class="grow">' + t.name + '</span><span class="d-tenant">' + t.ed + '</span>'
+        + '<span class="muted" style="color:' + col + ';font-weight:bold">D-' + t.d + '</span></div>';
+    }), 'saas/tenant'));
+    dash.appendChild(s3);
+
+    // ----- 섹션 4: 알람 목록 (전 고객사, 발생시각 최신순 + 페이징) -----
+    const HAL = [
+      { sev: 'crit',  ten: '대한IDC',     fac: 'GW-DR-02',     name: 'GW 서버 응답 없음 (SYSTEM)',      at: '2026-09-09 09:41:12', h: '미확인' },
+      { sev: 'crit',  ten: '세종클라우드', fac: 'UPS-2F-B',     name: '출력전압 상하한 초과',            at: '2026-09-09 09:33:40', h: '미확인' },
+      { sev: 'major', ten: '한빛전산',     fac: 'PDU-1F-01',    name: '분기전류 정격 90% 초과',          at: '2026-09-09 09:18:47', h: '확인' },
+      { sev: 'major', ten: '세종클라우드', fac: 'CH-2F-01',     name: '압축기 트립',                     at: '2026-09-09 08:57:03', h: '미확인' },
+      { sev: 'minor', ten: '미래테크',     fac: 'BAT-1F-01',    name: '셀 온도 상승',                    at: '2026-09-09 08:41:20', h: '조치완료' },
+      { sev: 'major', ten: '세종클라우드', fac: 'UPS-2F-B',     name: 'On Battery (DEVICE)',             at: '2026-09-09 08:12:22', h: '확인' },
+      { sev: 'warn',  ten: '한빛전산',     fac: 'UPS-1F-A',     name: '출력 부하율 85% 초과',            at: '2026-09-09 07:55:31', h: '미확인' },
+      { sev: 'minor', ten: '대한IDC',     fac: 'PDU-A-03',     name: '입력전압 변동',                   at: '2026-09-09 07:20:10', h: '조치완료' },
+      { sev: 'major', ten: '미래테크',     fac: 'CH-MAIN',      name: '냉수 유량 저하',                  at: '2026-09-09 06:48:55', h: '확인' },
+      { sev: 'crit',  ten: '세종클라우드', fac: 'BAT-1F-A-01',  name: '셀 온도 임계 초과',               at: '2026-09-09 06:15:02', h: '조치완료' },
+      { sev: 'warn',  ten: '한빛전산',     fac: 'CH-01',        name: '냉수 출구온도 12℃ 초과',          at: '2026-09-09 05:40:18', h: '조치완료' },
+      { sev: 'minor', ten: '세종클라우드', fac: 'PDU-1F-02',    name: '분기전류 경고',                   at: '2026-09-09 04:33:47', h: '확인' },
+      { sev: 'major', ten: '대한IDC',     fac: 'UPS-DR-1',     name: 'Bypass 전환 (DEVICE)',            at: '2026-09-09 03:11:29', h: '조치완료' },
+      { sev: 'warn',  ten: '미래테크',     fac: 'GW-SUB',       name: 'HEARTBEAT 지연',                  at: '2026-09-09 02:50:40', h: '미확인' },
+      { sev: 'minor', ten: '한빛전산',     fac: 'BAT-2F-01',    name: 'SOH 80% 미만',                    at: '2026-09-08 23:18:05', h: '조치완료' },
+      { sev: 'major', ten: '세종클라우드', fac: 'CH-1F-01',     name: '응축기 압력 경고',                at: '2026-09-08 21:02:14', h: '확인' },
+      { sev: 'crit',  ten: '대한IDC',     fac: 'BAT-DR-02',    name: '배터리 스트링 전압 저하',          at: '2026-09-08 19:44:37', h: '조치완료' },
+      { sev: 'minor', ten: '미래테크',     fac: 'PDU-MAIN-01', name: '온도 센서 이상',                  at: '2026-09-08 17:33:51', h: '조치완료' },
+      { sev: 'warn',  ten: '세종클라우드', fac: 'UPS-1F-B',     name: '출력 부하율 경고',                at: '2026-09-08 15:10:26', h: '조치완료' },
+      { sev: 'major', ten: '한빛전산',     fac: 'GW-01',        name: '미전송 버퍼 적체',                at: '2026-09-08 13:05:09', h: '확인' },
+    ];
+    const HA_SIZE = 8;
+    let haPageNo = 1;
+    function haSevLabel(s) { return s === 'crit' ? 'Critical' : s === 'major' ? 'Major' : s === 'minor' ? 'Minor' : 'Warning'; }
+    function haBadge(s) { return s === 'crit' ? 'badge-crit' : s === 'major' ? 'badge-major' : s === 'minor' ? 'badge-minor' : 'badge-warn'; }
+    function haStatus(h) { return h === '미확인' ? 'status-pending' : h === '확인' ? 'status-progress' : 'status-done'; }
+    function haRender() {
+      const total = Math.max(1, Math.ceil(HAL.length / HA_SIZE));
+      haPageNo = Math.min(Math.max(1, haPageNo), total);
+      const rows = HAL.slice((haPageNo - 1) * HA_SIZE, haPageNo * HA_SIZE);
+      document.getElementById('haBody').innerHTML = rows.map(function (a, i) {
+        const gi = (haPageNo - 1) * HA_SIZE + i + 1;
+        return '<tr><td>' + gi + '</td>'
+          + '<td><span class="badge ' + haBadge(a.sev) + '">' + haSevLabel(a.sev) + '</span></td>'
+          + '<td>' + a.ten + '</td><td>' + a.fac + '</td>'
+          + '<td style="text-align:left">' + esc(a.name) + '</td>'
+          + '<td>' + a.at + '</td>'
+          + '<td><span class="status-badge ' + haStatus(a.h) + '">' + a.h + '</span></td></tr>';
+      }).join('');
+      let pg = '<button class="page-btn" ' + (haPageNo === 1 ? 'disabled' : '') + ' onclick="haPage(' + (haPageNo - 1) + ')">&#9664;</button>';
+      for (let p = 1; p <= total; p++) pg += '<button class="page-btn' + (p === haPageNo ? ' active' : '') + '" onclick="haPage(' + p + ')">' + p + '</button>';
+      pg += '<button class="page-btn" ' + (haPageNo === total ? 'disabled' : '') + ' onclick="haPage(' + (haPageNo + 1) + ')">&#9654;</button>';
+      document.getElementById('haPaging').innerHTML = pg;
+    }
+    window.haPage = function (n) { haPageNo = n; haRender(); };
+
+    const s4 = sec('알람 목록', 'alarm/alarm-history');
+    const cA = el('div', 'd-card col-12');
+    cA.innerHTML = '<div class="d-card-t">발생시각 최신순 · 전체 ' + HAL.length + '건</div>'
+      + '<div class="grid-scroll"><table class="grid-table"><thead><tr>'
+      + '<th style="width:48px">No</th><th style="width:82px">심각도</th><th style="width:110px">고객사</th>'
+      + '<th style="width:120px">설비</th><th>알람명</th><th style="width:158px">발생시각</th><th style="width:88px">처리상태</th>'
+      + '</tr></thead><tbody id="haBody"></tbody></table></div><div class="paging" id="haPaging"></div>';
+    s4._grid.appendChild(cA);
+    dash.appendChild(s4);
+    haRender();
+
+    animateKpis(dash);
+  }
+
+  // ============================================================
+  //  고객 대시보드
+  // ============================================================
+  function renderCustomer() {
+    const TENANT = window.umsTenantName || '세종클라우드';
+
+    // --- 목업: 티켓 ---
+    const TK = { mine: 3, progress: 5, overdue: 1, pending: 4 };
+
+    // --- 목업: 설비 유형별 상태 ---
+    const FAC = [
+      { type: 'UPS', ok: 5, warn: 1, major: 0, crit: 1, off: 0 },
+      { type: 'PDU', ok: 4, warn: 1, major: 0, crit: 0, off: 1 },
+      { type: '칠러', ok: 3, warn: 1, major: 1, crit: 0, off: 0 },
+      { type: '배터리', ok: 9, warn: 2, major: 0, crit: 1, off: 0 },
+    ];
+    const facTotal = FAC.reduce(function (a, f) { return a + f.ok + f.warn + f.major + f.crit + f.off; }, 0);
+    const facOff = FAC.reduce(function (a, f) { return a + f.off; }, 0);
+    const commOnline = facTotal - facOff;
+    const gwOn = 4, gwOff = 1;
+
+    // --- 목업: 활성 알람 ---
+    const AL = { critical: 1, major: 2, minor: 1, warning: 0 };
+    const alRecent = [
+      { sev: 'crit', fac: 'UPS-2F-B', name: '출력전압 상하한 초과', ago: '8분', h: '미확인' },
+      { sev: 'major', fac: 'CH-2F-01', name: '압축기 트립', ago: '25분', h: '확인' },
+      { sev: 'major', fac: 'BAT-1F-A-01', name: '셀 온도 초과', ago: '41분', h: '미확인' },
+      { sev: 'minor', fac: 'PDU-1F-01', name: '분기전류 경고', ago: '1시간', h: '확인' },
+    ];
+    const al7 = [2, 1, 3, 0, 2, 4, 3];
+    const D7 = ['월', '화', '수', '목', '금', '토', '일'];
+
+    // --- 목업: 핵심 지표 ---
+    const upsLoad = 62, upsLoad7 = [58, 60, 63, 61, 64, 62, 62];
+    const batMinSoh = 78, batReplace = 1;
+    const chwOut = 7.2, chwAbn = false;
+
+    // ----- 히어로 -----
+    dash.appendChild(el('div', 'dash-hero',
+      '<div class="dash-hero-top"><span class="dash-hero-title">' + esc(TENANT) + ' 인프라 현황</span>'
+      + '<span class="dash-hero-sub">' + new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' }) + '</span></div>'
+      + '<div class="dash-hero-chips">'
+      + '<span class="dash-chip"><span class="dot dot-bad"></span>활성 알람 <b>' + (AL.critical + AL.major + AL.minor + AL.warning) + '</b></span>'
+      + '<span class="dash-chip"><span class="dot dot-warn"></span>오프라인 설비 <b>' + facOff + '</b></span>'
+      + '<span class="dash-chip"><span class="dot dot-warn"></span>오프라인 GW <b>' + gwOff + '</b></span>'
+      + '<span class="dash-chip"><span class="dot dot-info"></span>내 티켓 <b>' + TK.mine + '</b></span>'
+      + '</div>'));
+
+    // ----- 섹션 1: 인프라 헬스 -----
+    const s1 = sec('인프라 헬스', 'facility/ups-list');
+    const stackRows = FAC.map(function (f) {
+      const tot = f.ok + f.warn + f.major + f.crit + f.off;
+      return '<div class="d-stack-row"><span class="d-stack-label">' + f.type + '</span>'
+        + stackBar([
+            { label: '정상', value: f.ok, color: SC.ok }, { label: '경고', value: f.warn, color: SC.warn },
+            { label: 'Major', value: f.major, color: SC.major }, { label: 'Critical', value: f.crit, color: SC.crit },
+            { label: '오프라인', value: f.off, color: SC.off }])
+        + '<span class="d-stack-total">' + tot + '</span></div>';
+    });
+    const c1 = el('div', 'd-card col-6');
+    c1.innerHTML = '<div class="d-card-t">설비 유형별 상태</div>' + stackRows.join('')
+      + '<div class="d-legend" style="flex-direction:row;flex-wrap:wrap;gap:12px;margin-top:2px">'
+      + [['정상', SC.ok], ['경고', SC.warn], ['Major', SC.major], ['Critical', SC.crit], ['오프라인', SC.off]].map(function (x) {
+          return '<span class="li"><span class="sw" style="background:' + x[1] + '"></span>' + x[0] + '</span>';
+        }).join('') + '</div>';
+    s1._grid.appendChild(c1);
+    s1._grid.appendChild(donutCard('col-3', '설비 통신',
+      [{ label: '온라인', value: commOnline, color: '#27ae60' }, { label: '오프라인', value: facOff, color: '#c0392b' }], facTotal, '설비'));
+    s1._grid.appendChild(donutCard('col-3', 'GW 연결',
+      [{ label: '온라인', value: gwOn, color: '#27ae60' }, { label: '오프라인', value: gwOff, color: '#c0392b' }], gwOn + gwOff, 'GW'));
+    // s1(인프라 헬스)은 맨 마지막에 append
+
+    // ----- 섹션 2: 활성 알람 -----
+    const s2 = sec('활성 알람', 'alarm/alarm-manage');
+    [['critical', 'Critical', AL.critical], ['major', 'Major', AL.major], ['minor', 'Minor', AL.minor], ['warning', 'Warning', AL.warning]].forEach(function (x) {
+      const c = el('div', 'kpi-card sev-' + x[0] + ' col-3');
+      c.style.cursor = 'pointer';
+      c.onclick = function () { dGo('alarm/alarm-manage'); };
+      c.innerHTML = '<div class="kpi-card-label">' + x[1] + '</div><div class="kpi-card-value" data-to="' + x[2] + '" data-u="건">0</div>';
+      s2._grid.appendChild(c);
+    });
+    s2._grid.appendChild(donutCard('col-4', '심각도 분포',
+      [{ label: 'Critical', value: AL.critical, color: SC.crit }, { label: 'Major', value: AL.major, color: SC.major },
+       { label: 'Minor', value: AL.minor, color: SC.warn }, { label: 'Warning', value: AL.warning, color: '#ecc94b' }],
+      AL.critical + AL.major + AL.minor + AL.warning, '활성'));
+    s2._grid.appendChild(chartCard('col-4', '최근 7일 알람 발생',
+      bars(D7, [{ name: '발생', color: '#e74c3c', vals: al7 }])));
+    s2._grid.appendChild(listCard('col-4', '최근 활성 알람', alRecent.map(function (a) {
+      const badge = a.sev === 'crit' ? 'badge-crit' : a.sev === 'major' ? 'badge-major' : 'badge-warn';
+      return '<div class="d-list-row"><span class="badge ' + badge + '">' + (a.sev === 'crit' ? 'CRT' : a.sev === 'major' ? 'MAJ' : 'MIN') + '</span>'
+        + '<span class="grow">' + a.fac + ' · ' + esc(a.name) + '</span>'
+        + '<span class="muted">' + a.ago + ' 전</span></div>';
+    }), 'alarm/alarm-manage'));
+    dash.appendChild(s2);
+
+    // ----- 섹션 3: 핵심 지표 -----
+    const s3 = sec('핵심 지표', 'data/ups-trend');
+    const g1 = el('div', 'd-card col-4');
+    g1.innerHTML = '<div class="d-card-t">UPS 평균 부하율</div>'
+      + '<div class="d-gauge"><div class="d-gauge-top"><span class="d-gauge-v">' + upsLoad + '%</span><span class="muted">권장 &lt; 80%</span></div>'
+      + '<div class="d-gauge-track"><div class="d-gauge-fill" style="width:' + upsLoad + '%;background:' + (upsLoad >= 80 ? SC.crit : upsLoad >= 70 ? SC.warn : SC.ok) + '"></div></div></div>'
+      + '<div class="d-spark">' + spark(upsLoad7, '#1a6ed8') + '</div>';
+    s3._grid.appendChild(g1);
+    const g2 = el('div', 'd-card col-4');
+    g2.innerHTML = '<div class="d-card-t">배터리 최저 SOH</div>'
+      + '<div class="d-gauge"><div class="d-gauge-top"><span class="d-gauge-v">' + batMinSoh + '%</span><span class="muted">교체필요 ' + batReplace + '대</span></div>'
+      + '<div class="d-gauge-track"><div class="d-gauge-fill" style="width:' + batMinSoh + '%;background:' + (batMinSoh < 80 ? SC.warn : SC.ok) + '"></div></div></div>';
+    s3._grid.appendChild(g2);
+    const g3 = el('div', 'd-card col-4');
+    g3.innerHTML = '<div class="d-card-t">칠러 냉수 공급온도</div><div class="d-big"><span class="d-big-v" style="color:' + (chwAbn ? SC.crit : SC.ok) + '">' + chwOut + '℃</span><span class="d-big-l">' + (chwAbn ? '이상' : '정상 범위') + '</span></div>';
+    s3._grid.appendChild(g3);
+    dash.appendChild(s3);
+
+    // ----- 섹션 4: 티켓 현황 (현황만, 목록 없음) -----
+    const sT = sec('티켓 현황', 'ticket/ticket-my');
+    sT._grid.appendChild(kpiCard('내 티켓', TK.mine, '건', '', 'flat', [2, 3, 2, 3, 3, 3, 3], '#1a6ed8', 'ticket/ticket-my'));
+    sT._grid.appendChild(kpiCard('진행 중', TK.progress, '건', '', 'flat', [4, 5, 4, 5, 5, 5, 5], '#e08a1e', 'ticket/ticket-my'));
+    sT._grid.appendChild(kpiCard('기한 초과', TK.overdue, '건', TK.overdue ? '주의' : '', TK.overdue ? 'up' : 'flat', [0, 1, 1, 0, 1, 1, 1], '#c0392b', 'ticket/ticket-my'));
+    sT._grid.appendChild(kpiCard('대기 중', TK.pending, '건', '', 'flat', [3, 4, 3, 4, 4, 4, 4], '#8a929c', 'ticket/ticket-all'));
+    dash.appendChild(sT);
+
+    // ----- 섹션 5: 인프라 헬스 (맨 마지막) -----
+    dash.appendChild(s1);
+
+    animateKpis(dash);
+  }
+
+  // ===== 실행 =====
+  if (ROLE === 'customer') renderCustomer(); else renderHost();
 
 })();

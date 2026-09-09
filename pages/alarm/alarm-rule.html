@@ -107,6 +107,15 @@
         </div>
 
         <div class="cr-field">
+          <div class="cr-field-label">재발생 억제시간</div>
+          <div class="cr-rearm">
+            <label class="cr-rearm-item">알람 <input class="form-input" id="crmAlarmSup" type="number" min="0" placeholder="0"> 분</label>
+            <label class="cr-rearm-item">티켓 <input class="form-input" id="crmTicketSup" type="number" min="0" placeholder="0"> 분</label>
+            <span class="hint">해제 후 이 시간 안엔 같은 조건이어도 새로 만들지 않음 (0/빈칸 = 억제 없음). 티켓은 미완료 티켓이 있으면 시간과 무관하게 생성 안 함.</span>
+          </div>
+        </div>
+
+        <div class="cr-field">
           <div class="cr-field-label">Action</div>
           <div class="cr-actions">
             <div class="cr-act-edit">
