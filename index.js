@@ -216,7 +216,7 @@
         }), 'ticket/ticket-unassigned'));
       }
     },
-    'h-hd-gw': { host: 1, title: '─ GW 헬스 (제목)', col: 12, el: function () { return headerEl('GW 헬스', 'gw/gw-status'); } },
+    'h-hd-gw': { host: 1, title: '─ GW 헬스 (제목)', col: 12, el: function () { return headerEl('GW 헬스', 'gw/gw-status-host'); } },
     'h-gw-donut': {
       host: 1, title: 'GW 연결 상태', col: 4, el: function () {
         return cardEl('col-4', donutHtml('GW 연결 상태', [{ label: '온라인', value: H.gwOn, color: '#27ae60' }, { label: '오프라인', value: H.gwOff, color: '#c0392b' }], H.GW.length, 'GW'));
@@ -251,7 +251,7 @@
         }), 'saas/tenant'));
       }
     },
-    'h-hd-alarm': { host: 1, title: '─ 알람 목록 (제목)', col: 12, el: function () { return headerEl('알람 목록', 'alarm/alarm-history'); } },
+    'h-hd-alarm': { host: 1, title: '─ 알람 목록 (제목)', col: 12, el: function () { return headerEl('알람 목록', 'alarm/alarm-history-host'); } },
     'h-alarm-table': { host: 1, title: '알람 목록 (페이징 표)', col: 12, el: buildAlarmTable },
 
     // ---------- 고객 ----------
@@ -330,7 +330,7 @@
     const SIZE = 8;
     let page = 1;
     const card = cardEl('col-12', '<div class="d-card-t">발생시각 최신순 · 전체 ' + H.HAL.length + '건'
-      + '<span class="dash-sec-more" style="float:right;font-weight:normal" onclick="dGo(\'alarm/alarm-history\')">전체 &rsaquo;</span></div>'
+      + '<span class="dash-sec-more" style="float:right;font-weight:normal" onclick="dGo(\'alarm/alarm-history-host\')">전체 &rsaquo;</span></div>'
       + '<div class="grid-scroll"><table class="grid-table"><thead><tr>'
       + '<th style="width:48px">No</th><th style="width:82px">심각도</th><th style="width:110px">고객사</th>'
       + '<th style="width:120px">설비</th><th>알람명</th><th style="width:158px">발생시각</th><th style="width:88px">처리상태</th>'
