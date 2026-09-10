@@ -56,6 +56,46 @@
 }
 .d-card-t { font-size: 12px; font-weight: bold; color: #56606c; }
 
+/* 티켓 KPI 묶음 (5셀 한 줄, 한 위젯) */
+.d-card.d-tk-card { background: transparent; border: none; box-shadow: none; padding: 0; gap: 0; }
+.d-tk-strip { display: flex; gap: 10px; align-items: stretch; }
+.d-tk-strip > .d-tk-cell {
+  flex: 1 1 0; min-width: 0; text-align: center;
+  background: #fff; border: 1px solid #e4e8ee; border-top: 3px solid #c8cfda; border-radius: 9px;
+  box-shadow: 0 1px 3px rgba(20,30,50,0.05); padding: 13px 12px 14px;
+}
+.d-tk-cell .tv { font-size: 22px; font-weight: bold; color: #14213d; line-height: 1.15; }
+.d-tk-cell .tv .tp { font-size: 12px; font-weight: normal; color: #98a2b3; }
+.d-tk-cell .tl { font-size: 12px; color: #667085; margin-top: 6px; }
+
+/* 개념별 톤 — 상단 3px 라인 = 강조색, 배경은 은은한 틴트 */
+.d-tk-cell.tk-open      { border-top-color: #1f2d4d; background: #f3f6fc; }
+.d-tk-cell.tk-open .tv  { color: #16213f; font-weight: 800; font-size: 27px; }
+.d-tk-cell.tk-open .tl  { color: #3c4658; font-weight: bold; }
+
+.d-tk-cell.tk-unassigned     { border-top-color: #e8952b; background: #fff8ec; }
+.d-tk-cell.tk-unassigned .tv { color: #b06f10; }
+
+.d-tk-cell.tk-assigned       { border-top-color: #9aa7b4; }
+.d-tk-cell.tk-assigned .tv   { color: #5c6b7b; font-weight: 600; }
+
+.d-tk-cell.tk-progress       { border-top-color: #2f86e0; background: #eef5fe; }
+.d-tk-cell.tk-progress .tv   { color: #1a6ed8; }
+
+.d-tk-cell.tk-done           { border-top-color: #33a457; background: #eef8f1; }
+.d-tk-cell.tk-done .tv       { color: #1e7e34; }
+
+.d-tk-cell.tk-overdue        { border-top-color: #c81d8f; background: #fceef6; }
+.d-tk-cell.tk-overdue .tv    { color: #b5179e; font-weight: 800; }
+
+@media (max-width: 920px) {
+  .d-tk-strip { flex-wrap: wrap; }
+  .d-tk-strip > .d-tk-cell { flex: 1 1 calc(33.333% - 7px); }
+}
+@media (max-width: 560px) {
+  .d-tk-strip > .d-tk-cell { flex-basis: calc(50% - 5px); }
+}
+
 /* KPI 카드 (스파크라인 + 델타) */
 .d-kpi { position: relative; }
 .d-kpi-val { font-size: 27px; font-weight: bold; color: #14213d; line-height: 1.1; }
@@ -118,6 +158,17 @@
 .dg-header .dash-sec-title { font-size: 13.5px; font-weight: bold; color: #1a1a2e; }
 .dg-header .dash-sec-more { margin-left: auto; font-size: 11.5px; color: #1a6ed8; cursor: pointer; }
 .dg-header .dash-sec-more:hover { text-decoration: underline; }
+
+/* 클릭 이동: 기본은 '제목 글자'(.d-t-lnk)만 링크. 카드 테두리/그림자는 건드리지 않음 */
+.d-t-lnk { cursor: pointer; }
+.d-t-lnk:hover { color: #1a6ed8; text-decoration: underline; }
+.dg.dg-edit .d-t-lnk { cursor: grab; color: inherit; text-decoration: none; }   /* 편집 모드: 드래그 우선 */
+
+/* 요소 전체가 클릭되는 예외(티켓 5셀 / 알람 심각도 카드 / 설비 유형 행) — 커서만, 발광 없음 */
+.d-linkable { cursor: pointer; }
+.dg.dg-edit .d-linkable { cursor: grab; }
+.d-stack-row.d-linkable { border-radius: 6px; padding: 2px 4px; margin: 0 -4px; transition: background .12s; }
+.d-stack-row.d-linkable:hover { background: #f2f5fa; }
 
 .dg-item { position: relative; display: flex; flex-direction: column; }
 .dg-item > .d-card, .dg-item > .kpi-card { flex: 1 1 auto; }

@@ -50,12 +50,25 @@
   ];
 
   const PRI_LABEL = { warning: 'Warning', minor: 'Minor', major: 'Major', critical: 'Critical' };
-  const STATUS_LABEL = { pending: '대기중', progress: '진행중', done: '완료' };
+
+  // 파생 상태: 저장값(pending/progress/done) + 담당자 유무로 표시/검색용 상태를 계산.
+  //  - pending & 담당자 없음  → unassigned (미할당)
+  //  - pending & 담당자 있음  → assigned  (진행 대기: 배정됐고 착수 전)
+  //  - progress               → progress  (진행 중)
+  //  - done                   → done      (완료)
+  //  - open(오픈)             → done 이 아닌 전체 (별도 필터 값)
+  const EFF_LABEL = { unassigned: '미할당', assigned: '진행 대기', progress: '진행 중', done: '완료' };
+  const EFF_CLS   = { unassigned: 'status-pending', assigned: 'status-pending', progress: 'status-progress', done: 'status-done' };
+  function effStatus(r) {
+    if (r.status === 'done') return 'done';
+    if (r.status === 'progress') return 'progress';
+    return r.assignee ? 'assigned' : 'unassigned';
+  }
 
   function priBadge(pri) { return '<span class="pri-badge pri-' + pri + '">' + PRI_LABEL[pri] + '</span>'; }
-  function statusBadge(st) {
-    const cls = st === 'pending' ? 'status-pending' : (st === 'progress' ? 'status-progress' : 'status-done');
-    return '<span class="status-badge ' + cls + '">' + STATUS_LABEL[st] + '</span>';
+  function statusBadge(r) {
+    const e = effStatus(r);
+    return '<span class="status-badge ' + EFF_CLS[e] + '">' + EFF_LABEL[e] + '</span>';
   }
 
   function fillSelect(id, arr, withAll) {
@@ -66,19 +79,30 @@
   }
 
   function today() { return new Date().toISOString().slice(0, 10); }
-  function isOverdue(r) { return r.status !== 'done' && r.due < today(); }
+  function isOverdue(r) {
+    if (r.status === 'done') return r.updated.slice(0, 10) > r.due;  // 완료건: 완료시각(=최근 업데이트) > 기한
+    return r.due < today();                                          // 미완료건: 현재시각 > 기한
+  }
 
   function renderGrid() {
     const fAssignee = document.getElementById('fAssignee').value;
     const fStatus   = document.getElementById('fStatus').value;
+    const fOverdue  = document.getElementById('fOverdue').checked;
     const fPri      = document.getElementById('fPri').value;
     const fLoc      = document.getElementById('fLoc').value;
     const fFrom     = document.getElementById('fFrom').value;
     const fTo       = document.getElementById('fTo').value;
 
+    function statusMatch(r) {
+      if (!fStatus) return true;
+      if (fStatus === 'open') return r.status !== 'done';
+      return effStatus(r) === fStatus;
+    }
+
     const rows = DATA.filter(function (r) {
       return (!fAssignee || r.assignee === fAssignee)
-        && (!fStatus || r.status === fStatus)
+        && statusMatch(r)
+        && (!fOverdue || isOverdue(r))
         && (!fPri    || r.pri === fPri)
         && (!fLoc    || r.loc === fLoc)
         && (!fFrom   || r.reg >= fFrom)
@@ -93,7 +117,7 @@
             + '<td style="text-align:left;">' + r.title + '</td>'
             + '<td>' + r.target + '</td>'
             + '<td>' + priBadge(r.pri) + '</td>'
-            + '<td>' + statusBadge(r.status) + (isOverdue(r) ? '<span class="status-badge status-overdue">기한초과</span>' : '') + '</td>'
+            + '<td>' + statusBadge(r) + (isOverdue(r) ? '<span class="status-badge status-overdue">기한초과</span>' : '') + '</td>'
             + '<td>' + r.reg + '</td>'
             + '<td>' + r.due + '</td>'
             + '<td>' + r.updated + '</td>'
@@ -109,6 +133,7 @@
   function resetSearch() {
     document.getElementById('fAssignee').value = '';
     document.getElementById('fStatus').value = '';
+    document.getElementById('fOverdue').checked = false;
     document.getElementById('fPri').value = '';
     document.getElementById('fLoc').value = '';
     document.getElementById('fFrom').value = '';
@@ -178,7 +203,7 @@
           dvRow('제목', r.title, true)
           + dvRow('대상', r.targetType + ' · ' + r.target) + dvRow('위치', r.loc)
           + dvRow('우선순위', priBadge(r.pri))
-          + dvRow('상태', statusBadge(r.status) + (isOverdue(r) ? ' <span class="status-badge status-overdue">기한초과</span>' : ''))
+          + dvRow('상태', statusBadge(r) + (isOverdue(r) ? ' <span class="status-badge status-overdue">기한초과</span>' : ''))
           + dvRow('담당자', r.assignee || '<span style="color:#98a2b3;">미할당</span>')
           + dvRow('등록일', r.reg) + dvRow('처리기한', r.due) + dvRow('최근 업데이트', r.updated))
       + dvGroup(

@@ -24,11 +24,14 @@
       <div class="search-field"><label>상태</label>
         <select class="search-select" id="fStatus">
           <option value="">전체</option>
-          <option value="pending">대기중</option>
-          <option value="progress">진행중</option>
+          <option value="open">오픈</option>
+          <option value="unassigned">미할당</option>
+          <option value="assigned">진행 대기</option>
+          <option value="progress">진행 중</option>
           <option value="done">완료</option>
         </select>
       </div>
+      <label class="search-field" style="cursor:pointer;"><input type="checkbox" id="fOverdue"> 기한 초과</label>
       <div class="search-field"><label>우선순위</label>
         <select class="search-select" id="fPri">
           <option value="">전체</option>

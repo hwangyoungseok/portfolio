@@ -1,11 +1,11 @@
 // UMS 홈 대시보드 (목업). window.umsRole (host/customer) 로 위젯 세트를 분기.
 // 레이아웃 편집: 우상단 토글 → 위젯 드래그 재배치 / ✕ 로 빼기 / 하단 목록에서 다시 넣기.
-// 저장은 localStorage(ums.dash.<role>). 차트는 라이브러리 없이 인라인 SVG.
+// 저장은 localStorage(ums.dash.v2.<role>). 차트는 라이브러리 없이 인라인 SVG.
 (function () {
 
   const ROLE = window.umsRole || 'host';
   const dash = document.getElementById('dash');
-  const LS_KEY = 'ums.dash.' + ROLE;
+  const LS_KEY = 'ums.dash.v2.' + ROLE;  // 위젯 구성 변경(티켓 KPI 묶음) 시 버전 올려 옛 저장본 폐기
 
   // ===== 유틸 =====
   function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
@@ -83,29 +83,49 @@
     }).join('') + '</div>';
   }
 
-  const SC = { ok: '#27ae60', warn: '#e08a1e', major: '#e74c3c', crit: '#c0392b', off: '#98a2b3' };
+  const SC = { ok: '#27ae60', warn: '#e08a1e', major: '#e74c3c', crit: '#c0392b', off: '#98a2b3', unknown: '#c7ccd3' };
 
   // ===== 카드 조각 =====
   function cardEl(col, html) { return elx('div', 'd-card ' + col, html); }
-  function kpiHtml(label, value, unit, deltaTxt, deltaCls, sparkVals, sparkColor) {
-    return '<div class="d-card-t">' + label + '</div>'
+  // 카드 안 '제목 글자' 만 클릭 링크로 (카드 전체가 아님). 편집 모드에선 dNav 가 이동을 막음.
+  function tLink(title, key) {
+    return key ? '<span class="d-t-lnk" onclick="dNav(\'' + key + '\')">' + title + '</span>' : title;
+  }
+  // 카드 '전체' 가 클릭되는 경우 (한 카드=한 숫자인 KPI 류). 테두리/그림자 강조 없이 커서만.
+  function clickCard(col, html, key) {
+    const c = cardEl(col + ' d-linkable', html);
+    c.setAttribute('onclick', "dNav('" + key + "')");
+    return c;
+  }
+  function kpiHtml(label, value, unit, deltaTxt, deltaCls, sparkVals, sparkColor, key) {
+    return '<div class="d-card-t">' + tLink(label, key) + '</div>'
       + '<div class="d-kpi-row"><div class="d-kpi-val" data-to="' + value + '" data-u="' + (unit || '') + '">0</div>'
       + (deltaTxt ? '<span class="d-delta ' + deltaCls + '">' + deltaTxt + '</span>' : '') + '</div>'
       + '<div class="d-spark">' + spark(sparkVals, sparkColor) + '</div>';
   }
-  function donutHtml(title, segs, cv, cl) {
-    return '<div class="d-card-t">' + title + '</div><div class="d-donut-wrap"><div class="d-donut">' + donut(segs, cv, cl) + '</div>' + legend(segs) + '</div>';
+  function donutHtml(title, segs, cv, cl, key) {
+    return '<div class="d-card-t">' + tLink(title, key) + '</div><div class="d-donut-wrap"><div class="d-donut">' + donut(segs, cv, cl) + '</div>' + legend(segs) + '</div>';
   }
-  function chartHtml(title, svg) { return '<div class="d-card-t">' + title + '</div><div class="d-chart">' + svg + '</div>'; }
-  function listHtml(title, rows, moreKey) {
-    return '<div class="d-card-t">' + title
-      + (moreKey ? '<span class="dash-sec-more" style="float:right;font-weight:normal" onclick="dGo(\'' + moreKey + '\')">전체 &rsaquo;</span>' : '')
-      + '</div><div class="d-list">' + (rows.length ? rows.join('') : '<div class="d-list-empty">해당 항목 없음</div>') + '</div>';
+  // 티켓 KPI 묶음 — 5개 셀을 한 줄에 균등 배치. 카드 하나(=한 dg-item)라 레이아웃에서 통째로 이동.
+  // cells: [{ l:라벨, v:값, p:퍼센트(문자열, 없으면 생략), tone:개념 톤 }]
+  //   tone: open(중심·무겁게) / unassigned(경고성) / assigned(차분·중립) / progress(활기) / done(마무리) / overdue(생뚱맞게 튐)
+  function tkStrip(cells) {
+    return cardEl('col-12 d-tk-card', '<div class="d-tk-strip">' + cells.map(function (c) {
+      return '<div class="d-tk-cell tk-' + c.tone + (c.key ? ' d-linkable" onclick="dNav(\'' + c.key + '\')' : '') + '">'
+        + '<div class="tv">' + c.v + (c.p != null ? '<span class="tp"> (' + c.p + '%)</span>' : '') + '</div>'
+        + '<div class="tl">' + c.l + '</div></div>';
+    }).join('') + '</div>');
   }
-  function headerEl(title, moreKey) {
+  function chartHtml(title, svg, key) { return '<div class="d-card-t">' + tLink(title, key) + '</div><div class="d-chart">' + svg + '</div>'; }
+  function listHtml(title, rows, key) {
+    return '<div class="d-card-t">' + tLink(title, key) + '</div>'
+      + '<div class="d-list">' + (rows.length ? rows.join('') : '<div class="d-list-empty">해당 항목 없음</div>') + '</div>';
+  }
+  // key 가 있으면 섹션 '제목 글자' 만 클릭 이동 (헤더 전체 아님, 별도 '더보기' 글자 없음)
+  function headerEl(title, key) {
     return elx('div', 'col-12 dg-header',
-      '<span class="dash-sec-bar"></span><span class="dash-sec-title">' + title + '</span>'
-      + (moreKey ? '<span class="dash-sec-more" onclick="dGo(\'' + moreKey + '\')">더보기 &rsaquo;</span>' : ''));
+      '<span class="dash-sec-bar"></span><span class="dash-sec-title' + (key ? ' d-t-lnk' : '') + '"'
+      + (key ? ' onclick="dNav(\'' + key + '\')"' : '') + '>' + title + '</span>');
   }
 
   // ============================================================
@@ -113,7 +133,9 @@
   // ============================================================
   // --- 호스트 목업 ---
   const H = {
-    TK: { open: 9, unassigned: 5, progress: 4, overdue: 3, done: 4 },
+    // 오픈 = 미할당 + 진행대기 + 진행중 (종료 제외). open 은 아래에서 계산.
+    // 기한초과: 종료건은 완료시각 기준(CompletedAt > DueDate), 미종료건은 현재시각 기준(now > DueDate). 목업은 합계만.
+    TK: { unassigned: 5, pending: 3, progress: 4, done: 12, overdue: 3 },
     unassigned: [
       { t: 'GW-DR-02 서버 응답 없음', ten: '대한IDC', pri: 'critical', ago: '12분' },
       { t: 'UPS-2F-B 통신 두절', ten: '세종클라우드', pri: 'major', ago: '38분' },
@@ -158,6 +180,7 @@
       { sev: 'major', ten: '한빛전산', fac: 'GW-01', name: '미전송 버퍼 적체', at: '2026-09-08 13:05:09', h: '확인' },
     ],
   };
+  H.TK.open = H.TK.unassigned + H.TK.pending + H.TK.progress;
   H.gwOn = H.GW.filter(function (g) { return g.on; }).length;
   H.gwOff = H.GW.length - H.gwOn;
   H.resHigh = H.GW.filter(function (g) { return g.on && (g.cpu >= 85 || g.mem >= 85 || g.disk >= 85 || g.buf >= 1000); });
@@ -165,12 +188,12 @@
 
   // --- 고객 목업 ---
   const C = {
-    TK: { mine: 3, progress: 5, overdue: 1, pending: 4 },
+    TK: { unassigned: 2, pending: 4, progress: 5, done: 9, overdue: 1 },
     FAC: [
-      { type: 'UPS', ok: 5, warn: 1, major: 0, crit: 1, off: 0 },
-      { type: 'PDU', ok: 4, warn: 1, major: 0, crit: 0, off: 1 },
-      { type: '칠러', ok: 3, warn: 1, major: 1, crit: 0, off: 0 },
-      { type: '배터리', ok: 9, warn: 2, major: 0, crit: 1, off: 0 },
+      { type: 'UPS', ok: 5, warn: 1, major: 0, crit: 1, off: 0, unk: 0 },
+      { type: 'PDU', ok: 4, warn: 1, major: 0, crit: 0, off: 1, unk: 0 },
+      { type: '칠러', ok: 3, warn: 1, major: 1, crit: 0, off: 0, unk: 1 },
+      { type: '배터리', ok: 9, warn: 2, major: 0, crit: 1, off: 0, unk: 2 },
     ],
     AL: { critical: 1, major: 2, minor: 1, warning: 0 },
     alRecent: [
@@ -184,8 +207,9 @@
     batMinSoh: 78, batReplace: 1, chwOut: 7.2, chwAbn: false,
     gwOn: 4, gwOff: 1,
   };
-  C.facTotal = C.FAC.reduce(function (a, f) { return a + f.ok + f.warn + f.major + f.crit + f.off; }, 0);
+  C.facTotal = C.FAC.reduce(function (a, f) { return a + f.ok + f.warn + f.major + f.crit + f.off + f.unk; }, 0);
   C.facOff = C.FAC.reduce(function (a, f) { return a + f.off; }, 0);
+  C.facUnknown = C.FAC.reduce(function (a, f) { return a + f.unk; }, 0);  // GW 다운 등으로 상태 확인 불가
   const D7 = ['월', '화', '수', '목', '금', '토', '일'];
   const TENANT = window.umsTenantName || '세종클라우드';
 
@@ -198,10 +222,19 @@
   const WIDGETS = {
     // ---------- 호스트 ----------
     'h-hd-ticket': { host: 1, title: '─ 티켓 현황 (제목)', col: 12, el: function () { return headerEl('티켓 현황', 'ticket/ticket-all'); } },
-    'h-tk-open': { host: 1, title: '오픈 티켓', col: 3, el: function () { return cardEl('col-3 d-kpi', kpiHtml('오픈 티켓', H.TK.open, '건', '▲ 2', 'up', [5, 7, 6, 8, 7, 9, 9], '#1a6ed8')); } },
-    'h-tk-unassigned': { host: 1, title: '미할당(KPI)', col: 3, el: function () { return cardEl('col-3 d-kpi', kpiHtml('미할당', H.TK.unassigned, '건', '▲ 1', 'up', [2, 3, 3, 4, 3, 4, 5], '#c0392b')); } },
-    'h-tk-progress': { host: 1, title: '진행 중(KPI)', col: 3, el: function () { return cardEl('col-3 d-kpi', kpiHtml('진행 중', H.TK.progress, '건', '─', 'flat', [4, 3, 5, 4, 4, 3, 4], '#e08a1e')); } },
-    'h-tk-overdue': { host: 1, title: '기한 초과(KPI)', col: 3, el: function () { return cardEl('col-3 d-kpi', kpiHtml('기한 초과', H.TK.overdue, '건', '▲ 1', 'up', [1, 2, 1, 2, 2, 3, 3], '#c0392b')); } },
+    'h-tk-kpis': {
+      host: 1, title: '티켓 KPI (오픈·미할당·대기·진행·기한초과)', col: 12, el: function () {
+        const t = H.TK, base = t.open || 1;
+        const pc = function (v) { return (v / base * 100).toFixed(1); };
+        return tkStrip([
+          { l: '오픈 티켓', v: t.open, p: pc(t.open), tone: 'open', key: 'ticket/ticket-all' },
+          { l: '할당되지 않은 티켓', v: t.unassigned, p: pc(t.unassigned), tone: 'unassigned', key: 'ticket/ticket-all' },
+          { l: '진행 대기 중 티켓', v: t.pending, p: pc(t.pending), tone: 'assigned', key: 'ticket/ticket-all' },
+          { l: '진행 중 티켓', v: t.progress, p: pc(t.progress), tone: 'progress', key: 'ticket/ticket-all' },
+          { l: '기한이 지난 티켓', v: t.overdue, tone: 'overdue', key: 'ticket/ticket-all' },
+        ]);
+      }
+    },
     'h-tk-donut': {
       host: 1, title: '티켓 상태 분포', col: 6, el: function () {
         return cardEl('col-6', donutHtml('티켓 상태 분포',
@@ -219,14 +252,14 @@
     'h-hd-gw': { host: 1, title: '─ GW 헬스 (제목)', col: 12, el: function () { return headerEl('GW 헬스', 'gw/gw-status-host'); } },
     'h-gw-donut': {
       host: 1, title: 'GW 연결 상태', col: 4, el: function () {
-        return cardEl('col-4', donutHtml('GW 연결 상태', [{ label: '온라인', value: H.gwOn, color: '#27ae60' }, { label: '오프라인', value: H.gwOff, color: '#c0392b' }], H.GW.length, 'GW'));
+        return cardEl('col-4', donutHtml('GW 연결 상태', [{ label: '온라인', value: H.gwOn, color: '#27ae60' }, { label: '오프라인', value: H.gwOff, color: '#c0392b' }], H.GW.length, 'GW', 'gw/gw-status-host'));
       }
     },
     'h-gw-offline': {
       host: 1, title: '오프라인 GW', col: 4, el: function () {
         return cardEl('col-4', listHtml('오프라인 GW', H.offGW.map(function (g) {
           return '<div class="d-list-row"><span class="dot dot-bad" style="width:8px;height:8px;border-radius:50%"></span><span class="grow">' + g.name + '</span><span class="d-tenant">' + g.ten + '</span><span class="muted">' + g.last + '</span></div>';
-        })));
+        }), 'gw/gw-status-host'));
       }
     },
     'h-gw-res': {
@@ -234,14 +267,14 @@
         return cardEl('col-4', listHtml('리소스 경고 GW', H.resHigh.map(function (g) {
           const w = Math.max(g.cpu, g.mem, g.disk), lb = g.cpu === w ? 'CPU' : g.mem === w ? 'MEM' : 'DISK', col = w >= 90 ? SC.crit : SC.warn;
           return '<div class="d-list-row"><span class="grow">' + g.name + '</span><span class="d-tenant">' + g.ten + '</span><span class="muted" style="color:' + col + ';font-weight:bold">' + lb + ' ' + w + '%</span></div>';
-        })));
+        }), 'gw/gw-server-host'));
       }
     },
     'h-hd-tenant': { host: 1, title: '─ 테넌트/구독 (제목)', col: 12, el: function () { return headerEl('테넌트 / 구독', 'saas/tenant'); } },
-    'h-tn-active': { host: 1, title: '활성 테넌트(KPI)', col: 3, el: function () { return cardEl('col-3 d-kpi', kpiHtml('활성 테넌트', H.TEN.active, '', '▲ 2', 'up', [9, 10, 10, 11, 11, 12, 12], '#1a6ed8')); } },
-    'h-tn-new': { host: 1, title: '이번 달 신규(KPI)', col: 3, el: function () { return cardEl('col-3 d-kpi', kpiHtml('이번 달 신규', H.TEN.newThisMonth, '', '', 'flat', [0, 1, 1, 1, 2, 2, 2], '#27ae60')); } },
-    'h-tn-expiring': { host: 1, title: '만료 임박(KPI)', col: 3, el: function () { return cardEl('col-3 d-kpi', kpiHtml('만료 임박(30일)', H.TEN.expiringSoon, '', '▲ 1', 'up', [1, 1, 2, 2, 2, 3, 3], '#e08a1e')); } },
-    'h-tn-req': { host: 1, title: '미처리 구독요청(KPI)', col: 3, el: function () { return cardEl('col-3 d-kpi', kpiHtml('미처리 구독요청', H.TEN.pendingReq, '', '▲ 2', 'up', [1, 2, 2, 3, 3, 3, 4], '#c0392b')); } },
+    'h-tn-active': { host: 1, title: '활성 테넌트(KPI)', col: 3, el: function () { return clickCard('col-3 d-kpi', kpiHtml('활성 테넌트', H.TEN.active, '', '▲ 2', 'up', [9, 10, 10, 11, 11, 12, 12], '#1a6ed8'), 'saas/tenant'); } },
+    'h-tn-new': { host: 1, title: '이번 달 신규(KPI)', col: 3, el: function () { return clickCard('col-3 d-kpi', kpiHtml('이번 달 신규', H.TEN.newThisMonth, '', '', 'flat', [0, 1, 1, 1, 2, 2, 2], '#27ae60'), 'saas/tenant'); } },
+    'h-tn-expiring': { host: 1, title: '만료 임박(KPI)', col: 3, el: function () { return clickCard('col-3 d-kpi', kpiHtml('만료 임박(30일)', H.TEN.expiringSoon, '', '▲ 1', 'up', [1, 1, 2, 2, 2, 3, 3], '#e08a1e'), 'saas/tenant'); } },
+    'h-tn-req': { host: 1, title: '미처리 구독요청(KPI)', col: 3, el: function () { return clickCard('col-3 d-kpi', kpiHtml('미처리 구독요청', H.TEN.pendingReq, '', '▲ 2', 'up', [1, 2, 2, 3, 3, 3, 4], '#c0392b'), 'saas/subscribe-request'); } },
     'h-tn-edition': { host: 1, title: '에디션 분포', col: 6, el: function () { return cardEl('col-6', donutHtml('에디션 분포', H.edSeg, H.edSeg.reduce(function (a, s) { return a + s.value; }, 0), '테넌트')); } },
     'h-tn-expiring-list': {
       host: 1, title: '구독 만료 임박 목록', col: 6, el: function () {
@@ -251,15 +284,15 @@
         }), 'saas/tenant'));
       }
     },
-    'h-hd-alarm': { host: 1, title: '─ 알람 목록 (제목)', col: 12, el: function () { return headerEl('알람 목록', 'alarm/alarm-history-host'); } },
+    'h-hd-alarm': { host: 1, title: '─ 알람 목록 (제목)', col: 12, el: function () { return headerEl('알람 목록', 'alarm/alarm-overview-host'); } },
     'h-alarm-table': { host: 1, title: '알람 목록 (페이징 표)', col: 12, el: buildAlarmTable },
 
     // ---------- 고객 ----------
-    'c-hd-alarm': { cust: 1, title: '─ 활성 알람 (제목)', col: 12, el: function () { return headerEl('활성 알람', 'alarm/alarm-manage'); } },
-    'c-al-crit': { cust: 1, title: 'Critical(색상카드)', col: 3, el: function () { return sevCard('critical', 'Critical', C.AL.critical); } },
-    'c-al-major': { cust: 1, title: 'Major(색상카드)', col: 3, el: function () { return sevCard('major', 'Major', C.AL.major); } },
-    'c-al-minor': { cust: 1, title: 'Minor(색상카드)', col: 3, el: function () { return sevCard('minor', 'Minor', C.AL.minor); } },
-    'c-al-warn': { cust: 1, title: 'Warning(색상카드)', col: 3, el: function () { return sevCard('warning', 'Warning', C.AL.warning); } },
+    'c-hd-alarm': { cust: 1, title: '─ 알람 현황 (제목)', col: 12, el: function () { return headerEl('알람 현황', 'alarm/alarm-manage'); } },
+    'c-al-crit': { cust: 1, title: 'Critical(색상카드)', col: 3, el: function () { return sevCard('critical', 'Critical', C.AL.critical, 'alarm/alarm-manage'); } },
+    'c-al-major': { cust: 1, title: 'Major(색상카드)', col: 3, el: function () { return sevCard('major', 'Major', C.AL.major, 'alarm/alarm-manage'); } },
+    'c-al-minor': { cust: 1, title: 'Minor(색상카드)', col: 3, el: function () { return sevCard('minor', 'Minor', C.AL.minor, 'alarm/alarm-manage'); } },
+    'c-al-warn': { cust: 1, title: 'Warning(색상카드)', col: 3, el: function () { return sevCard('warning', 'Warning', C.AL.warning, 'alarm/alarm-manage'); } },
     'c-al-donut': {
       cust: 1, title: '심각도 분포', col: 4, el: function () {
         return cardEl('col-4', donutHtml('심각도 분포',
@@ -267,7 +300,7 @@
           C.AL.critical + C.AL.major + C.AL.minor + C.AL.warning, '활성'));
       }
     },
-    'c-al-7d': { cust: 1, title: '최근 7일 알람 발생', col: 4, el: function () { return cardEl('col-4', chartHtml('최근 7일 알람 발생', bars(D7, [{ name: '발생', color: '#e74c3c', vals: C.al7 }]))); } },
+    'c-al-7d': { cust: 1, title: '최근 7일 알람 발생', col: 4, el: function () { return cardEl('col-4', chartHtml('최근 7일 알람 발생', bars(D7, [{ name: '발생', color: '#e74c3c', vals: C.al7 }]), 'alarm/alarm-manage')); } },
     'c-al-recent': {
       cust: 1, title: '최근 활성 알람', col: 4, el: function () {
         return cardEl('col-4', listHtml('최근 활성 알람', C.alRecent.map(function (a) {
@@ -275,10 +308,10 @@
         }), 'alarm/alarm-manage'));
       }
     },
-    'c-hd-metric': { cust: 1, title: '─ 핵심 지표 (제목)', col: 12, el: function () { return headerEl('핵심 지표', 'data/ups-trend'); } },
+    'c-hd-metric': { cust: 1, title: '─ 핵심 지표 (제목)', col: 12, el: function () { return headerEl('핵심 지표'); } },
     'c-m-ups': {
       cust: 1, title: 'UPS 평균 부하율', col: 4, el: function () {
-        return cardEl('col-4', '<div class="d-card-t">UPS 평균 부하율</div>'
+        return cardEl('col-4', '<div class="d-card-t">' + tLink('UPS 평균 부하율', 'data/ups-trend') + '</div>'
           + '<div class="d-gauge"><div class="d-gauge-top"><span class="d-gauge-v">' + C.upsLoad + '%</span><span class="muted">권장 &lt; 80%</span></div>'
           + '<div class="d-gauge-track"><div class="d-gauge-fill" style="width:' + C.upsLoad + '%;background:' + (C.upsLoad >= 80 ? SC.crit : C.upsLoad >= 70 ? SC.warn : SC.ok) + '"></div></div></div>'
           + '<div class="d-spark">' + spark(C.upsLoad7, '#1a6ed8') + '</div>');
@@ -286,42 +319,54 @@
     },
     'c-m-bat': {
       cust: 1, title: '배터리 최저 SOH', col: 4, el: function () {
-        return cardEl('col-4', '<div class="d-card-t">배터리 최저 SOH</div>'
+        return cardEl('col-4', '<div class="d-card-t">' + tLink('배터리 최저 SOH', 'data/battery-trend') + '</div>'
           + '<div class="d-gauge"><div class="d-gauge-top"><span class="d-gauge-v">' + C.batMinSoh + '%</span><span class="muted">교체필요 ' + C.batReplace + '대</span></div>'
           + '<div class="d-gauge-track"><div class="d-gauge-fill" style="width:' + C.batMinSoh + '%;background:' + (C.batMinSoh < 80 ? SC.warn : SC.ok) + '"></div></div></div>');
       }
     },
     'c-m-chw': {
       cust: 1, title: '칠러 냉수 공급온도', col: 4, el: function () {
-        return cardEl('col-4', '<div class="d-card-t">칠러 냉수 공급온도</div><div class="d-big"><span class="d-big-v" style="color:' + (C.chwAbn ? SC.crit : SC.ok) + '">' + C.chwOut + '℃</span><span class="d-big-l">' + (C.chwAbn ? '이상' : '정상 범위') + '</span></div>');
+        return cardEl('col-4', '<div class="d-card-t">' + tLink('칠러 냉수 공급온도', 'data/chiller-trend') + '</div><div class="d-big"><span class="d-big-v" style="color:' + (C.chwAbn ? SC.crit : SC.ok) + '">' + C.chwOut + '℃</span><span class="d-big-l">' + (C.chwAbn ? '이상' : '정상 범위') + '</span></div>');
       }
     },
     'c-hd-ticket': { cust: 1, title: '─ 티켓 현황 (제목)', col: 12, el: function () { return headerEl('티켓 현황', 'ticket/ticket-my'); } },
-    'c-tk-mine': { cust: 1, title: '내 티켓(KPI)', col: 3, el: function () { return cardEl('col-3 d-kpi', kpiHtml('내 티켓', C.TK.mine, '건', '', 'flat', [2, 3, 2, 3, 3, 3, 3], '#1a6ed8')); } },
-    'c-tk-progress': { cust: 1, title: '진행 중(KPI)', col: 3, el: function () { return cardEl('col-3 d-kpi', kpiHtml('진행 중', C.TK.progress, '건', '', 'flat', [4, 5, 4, 5, 5, 5, 5], '#e08a1e')); } },
-    'c-tk-overdue': { cust: 1, title: '기한 초과(KPI)', col: 3, el: function () { return cardEl('col-3 d-kpi', kpiHtml('기한 초과', C.TK.overdue, '건', C.TK.overdue ? '주의' : '', C.TK.overdue ? 'up' : 'flat', [0, 1, 1, 0, 1, 1, 1], '#c0392b')); } },
-    'c-tk-pending': { cust: 1, title: '대기 중(KPI)', col: 3, el: function () { return cardEl('col-3 d-kpi', kpiHtml('대기 중', C.TK.pending, '건', '', 'flat', [3, 4, 3, 4, 4, 4, 4], '#8a929c')); } },
+    'c-tk-kpis': {
+      cust: 1, title: '티켓 KPI (미할당·대기·진행·종료·기한초과)', col: 12, el: function () {
+        const t = C.TK, base = (t.unassigned + t.pending + t.progress + t.done) || 1;
+        const pc = function (v) { return (v / base * 100).toFixed(1); };
+        return tkStrip([
+          { l: '할당되지 않은 티켓', v: t.unassigned, p: pc(t.unassigned), tone: 'unassigned', key: 'ticket/ticket-my' },
+          { l: '진행 대기 중 티켓', v: t.pending, p: pc(t.pending), tone: 'assigned', key: 'ticket/ticket-my' },
+          { l: '진행 중 티켓', v: t.progress, p: pc(t.progress), tone: 'progress', key: 'ticket/ticket-my' },
+          { l: '종료된 티켓', v: t.done, p: pc(t.done), tone: 'done', key: 'ticket/ticket-my' },
+          { l: '기한이 지난 티켓', v: t.overdue, tone: 'overdue', key: 'ticket/ticket-my' },
+        ]);
+      }
+    },
     'c-hd-infra': { cust: 1, title: '─ 인프라 헬스 (제목)', col: 12, el: function () { return headerEl('인프라 헬스', 'facility/ups-list'); } },
     'c-infra-stack': {
       cust: 1, title: '설비 유형별 상태', col: 6, el: function () {
+        const FAC_PAGE = { UPS: 'facility/ups-list', PDU: 'facility/pdu-list', '칠러': 'facility/chiller-list', '배터리': 'facility/battery-list' };
         const rows = C.FAC.map(function (f) {
-          const tot = f.ok + f.warn + f.major + f.crit + f.off;
-          return '<div class="d-stack-row"><span class="d-stack-label">' + f.type + '</span>'
-            + stackBar([{ label: '정상', value: f.ok, color: SC.ok }, { label: '경고', value: f.warn, color: SC.warn }, { label: 'Major', value: f.major, color: SC.major }, { label: 'Critical', value: f.crit, color: SC.crit }, { label: '오프라인', value: f.off, color: SC.off }])
+          const tot = f.ok + f.warn + f.major + f.crit + f.off + f.unk;
+          const pg = FAC_PAGE[f.type];
+          return '<div class="d-stack-row' + (pg ? ' d-linkable" onclick="dNav(\'' + pg + '\')' : '') + '"><span class="d-stack-label">' + f.type + '</span>'
+            + stackBar([{ label: '정상', value: f.ok, color: SC.ok }, { label: '경고', value: f.warn, color: SC.warn }, { label: 'Major', value: f.major, color: SC.major }, { label: 'Critical', value: f.crit, color: SC.crit }, { label: '오프라인', value: f.off, color: SC.off }, { label: '확인 불가', value: f.unk, color: SC.unknown }])
             + '<span class="d-stack-total">' + tot + '</span></div>';
         });
         return cardEl('col-6', '<div class="d-card-t">설비 유형별 상태</div>' + rows.join('')
           + '<div class="d-legend" style="flex-direction:row;flex-wrap:wrap;gap:12px;margin-top:2px">'
-          + [['정상', SC.ok], ['경고', SC.warn], ['Major', SC.major], ['Critical', SC.crit], ['오프라인', SC.off]].map(function (x) { return '<span class="li"><span class="sw" style="background:' + x[1] + '"></span>' + x[0] + '</span>'; }).join('') + '</div>');
+          + [['정상', SC.ok], ['경고', SC.warn], ['Major', SC.major], ['Critical', SC.crit], ['오프라인', SC.off], ['확인 불가', SC.unknown]].map(function (x) { return '<span class="li"><span class="sw" style="background:' + x[1] + '"></span>' + x[0] + '</span>'; }).join('') + '</div>');
       }
     },
-    'c-infra-comm': { cust: 1, title: '설비 통신', col: 3, el: function () { return cardEl('col-3', donutHtml('설비 통신', [{ label: '온라인', value: C.facTotal - C.facOff, color: '#27ae60' }, { label: '오프라인', value: C.facOff, color: '#c0392b' }], C.facTotal, '설비')); } },
-    'c-infra-gw': { cust: 1, title: 'GW 연결', col: 3, el: function () { return cardEl('col-3', donutHtml('GW 연결', [{ label: '온라인', value: C.gwOn, color: '#27ae60' }, { label: '오프라인', value: C.gwOff, color: '#c0392b' }], C.gwOn + C.gwOff, 'GW')); } },
+    'c-infra-comm': { cust: 1, title: '설비 통신', col: 3, el: function () { return cardEl('col-3', donutHtml('설비 통신', [{ label: '온라인', value: C.facTotal - C.facOff - C.facUnknown, color: '#27ae60' }, { label: '오프라인', value: C.facOff, color: '#c0392b' }, { label: '확인 불가', value: C.facUnknown, color: SC.unknown }], C.facTotal, '설비')); } },
+    'c-infra-gw': { cust: 1, title: 'GW 연결', col: 3, el: function () { return cardEl('col-3', donutHtml('GW 연결', [{ label: '온라인', value: C.gwOn, color: '#27ae60' }, { label: '오프라인', value: C.gwOff, color: '#c0392b' }], C.gwOn + C.gwOff, 'GW', 'gw/gw-status')); } },
   };
 
-  function sevCard(sev, label, val) {
-    const c = elx('div', 'kpi-card sev-' + sev + ' col-3');
+  function sevCard(sev, label, val, key) {
+    const c = elx('div', 'kpi-card sev-' + sev + ' col-3' + (key ? ' d-linkable' : ''));
     c.innerHTML = '<div class="kpi-card-label">' + label + '</div><div class="kpi-card-value" data-to="' + val + '" data-u="건">0</div>';
+    if (key) c.setAttribute('onclick', "dNav('" + key + "')");
     return c;
   }
 
@@ -329,8 +374,7 @@
   function buildAlarmTable() {
     const SIZE = 8;
     let page = 1;
-    const card = cardEl('col-12', '<div class="d-card-t">발생시각 최신순 · 전체 ' + H.HAL.length + '건'
-      + '<span class="dash-sec-more" style="float:right;font-weight:normal" onclick="dGo(\'alarm/alarm-history-host\')">전체 &rsaquo;</span></div>'
+    const card = cardEl('col-12', '<div class="d-card-t">발생시각 최신순 · 전체 ' + H.HAL.length + '건</div>'
       + '<div class="grid-scroll"><table class="grid-table"><thead><tr>'
       + '<th style="width:48px">No</th><th style="width:82px">심각도</th><th style="width:110px">고객사</th>'
       + '<th style="width:120px">설비</th><th>알람명</th><th style="width:158px">발생시각</th><th style="width:88px">처리상태</th>'
@@ -373,6 +417,10 @@
 
   let layout = loadLayout();
   let editing = false;
+
+  // 위젯 클릭 → 페이지 이동. 편집 모드에선 이동을 막는다(드래그 중 오이동 방지).
+  function dNav(key) { if (editing) return; dGo(key); }
+  window.dNav = dNav;
 
   function render() {
     dash.innerHTML = '';

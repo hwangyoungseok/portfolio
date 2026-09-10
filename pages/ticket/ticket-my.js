@@ -79,7 +79,10 @@
   function priBadge(pri) { return '<span class="pri-badge pri-' + pri + '">' + PRI_LABEL[pri] + '</span>'; }
 
   function today() { return new Date().toISOString().slice(0, 10); }
-  function isOverdue(r) { return r.status !== 'done' && r.due < today(); }
+  function isOverdue(r) {
+    if (r.status === 'done') return r.updated.slice(0, 10) > r.due;  // 완료건: 완료시각(=최근 업데이트) > 기한
+    return r.due < today();                                          // 미완료건: 현재시각 > 기한
+  }
 
   function statusBadge(st) {
     const cls = st === 'pending' ? 'status-pending' : (st === 'progress' ? 'status-progress' : 'status-done');
@@ -100,13 +103,23 @@
   function renderGrid() {
     const kw     = (document.getElementById('q').value || '').trim();
     const fStat  = document.getElementById('fStatus').value;
+    const fOverdue = document.getElementById('fOverdue').checked;
     const fPri   = document.getElementById('fPri').value;
     const fFrom  = document.getElementById('fFrom').value;
     const fTo    = document.getElementById('fTo').value;
 
+    // 내 티켓은 전부 담당자 배정된 상태라 pending = "진행 대기". open = 완료 아님.
+    function statusMatch(r) {
+      if (!fStat) return true;
+      if (fStat === 'open') return r.status !== 'done';
+      if (fStat === 'assigned') return r.status === 'pending';
+      return r.status === fStat;
+    }
+
     const rows = DATA.filter(function (r) {
       return (!kw || r.title.indexOf(kw) >= 0 || r.ticketNo.indexOf(kw) >= 0 || r.target.indexOf(kw) >= 0)
-        && (!fStat || r.status === fStat)
+        && statusMatch(r)
+        && (!fOverdue || isOverdue(r))
         && (!fPri  || r.pri === fPri)
         && (!fFrom || r.reg >= fFrom)
         && (!fTo   || r.reg <= fTo);
@@ -133,6 +146,7 @@
 
   function resetSearch() {
     document.getElementById('fStatus').value = '';
+    document.getElementById('fOverdue').checked = false;
     document.getElementById('fPri').value = '';
     document.getElementById('fFrom').value = '';
     document.getElementById('fTo').value = '';
