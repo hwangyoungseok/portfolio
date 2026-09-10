@@ -1,0 +1,8 @@
+/* GW 관리 (호스트) 전용 스타일 (공통은 shared/common.css) */
+
+.gh-table td:nth-child(3), .gh-table td:nth-child(4), .gh-table td:nth-child(5) { text-align: left; }
+.gh-tenant { display: inline-block; font-size: 11px; color: #33506e; background: #eef3fb; border: 1px solid #dbe6f7; border-radius: 3px; padding: 1px 7px; }
+
+#ghdBody .gh-fac-list { width: 100%; border-collapse: collapse; }
+#ghdBody .gh-fac-list th, #ghdBody .gh-fac-list td { border: 1px solid #eef1f4; padding: 6px 9px; font-size: 12px; text-align: left; }
+#ghdBody .gh-fac-list th { background: #f8f9fa; color: #667; font-weight: normal; }
