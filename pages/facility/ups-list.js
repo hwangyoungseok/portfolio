@@ -141,7 +141,7 @@
     const r = (no == null) ? null : DATA.filter(function (x) { return x.no === no; })[0];
     document.getElementById('mTitle').textContent = r ? 'UPS 수정' : 'UPS 등록';
     document.getElementById('m-name').value      = r ? r.name : '';
-    document.getElementById('m-loc').value       = r ? r.loc : LOCATIONS[0];
+    document.getElementById('m-loc').value       = r ? r.loc : '';
     document.getElementById('m-vendor').value    = r ? r.vendor : VENDORS[0];
     document.getElementById('m-model').value     = r ? r.model : '';
     document.getElementById('m-sn').value        = r ? r.sn : '';
@@ -169,6 +169,7 @@
   fillSelect('fVendor', VENDORS, true);
   fillSelect('fComm', COMMS, true);
   fillSelect('m-loc', LOCATIONS, false);
+  document.getElementById('m-loc').insertAdjacentHTML('afterbegin', '<option value=""></option>');
   fillSelect('m-vendor', VENDORS, false);
   fillSelect('m-gw', GWS, false);
   renderGrid();

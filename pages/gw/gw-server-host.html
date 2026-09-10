@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GW 서버 상태 모니터링 (호스트) - UMS</title>
+<link rel="stylesheet" href="../../shared/common.css">
+<link rel="stylesheet" href="gw-server-host.css">
+</head>
+<body data-page="gw/gw-server-host">
+
+<!--
+  화면: GW > GW 서버 상태 모니터링 (호스트 전용)
+  설명: 전 고객사 GW 설치 서버의 CPU/메모리/디스크 게이지 카드. 고객사 필터. 카드 클릭 시 24h 추이.
+-->
+
+<div id="umsContent">
+  <div class="content">
+
+    <div class="search-bar">
+      <div class="search-field"><label>고객사</label><select class="search-select" id="fTenant" onchange="gvRefreshGwList()"></select></div>
+      <div class="search-field"><label>위치</label><select class="search-select" id="fLoc"></select></div>
+      <div class="search-field"><label>GW</label><select class="search-select" id="fGw"></select></div>
+      <div class="search-actions">
+        <button class="btn btn-primary" onclick="gvRender()">조회</button>
+        <button class="btn" onclick="gvReset()">초기화</button>
+      </div>
+    </div>
+
+    <div id="gvGrid" class="gwsrv-grid"></div>
+
+  </div>
+
+  <div class="modal-overlay" id="gvTrendModal">
+    <div class="modal" style="max-width:720px;">
+      <div class="modal-header">
+        <h3 id="gvTrendTitle">리소스 추이</h3>
+        <button class="modal-close" onclick="gvTrendClose()">&#10005;</button>
+      </div>
+      <div class="modal-body">
+        <div class="trend-legend">
+          <span class="legend-item"><i class="legend-dot" style="background:#1a6ed8;"></i>CPU</span>
+          <span class="legend-item"><i class="legend-dot" style="background:#2e9e5b;"></i>메모리</span>
+          <span class="legend-item"><i class="legend-dot" style="background:#e08a1e;"></i>디스크</span>
+        </div>
+        <div id="gvTrendChart"></div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-primary" onclick="gvTrendClose()">닫기</button></div>
+    </div>
+  </div>
+</div>
+
+<script src="../../shared/layout.js"></script>
+<script src="gw-server-host.js"></script>
+</body>
+</html>

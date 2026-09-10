@@ -27,6 +27,7 @@
   let sortAsc = true;
   let menuNo  = null;   // 현재 [작업] 메뉴가 열려 있는 행
   let detailNo = null;  // 상세 Offcanvas 대상 행
+  let inviteNo = null;  // 관리자 초대 대상 행
   let editNo  = null;   // 편집/연결문자열 대상 행
 
   function badge(map, key) {
@@ -165,7 +166,7 @@
       case 'conn':    connOpen(r.no); break;
       case 'migrate': umsToast(r.name + ' — 마이그레이션을 적용했습니다. (목업)'); break;
       case 'feature': umsToast(r.name + ' — 기능 설정 (목업)'); break;
-      case 'invite':  umsToast(r.name + ' — 관리자 초대 메일을 발송했습니다. (목업)'); break;
+      case 'invite':  inviteOpen(r.no); break;
       case 'passwd':  umsToast(r.name + ' — 비밀번호 설정 (목업)'); break;
       case 'login':   umsToast(r.name + ' 테넌트로 로그인 (목업)'); break;
       case 'delete':  askDelete(r.no); break;
@@ -247,6 +248,35 @@
 
   function tenantSave() { hide('tenantModal'); renderGrid(); umsToast('저장되었습니다.'); }
 
+  // ---- 관리자 초대 ----
+  function inviteOpen(no) {
+    const r = row(no);
+    if (!r) return;
+    inviteNo = no;
+    document.getElementById('i-name').textContent = r.name;
+    document.getElementById('i-email').value = r.admin || '';
+    inviteMsg('');
+    show('inviteModal');
+    document.getElementById('i-email').focus();
+  }
+
+  // 검증 실패 메시지. 빈 값이면 기본 안내로 되돌린다.
+  function inviteMsg(text) {
+    const el = document.getElementById('i-msg');
+    el.textContent = text || '이 주소로 초대 메일이 발송됩니다. 등록된 관리자 이메일이 기본값입니다.';
+    el.classList.toggle('err', !!text);
+  }
+
+  function inviteSend() {
+    const r = row(inviteNo);
+    const email = (document.getElementById('i-email').value || '').trim();
+    if (!email) { inviteMsg('이메일을 입력하세요.'); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { inviteMsg('이메일 형식이 올바르지 않습니다.'); return; }
+    hide('inviteModal');
+    inviteNo = null;
+    umsToast((r ? r.name + ' — ' : '') + email + ' 로 초대 메일을 발송했습니다. (목업)');
+  }
+
   // ---- DB 연결 문자열 ----
   function connOpen(no) {
     const r = row(no);
@@ -304,6 +334,8 @@
   window.tenantDetailClose = tenantDetailClose;
   window.tenantEditFromDetail = tenantEditFromDetail;
   window.tenantModalClose  = function () { hide('tenantModal'); };
+  window.inviteSend        = inviteSend;
+  window.inviteModalClose  = function () { hide('inviteModal'); inviteNo = null; };
   window.connModalClose    = function () { hide('connModal'); };
   window.delModalClose     = function () { hide('delModal'); };
 

@@ -157,6 +157,30 @@
     </div>
   </div>
 
+  <!-- 관리자 초대 모달 -->
+  <div class="modal-overlay" id="inviteModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>관리자 초대</h3>
+        <button class="modal-close" onclick="inviteModalClose()">&#10005;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="form-label">테넌트</div><div id="i-name" class="dv-box"></div>
+          <div class="form-label req">이메일</div>
+          <input class="form-input" id="i-email" type="email" placeholder="admin@example.com"
+                 onkeyup="if(event.key==='Enter')inviteSend()">
+          <div class="form-label"></div>
+          <div class="hint" id="i-msg">이 주소로 초대 메일이 발송됩니다. 등록된 관리자 이메일이 기본값입니다.</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" onclick="inviteModalClose()">취소</button>
+        <button class="btn btn-primary" onclick="inviteSend()">확인</button>
+      </div>
+    </div>
+  </div>
+
   <!-- DB 연결 문자열 모달 -->
   <div class="modal-overlay" id="connModal">
     <div class="modal">
