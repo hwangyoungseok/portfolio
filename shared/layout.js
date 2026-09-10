@@ -322,6 +322,83 @@
       + '</div>';
   }
 
+  // ---- 헤더 우측 사용자 메뉴 ------------------------------------------
+  // ABP 계정 화면들에 대응하는 항목. 아직 화면이 없어 토스트만 띄운다.
+  // 화면을 만들면 action 을 pageHref('그룹/키') 로 바꿔 링크로 연결하면 된다.
+  // 아이콘은 인라인 SVG (currentColor) — 폰트/이모지 의존 없이 색이 통일된다.
+  const ICON = {
+    gear: '<path d="M8 5.2a2.8 2.8 0 100 5.6 2.8 2.8 0 000-5.6zm6.3 3.6l-1.4-.5a5 5 0 000-.6l1.4-.5a.4.4 0 00.2-.5l-.9-2a.4.4 0 00-.5-.2l-1.3.6a5 5 0 00-.5-.3l-.2-1.4a.4.4 0 00-.4-.4h-2.2a.4.4 0 00-.4.4l-.2 1.4a5 5 0 00-.5.3l-1.3-.6a.4.4 0 00-.5.2l-.9 2a.4.4 0 00.2.5l1.4.5a5 5 0 000 .6l-1.4.5a.4.4 0 00-.2.5l.9 2c.1.2.3.3.5.2l1.3-.6.5.3.2 1.4c0 .2.2.4.4.4h2.2c.2 0 .4-.2.4-.4l.2-1.4.5-.3 1.3.6c.2.1.4 0 .5-.2l.9-2a.4.4 0 00-.2-.5z"/>',
+    user: '<path d="M8 8.4a3 3 0 100-6 3 3 0 000 6zm0 1.2c-2.6 0-5 1.3-5 3v1.2c0 .4.3.7.7.7h8.6c.4 0 .7-.3.7-.7V12.6c0-1.7-2.4-3-5-3z"/>',
+    clock: '<path d="M8 1.4a6.6 6.6 0 100 13.2A6.6 6.6 0 008 1.4zm.7 6.9l2.4 1.4a.6.6 0 11-.6 1L7.7 9.2a.6.6 0 01-.3-.5V4.6a.6.6 0 011.2 0v3.7z"/>',
+    lock: '<path d="M11.6 6.6h-.5V5a3.1 3.1 0 10-6.2 0v1.6h-.5c-.6 0-1 .5-1 1v5.3c0 .6.4 1 1 1h7.2c.6 0 1-.4 1-1V7.6c0-.5-.4-1-1-1zM6.1 5a1.9 1.9 0 013.8 0v1.6H6.1V5z"/>',
+    power: '<path d="M8 1.6c-.4 0-.7.3-.7.7v5.5a.7.7 0 001.4 0V2.3c0-.4-.3-.7-.7-.7zM4.6 3.7a.7.7 0 00-.9 0 5.9 5.9 0 108.6 0 .7.7 0 10-1 1 4.5 4.5 0 11-6.6 0 .7.7 0 00-.1-1z"/>',
+  };
+
+  function icon(name) {
+    return '<svg class="um-ico" viewBox="0 0 16 16" aria-hidden="true">' + ICON[name] + '</svg>';
+  }
+
+  const USER_MENU = [
+    { key: 'account',  label: '내 계정',     ico: 'gear',  page: 'account/my-account' },
+    { key: 'seclog',   label: '보안 로그',   ico: 'user'  },
+    { key: 'session',  label: '세션',        ico: 'clock' },
+    { key: 'personal', label: '개인 데이터', ico: 'lock'  },
+    { sep: true },
+    { key: 'logout',   label: '로그아웃',    ico: 'power' },
+  ];
+
+  function renderUserMenu() {
+    return '<div class="user-menu" id="umsUserMenu">'
+      + USER_MENU.map(function (it) {
+          if (it.sep) return '<div class="user-menu-sep"></div>';
+          return '<button type="button" class="user-menu-item" data-act="' + it.key + '">'
+            + icon(it.ico) + '<span>' + it.label + '</span></button>';
+        }).join('')
+      + '</div>';
+  }
+
+  // 로그아웃은 확인 팝업, 화면이 있는 항목은 이동, 나머지는 안내 토스트.
+  // 화면을 만들면 USER_MENU 항목에 page: '그룹/키' 를 추가하면 자동으로 링크가 된다.
+  function userMenuAct(key) {
+    if (key === 'logout') { showLogoutModal(); return; }
+    const it = USER_MENU.filter(function (x) { return x.key === key; })[0];
+    if (!it) return;
+    if (it.page) { location.href = pageHref(it.page); return; }
+    window.umsToast(it.label + ' — 준비 중입니다. (목업)');
+  }
+
+  // ---- 로그아웃 확인 팝업 (모든 페이지 공통) ----
+  //  프로토타입에는 로그인 화면이 없으므로 실제 이동은 하지 않는다.
+  function buildLogoutModal() {
+    const el = document.createElement('div');
+    el.className = 'modal-overlay';
+    el.id = 'umsLogoutModal';
+    el.innerHTML =
+      '<div class="confirm-modal">'
+      +   '<p><span class="confirm-hl">' + ROLES[ROLE].user + '</span><br>로그아웃 하시겠습니까?</p>'
+      +   '<div class="confirm-btns">'
+      +     '<button class="btn btn-primary" id="umsLogoutOk">로그아웃</button>'
+      +     '<button class="btn" id="umsLogoutCancel">취소</button>'
+      +   '</div>'
+      + '</div>';
+    document.body.appendChild(el);
+
+    el.querySelector('#umsLogoutOk').addEventListener('click', function () {
+      hideLogoutModal();
+      window.umsToast('로그아웃되었습니다. (목업)');
+    });
+    el.querySelector('#umsLogoutCancel').addEventListener('click', hideLogoutModal);
+    // 바깥(오버레이) 클릭으로도 닫는다
+    el.addEventListener('click', function (e) { if (e.target === el) hideLogoutModal(); });
+  }
+
+  function showLogoutModal() {
+    document.getElementById('umsLogoutModal').classList.add('show');
+  }
+  function hideLogoutModal() {
+    document.getElementById('umsLogoutModal').classList.remove('show');
+  }
+
   // ---- 크롬(사이드바/헤더/브레드크럼/푸터) 조립 ----
   function buildChrome() {
     const key = currentKey();
@@ -367,8 +444,14 @@
       +   '<div class="header-right">'
       +     renderRoleSwitch()
       +     '<span class="header-link">알림</span>'
-      +     '<div class="header-user"><span class="avatar" style="background:' + cfg.avatarBg + '">'
-      +       cfg.avatar + '</span><span>' + cfg.user + '</span></div>'
+      +     '<div class="header-user-wrap">'
+      +       '<button type="button" class="header-user" id="umsUserBtn" aria-haspopup="true" aria-expanded="false">'
+      +         '<span class="avatar" style="background:' + cfg.avatarBg + '">' + cfg.avatar + '</span>'
+      +         '<span>' + cfg.user + '</span>'
+      +         '<span class="user-caret">&#9662;</span>'
+      +       '</button>'
+      +       renderUserMenu()
+      +     '</div>'
       +     '<a class="header-link" href="' + withRole(ROOT + 'index.html') + '">홈</a>'
       +   '</div>'
       + '</div>'
@@ -400,6 +483,40 @@
       // 링크가 아닌 노드 머리(<div class="nav-row">)는 접기/펼치기
       const row = e.target.closest('.nav-row');
       if (row && row.tagName !== 'A') row.parentElement.classList.toggle('open');
+    });
+
+    // 헤더 사용자 메뉴: 아바타 클릭으로 열고 닫기
+    const userBtn  = document.getElementById('umsUserBtn');
+    const userMenu = document.getElementById('umsUserMenu');
+
+    function closeUserMenu() {
+      userMenu.classList.remove('show');
+      userBtn.setAttribute('aria-expanded', 'false');
+    }
+
+    userBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      const open = userMenu.classList.toggle('show');
+      userBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+
+    userMenu.addEventListener('click', function (e) {
+      const item = e.target.closest('.user-menu-item');
+      if (!item) return;
+      closeUserMenu();
+      userMenuAct(item.dataset.act);
+    });
+
+    // 바깥 클릭 / ESC 로 닫는다. 페이지별 드롭다운과 독립적으로 동작한다.
+    document.addEventListener('click', function (e) {
+      if (!e.target.closest('.header-user-wrap')) closeUserMenu();
+    });
+    buildLogoutModal();
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key !== 'Escape') return;
+      closeUserMenu();
+      hideLogoutModal();
     });
   }
 

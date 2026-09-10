@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>내 계정 - UMS</title>
+<link rel="stylesheet" href="../../shared/common.css">
+<link rel="stylesheet" href="my-account.css">
+</head>
+<body data-page="account/my-account">
+
+<!--
+  화면: (헤더 우측 사용자 메뉴) > 내 계정
+  설명: 로그인한 사용자 본인의 계정 관리. 좌측 카테고리 + 우측 본문.
+        프로필 사진 / 비밀번호 변경 / 개인 정보 / 인증 앱(2FA).
+  ---------------------------------------------------------------------
+  ※ 사이드바 메뉴(MENUS)에는 없는 화면이다. 헤더 사용자 메뉴에서만 진입한다.
+     layout.js 가 PAGE_META 에서 못 찾으면 <title> 로 브레드크럼을 만든다.
+  ※ 레이아웃은 pages/admin/setting.* 과 같은 패턴(.set-wrap / .set-nav / .set-body).
+-->
+
+<div id="umsContent">
+  <div class="content">
+    <div class="set-wrap">
+
+      <!-- 좌측 카테고리 -->
+      <nav class="set-nav">
+        <div class="set-nav-item active" data-sec="photo"    onclick="selectSec('photo')">프로필 사진</div>
+        <div class="set-nav-item"        data-sec="password" onclick="selectSec('password')">비밀번호 변경</div>
+        <div class="set-nav-item"        data-sec="profile"  onclick="selectSec('profile')">개인 정보</div>
+        <div class="set-nav-item"        data-sec="authapp"  onclick="selectSec('authapp')">인증 앱</div>
+      </nav>
+
+      <!-- 우측 본문 -->
+      <div class="set-body">
+
+        <!-- ===== 프로필 사진 ===== -->
+        <section class="set-sec show" id="sec-photo">
+          <h3 class="set-title">프로필 사진</h3>
+
+          <div class="ma-row">
+            <div class="ma-row-label">현재 프로필 사진</div>
+            <div class="ma-avatar" id="curAvatar"></div>
+          </div>
+
+          <div class="ma-radios">
+            <label class="rdo"><input type="radio" name="avatarType" value="default" checked>
+              <span>기본 아바타 사용</span></label>
+            <label class="rdo"><input type="radio" name="avatarType" value="gravatar">
+              <span>Gravatar 사용</span>
+              <em>등록된 이메일 주소에 연결된 Gravatar 이미지를 가져옵니다.</em></label>
+            <label class="rdo"><input type="radio" name="avatarType" value="upload">
+              <span>파일 업로드</span></label>
+            <div class="ma-upload">
+              <input class="form-input" type="file" id="avatarFile" accept="image/*" disabled>
+              <div class="hint">JPG / PNG, 최대 1MB. 정사각형 이미지를 권장합니다.</div>
+            </div>
+          </div>
+
+          <div class="set-actions">
+            <button class="btn btn-primary" onclick="saveAvatar()">변경사항 저장</button>
+          </div>
+        </section>
+
+        <!-- ===== 비밀번호 변경 ===== -->
+        <section class="set-sec" id="sec-password">
+          <h3 class="set-title">비밀번호 변경</h3>
+          <p class="set-desc">변경 후에는 다른 기기의 세션이 모두 만료됩니다.</p>
+
+          <div class="form-grid">
+            <div class="form-label req">현재 비밀번호</div>
+            <input class="form-input" type="password" id="p-current" autocomplete="current-password">
+            <div class="form-label req">새 비밀번호</div>
+            <input class="form-input" type="password" id="p-new" autocomplete="new-password">
+            <div class="form-label req">새 비밀번호 확인</div>
+            <input class="form-input" type="password" id="p-confirm" autocomplete="new-password">
+            <div class="form-label"></div>
+            <div class="hint" id="p-msg">영문·숫자를 포함해 8자 이상이어야 합니다.</div>
+          </div>
+
+          <div class="set-actions">
+            <button class="btn btn-primary" onclick="savePassword()">변경사항 저장</button>
+          </div>
+        </section>
+
+        <!-- ===== 개인 정보 ===== -->
+        <section class="set-sec" id="sec-profile">
+          <h3 class="set-title">개인 정보</h3>
+
+          <div class="form-grid">
+            <div class="form-label req">사용자명</div>
+            <input class="form-input" id="u-name">
+            <div class="form-label">이름</div>
+            <input class="form-input" id="u-first">
+            <div class="form-label">성</div>
+            <input class="form-input" id="u-last">
+            <div class="form-label req">이메일</div>
+            <input class="form-input" type="email" id="u-email">
+            <div class="form-label">전화번호</div>
+            <input class="form-input" id="u-phone" placeholder="010-0000-0000">
+            <div class="form-label"></div>
+            <div class="hint" id="u-msg">이메일을 바꾸면 새 주소로 인증 메일이 발송됩니다.</div>
+          </div>
+
+          <div class="set-actions">
+            <button class="btn btn-primary" onclick="saveProfile()">변경사항 저장</button>
+          </div>
+        </section>
+
+        <!-- ===== 인증 앱 (2FA) ===== -->
+        <section class="set-sec" id="sec-authapp">
+          <h3 class="set-title">인증 앱</h3>
+          <p class="set-desc">
+            Google Authenticator, Microsoft Authenticator 등 OTP 앱으로 2단계 인증을 사용합니다.
+          </p>
+
+          <div class="ma-row">
+            <div class="ma-row-label">현재 상태</div>
+            <div id="authState"></div>
+          </div>
+
+          <div id="authSetup">
+            <ol class="ma-steps">
+              <li>인증 앱에서 <b>계정 추가 &gt; QR 코드 스캔</b>을 선택합니다.</li>
+              <li>아래 QR 코드를 스캔하거나 설정 키를 직접 입력합니다.</li>
+              <li>앱에 표시된 6자리 코드를 입력하고 [활성화]를 누릅니다.</li>
+            </ol>
+
+            <div class="ma-qr-wrap">
+              <div class="ma-qr" id="authQr">QR 코드</div>
+              <div class="ma-key">
+                <div class="ma-row-label">설정 키</div>
+                <code id="authKey"></code>
+                <div class="hint">QR 스캔이 어려우면 이 키를 앱에 직접 입력하세요.</div>
+              </div>
+            </div>
+
+            <div class="form-grid">
+              <div class="form-label req">확인 코드</div>
+              <input class="form-input ma-code" id="authCode" maxlength="6" inputmode="numeric"
+                     placeholder="000000" onkeyup="if(event.key==='Enter')enableAuthApp()">
+              <div class="form-label"></div>
+              <div class="hint" id="authMsg">앱에 표시된 6자리 숫자를 입력하세요.</div>
+            </div>
+
+            <div class="set-actions">
+              <button class="btn btn-primary" onclick="enableAuthApp()">활성화</button>
+            </div>
+          </div>
+
+          <div id="authDone" hidden>
+            <div class="set-actions">
+              <button class="btn btn-danger" onclick="disableAuthApp()">비활성화</button>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="../../shared/layout.js"></script>
+<script src="my-account.js"></script>
+</body>
+</html>

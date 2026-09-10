@@ -35,7 +35,28 @@ a { color: inherit; text-decoration: none; }
 .header { background: #1a1a2e; color: #fff; padding: 0 18px; height: 48px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
 .header-brand { font-size: 15px; font-weight: bold; letter-spacing: 0.3px; }
 .header-right { display: flex; align-items: center; gap: 16px; font-size: 12px; }
-.header-user { display: flex; align-items: center; gap: 6px; color: #cfd3e0; }
+.header-user-wrap { position: relative; }
+.header-user { display: flex; align-items: center; gap: 6px; color: #cfd3e0;
+  background: none; border: 0; padding: 2px 4px; font: inherit; font-size: 12px; cursor: pointer; border-radius: 4px; }
+.header-user:hover { color: #fff; background: rgba(255,255,255,0.08); }
+.header-user .user-caret { font-size: 9px; opacity: 0.8; }
+.header-user[aria-expanded="true"] { color: #fff; background: rgba(255,255,255,0.12); }
+
+/* 헤더 사용자 컨텍스트 메뉴 */
+.user-menu { display: none; position: absolute; top: calc(100% + 6px); right: 0; z-index: 160;
+  min-width: 176px; padding: 6px 0; background: #fff; border: 1px solid #dde1e7; border-radius: 6px;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.18); }
+.user-menu.show { display: block; }
+.user-menu-item { display: flex; align-items: center; gap: 10px; width: 100%;
+  padding: 8px 16px; border: 0; background: none; font: inherit; font-size: 12.5px;
+  color: #333; cursor: pointer; text-align: left; white-space: nowrap; }
+.user-menu-item:hover { background: #f0f6ff; color: #1a6ed8; }
+.user-menu-item .um-ico { width: 15px; height: 15px; flex-shrink: 0; fill: #6b7684; }
+.user-menu-item:hover .um-ico { fill: #1a6ed8; }
+.user-menu-sep { height: 1px; background: #eee; margin: 6px 0; }
+
+/* 로그아웃 확인 팝업 — 드로어(120)/사용자 메뉴(160) 위에 떠야 한다 */
+#umsLogoutModal { z-index: 210; }
 .header-user .avatar { width: 24px; height: 24px; border-radius: 50%; background: #3498db; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; color: #fff; }
 .header-link { color: #cfd3e0; cursor: pointer; }
 .header-link:hover { color: #fff; }
