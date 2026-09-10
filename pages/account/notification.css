@@ -1,0 +1,45 @@
+/* 알림 보기 전용 스타일 (공통은 shared/common.css)
+   화면: (헤더 사용자 메뉴) > 알림 보기 */
+
+/* 하단 페이징 — admin/job.css 와 같은 규칙 (공통 CSS 에는 없어 페이지마다 정의한다) */
+.pane-paging { display: flex; align-items: center; gap: 8px; padding: 10px 14px; flex-shrink: 0;
+  border-top: 1px solid #eef1f4; font-size: 12px; color: #666; }
+.page-info { color: #98a2b3; margin-left: 8px; }
+
+.search-sep { color: #98a2b3; }
+
+.nt-count { font-size: 12px; color: #666; }
+.nt-count b { color: #1a1a2e; }
+.nt-unread-n { color: #e53935 !important; }
+
+/* 중요도 배지 */
+.nt-sev { display: inline-block; padding: 2px 9px; border-radius: 10px;
+  font-size: 11px; font-weight: bold; line-height: 1.6; }
+.nt-sev.crit { background: #fdecea; color: #c62828; }
+.nt-sev.warn { background: #fff4e5; color: #b76e00; }
+.nt-sev.info { background: #e8f1fd; color: #1a6ed8; }
+
+/* 분류 */
+.nt-kind { display: inline-block; padding: 2px 8px; border-radius: 4px;
+  background: #eef1f4; color: #55606b; font-size: 11px; line-height: 1.6; }
+
+/* 내용 셀 — 제목 + 설명 두 줄, 좌측 정렬 */
+.nt-body { display: block; text-align: left; }
+.nt-title { display: block; color: #1a1a2e; }
+.nt-desc { display: block; font-size: 11.5px; color: #7a8794; margin-top: 3px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* 읽지 않음 행 강조 */
+.grid-table tbody tr.nt-unread td { background: #f4f9ff; }
+.grid-table tbody tr.nt-unread:hover td { background: #eaf3ff; }
+.grid-table tbody tr.nt-unread .nt-title { font-weight: bold; }
+
+.nt-state { font-size: 11.5px; }
+.nt-state.unread { color: #1a6ed8; font-weight: bold; }
+.nt-state.read { color: #98a2b3; }
+
+/* 행 안 버튼 */
+.nt-btn { border: 1px solid #dde; background: #fff; color: #333;
+  padding: 3px 9px; border-radius: 4px; cursor: pointer; font-size: 11.5px; }
+.nt-btn:hover { border-color: #1a6ed8; color: #1a6ed8; background: #f7faff; }
+.nt-btn + .nt-btn { margin-left: 4px; }

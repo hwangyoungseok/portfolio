@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>보안 로그 - UMS</title>
+<link rel="stylesheet" href="../../shared/common.css">
+<link rel="stylesheet" href="security-log.css">
+</head>
+<body data-page="account/security-log">
+
+<!--
+  화면: (헤더 우측 사용자 메뉴) > 보안 로그
+  설명: 로그인한 사용자 "본인"의 보안 이벤트 조회 (로그인/로그아웃/비밀번호 변경 등).
+        기간 + 작업으로 검색. 조회 전용.
+  대응 테이블: AbpSecurityLogs
+  ---------------------------------------------------------------------
+  ※ 사이드바 메뉴(MENUS)에는 없는 화면이다. 헤더 사용자 메뉴에서만 진입한다.
+  ※ 관리자가 전체 사용자의 이력을 보는 화면은 [관리 > 감사로그](admin/audit-log)로 별개다.
+-->
+
+<div id="umsContent">
+  <div class="content">
+
+    <!-- 검색 -->
+    <div class="search-bar">
+      <div class="search-field"><label>시작 시간</label>
+        <input class="search-input" id="fFrom" type="datetime-local" style="min-width:200px;">
+      </div>
+      <div class="search-field"><label>종료 시간</label>
+        <input class="search-input" id="fTo" type="datetime-local" style="min-width:200px;">
+      </div>
+      <div class="search-field">
+        <label>작업
+          <span class="sl-info" title="LoginSucceeded, LoginFailed, Logout, ChangePassword 등 이벤트 이름입니다. 일부만 입력해도 검색됩니다.">&#9432;</span>
+        </label>
+        <input class="search-input" id="fAction" placeholder="예) Login" style="min-width:200px;"
+               onkeyup="if(event.key==='Enter')search()">
+      </div>
+      <span class="toolbar-spacer"></span>
+      <button class="btn btn-primary" onclick="search()">&#128269; 검색</button>
+      <button class="btn" onclick="resetSearch()">초기화</button>
+    </div>
+
+    <!-- 그리드 -->
+    <div class="grid-wrap">
+      <div class="grid-scroll">
+        <table class="grid-table" id="slTable">
+          <thead>
+            <tr>
+              <th class="sortable" data-sort="at"       onclick="sortBy('at')" style="width:220px;">시간<span class="sort-ind"></span></th>
+              <th class="sortable" data-sort="action"   onclick="sortBy('action')" style="width:170px;">작업<span class="sort-ind"></span></th>
+              <th style="width:140px;">IP 주소</th>
+              <th>브라우저</th>
+              <th class="sortable" data-sort="app"      onclick="sortBy('app')" style="width:180px;">애플리케이션<span class="sort-ind"></span></th>
+              <th class="sortable" data-sort="identity" onclick="sortBy('identity')" style="width:110px;">신원<span class="sort-ind"></span></th>
+              <th class="sortable" data-sort="client"   onclick="sortBy('client')" style="width:130px;">클라이언트<span class="sort-ind"></span></th>
+            </tr>
+          </thead>
+          <tbody id="gridBody"></tbody>
+        </table>
+      </div>
+
+      <div class="pane-paging">
+        <select class="search-select" id="pSize" onchange="go('size')" style="min-width:70px;">
+          <option>10</option><option>20</option><option>50</option>
+        </select>
+        <span class="hint">건씩 보기</span>
+        <span class="page-info" id="pInfo">0 - 0 / 전체 0 건</span>
+        <span class="toolbar-spacer"></span>
+        <button class="page-btn" onclick="go('first')">처음</button>
+        <button class="page-btn" onclick="go('prev')">이전</button>
+        <button class="page-btn active" id="pNo">1</button>
+        <button class="page-btn" onclick="go('next')">다음</button>
+        <button class="page-btn" onclick="go('last')">마지막</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="../../shared/layout.js"></script>
+<script src="security-log.js"></script>
+</body>
+</html>

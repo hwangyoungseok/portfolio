@@ -338,7 +338,7 @@
     gear: '<path d="M8 5.2a2.8 2.8 0 100 5.6 2.8 2.8 0 000-5.6zm6.3 3.6l-1.4-.5a5 5 0 000-.6l1.4-.5a.4.4 0 00.2-.5l-.9-2a.4.4 0 00-.5-.2l-1.3.6a5 5 0 00-.5-.3l-.2-1.4a.4.4 0 00-.4-.4h-2.2a.4.4 0 00-.4.4l-.2 1.4a5 5 0 00-.5.3l-1.3-.6a.4.4 0 00-.5.2l-.9 2a.4.4 0 00.2.5l1.4.5a5 5 0 000 .6l-1.4.5a.4.4 0 00-.2.5l.9 2c.1.2.3.3.5.2l1.3-.6.5.3.2 1.4c0 .2.2.4.4.4h2.2c.2 0 .4-.2.4-.4l.2-1.4.5-.3 1.3.6c.2.1.4 0 .5-.2l.9-2a.4.4 0 00-.2-.5z"/>',
     user: '<path d="M8 8.4a3 3 0 100-6 3 3 0 000 6zm0 1.2c-2.6 0-5 1.3-5 3v1.2c0 .4.3.7.7.7h8.6c.4 0 .7-.3.7-.7V12.6c0-1.7-2.4-3-5-3z"/>',
     clock: '<path d="M8 1.4a6.6 6.6 0 100 13.2A6.6 6.6 0 008 1.4zm.7 6.9l2.4 1.4a.6.6 0 11-.6 1L7.7 9.2a.6.6 0 01-.3-.5V4.6a.6.6 0 011.2 0v3.7z"/>',
-    lock: '<path d="M11.6 6.6h-.5V5a3.1 3.1 0 10-6.2 0v1.6h-.5c-.6 0-1 .5-1 1v5.3c0 .6.4 1 1 1h7.2c.6 0 1-.4 1-1V7.6c0-.5-.4-1-1-1zM6.1 5a1.9 1.9 0 013.8 0v1.6H6.1V5z"/>',
+    bell: '<path d="M8 15a1.7 1.7 0 001.7-1.6H6.3A1.7 1.7 0 008 15zm5-4.2v-3a5 5 0 00-3.8-4.9v-.5a1.2 1.2 0 10-2.4 0v.5A5 5 0 003 7.8v3l-1.2 1.3v.6h12.4v-.6L13 10.8z"/>',
     power: '<path d="M8 1.6c-.4 0-.7.3-.7.7v5.5a.7.7 0 001.4 0V2.3c0-.4-.3-.7-.7-.7zM4.6 3.7a.7.7 0 00-.9 0 5.9 5.9 0 108.6 0 .7.7 0 10-1 1 4.5 4.5 0 11-6.6 0 .7.7 0 00-.1-1z"/>',
   };
 
@@ -348,9 +348,9 @@
 
   const USER_MENU = [
     { key: 'account',  label: '내 계정',     ico: 'gear',  page: 'account/my-account' },
-    { key: 'seclog',   label: '보안 로그',   ico: 'user'  },
-    { key: 'session',  label: '세션',        ico: 'clock' },
-    { key: 'personal', label: '개인 데이터', ico: 'lock'  },
+    { key: 'seclog',   label: '보안 로그',   ico: 'user',  page: 'account/security-log' },
+    { key: 'notilist', label: '알림 보기',   ico: 'bell',  page: 'account/notification' },
+    { key: 'session',  label: '세션',        ico: 'clock', page: 'account/session' },
     { sep: true },
     { key: 'logout',   label: '로그아웃',    ico: 'power' },
   ];
@@ -407,6 +407,121 @@
     document.getElementById('umsLogoutModal').classList.remove('show');
   }
 
+  // ---- 헤더 알림 --------------------------------------------------------
+  // 목업. 실제로는 AbpNotifications / AbpNotificationSendRecords 를 읽는다.
+  // sev  : crit(빨강) | warn(주황) | info(파랑)
+  // kind : 분류 (알림 목록 화면의 필터 기준)
+  // page : 있으면 클릭 시 해당 화면으로 이동
+  //
+  // ※ 이 배열은 [알림 보기] 화면(account/notification)과 공유한다.
+  //    헤더 패널은 최근 6건만, 목록 화면은 전체를 보여준다.
+  const NOTI_LIMIT = 6;
+  const NOTI_NOW = new Date('2026-09-04T09:45:00');
+
+  const NOTIS = ROLE === 'host' ? [
+    { id: 1,  sev: 'warn', kind: '구독', time: '2026-09-04 09:33', unread: true,
+      title: '구독 요청 접수', desc: 'REQ-260903 미래네트웍스 — 기간 연장 요청', page: 'saas/subscribe-request' },
+    { id: 2,  sev: 'crit', kind: '티켓', time: '2026-09-04 08:45', unread: true,
+      title: '미할당 티켓 (Critical)', desc: 'TCK-20260903-001 GW-DR-02 서버 응답 없음', page: 'ticket/ticket-unassigned' },
+    { id: 3,  sev: 'crit', kind: '작업', time: '2026-09-04 03:00', unread: true,
+      title: '작업 실행 실패', desc: 'Ums.Facility.BatteryHealthCheckWorker — GW-DR-01 응답 없음', page: 'admin/job' },
+    { id: 4,  sev: 'warn', kind: '구독', time: '2026-09-03 00:30', unread: false,
+      title: '계약 만료 임박', desc: '세종클라우드 Professional — 2026-09-20 (D-16)', page: 'saas/tenant' },
+    { id: 5,  sev: 'info', kind: '구독', time: '2026-09-02 15:33', unread: false,
+      title: '구독 요청 접수', desc: 'REQ-260902 정우텔레콤 — 에디션 변경 요청', page: 'saas/subscribe-request' },
+    { id: 6,  sev: 'crit', kind: '티켓', time: '2026-09-02 08:20', unread: false,
+      title: '미할당 티켓 (Major)', desc: 'TCK-20260902-021 GW-IDC-02 통신 두절', page: 'ticket/ticket-all' },
+    { id: 7,  sev: 'warn', kind: '시스템', time: '2026-09-03 09:39', unread: false,
+      title: '설정 변경', desc: 'Alarm.Mail.Enabled — false → true (admin)', page: 'admin/setting' },
+    { id: 8,  sev: 'info', kind: '시스템', time: '2026-09-01 06:00', unread: false,
+      title: '월간 사용량 리포트', desc: '2026년 8월 리포트가 발송되었습니다.', page: 'admin/job' },
+    { id: 9,  sev: 'info', kind: '구독', time: '2026-08-29 10:20', unread: false,
+      title: '구독 요청 승인', desc: 'REQ-260828 한빛데이터센터 — Enterprise 적용 완료', page: 'saas/subscribe-request' },
+    { id: 10, sev: 'warn', kind: '구독', time: '2026-08-22 16:48', unread: false,
+      title: '구독 요청 반려', desc: 'REQ-260820 대성정보기술 — 중도 해지 불가', page: 'saas/subscribe-request' },
+    { id: 11, sev: 'warn', kind: '구독', time: '2026-08-16 00:30', unread: false,
+      title: '구독 만료 — 서비스 정지', desc: '미래네트웍스 Standard — 기능 차단 적용', page: 'saas/tenant' },
+    { id: 12, sev: 'info', kind: '구독', time: '2026-08-14 09:10', unread: false,
+      title: '구독 요청 승인', desc: 'REQ-260812 세종클라우드 — Professional 적용 완료', page: 'saas/subscribe-request' },
+  ] : [
+    { id: 1,  sev: 'crit', kind: '알람', time: '2026-09-04 09:37', unread: true,
+      title: '알람 발생 (Critical)', desc: 'UPS-2F-B 출력전압 상하한 초과 — 본사 IDC-2F', page: 'alarm/alarm-manage' },
+    { id: 2,  sev: 'warn', kind: '알람', time: '2026-09-04 09:33', unread: true,
+      title: '알람 발생 (Warning)', desc: 'GW-DR-01 HEARTBEAT 지연 — 판교 DR센터', page: 'alarm/alarm-manage' },
+    { id: 3,  sev: 'warn', kind: '알람', time: '2026-09-04 09:24', unread: true,
+      title: '알람 발생 (Major)', desc: 'CH-1 계측값 수집 중단 — 본사 IDC-2F', page: 'alarm/alarm-manage' },
+    { id: 4,  sev: 'info', kind: '알람', time: '2026-09-04 09:19', unread: false,
+      title: '알람 발생 (Minor)', desc: 'PDU-1F-01 분기전류 경고 — 본사 IDC-1F', page: 'alarm/alarm-manage' },
+    { id: 5,  sev: 'info', kind: '티켓', time: '2026-09-04 08:45', unread: false,
+      title: '티켓 배정', desc: 'TCK-20260903-002 UPS-2F-B 통신 두절', page: 'ticket/ticket-my' },
+    { id: 6,  sev: 'crit', kind: '알람', time: '2026-09-04 08:13', unread: false,
+      title: '알람 발생 (Major)', desc: 'UPS-2F-B On Battery — 본사 IDC-2F', page: 'alarm/alarm-manage' },
+    { id: 7,  sev: 'crit', kind: '알람', time: '2026-09-04 07:20', unread: false,
+      title: '알람 발생 (Critical)', desc: 'BAT-1F-A-01 셀 온도 초과 — 본사 IDC-1F', page: 'alarm/alarm-manage' },
+    { id: 8,  sev: 'warn', kind: '구독', time: '2026-09-03 00:30', unread: false,
+      title: '구독 만료 임박', desc: 'Professional — 2026-09-20 (D-16)', page: 'subscribe/status' },
+    { id: 9,  sev: 'info', kind: '티켓', time: '2026-09-02 19:41', unread: false,
+      title: '티켓 등록', desc: 'TCK-20260902-030 PDU-1F-C 출력 전류 이상', page: 'ticket/ticket-all' },
+    { id: 10, sev: 'info', kind: '티켓', time: '2026-08-29 09:00', unread: false,
+      title: '티켓 진행중', desc: 'TCK-20260829-011 UPS-DR-1 배터리 자가진단 실패', page: 'ticket/ticket-my' },
+    { id: 11, sev: 'info', kind: '티켓', time: '2026-08-28 16:40', unread: false,
+      title: '티켓 처리 완료', desc: 'TCK-20260825-002 배터리 스트링 교체 완료', page: 'ticket/ticket-my' },
+    { id: 12, sev: 'info', kind: '구독', time: '2026-08-14 09:10', unread: false,
+      title: '구독 요청 승인', desc: 'Professional 에디션이 적용되었습니다.', page: 'subscribe/status' },
+  ];
+
+  // 수신 시각을 상대 표기로. (기준 시각은 목업 고정값 NOTI_NOW)
+  function notiRel(time) {
+    const diff = Math.floor((NOTI_NOW - new Date(time.replace(' ', 'T'))) / 60000);   // 분
+    if (diff < 1)      return '방금';
+    if (diff < 60)     return diff + '분 전';
+    if (diff < 1440)   return Math.floor(diff / 60) + '시간 전';
+    if (diff < 2880)   return '어제';
+    if (diff < 10080)  return Math.floor(diff / 1440) + '일 전';
+    return Math.floor(diff / 10080) + '주 전';
+  }
+
+  function unreadCount() {
+    return NOTIS.filter(function (n) { return n.unread; }).length;
+  }
+
+  function renderNotiPanel() {
+    return '<div class="noti-panel" id="umsNotiPanel">'
+      +   '<div class="noti-head"><b>알림</b>'
+      +     '<button type="button" class="noti-link" id="umsNotiReadAll">모두 읽음</button></div>'
+      +   '<div class="noti-list" id="umsNotiList"></div>'
+      +   '<div class="noti-foot">'
+      +     '<button type="button" class="noti-link" id="umsNotiMore">전체 보기</button></div>'
+      + '</div>';
+  }
+
+  function renderNotiList() {
+    const list = document.getElementById('umsNotiList');
+    if (list) {
+      const recent = NOTIS.slice(0, NOTI_LIMIT);
+      list.innerHTML = recent.length
+        ? recent.map(function (n) {
+            return '<button type="button" class="noti-item' + (n.unread ? ' unread' : '') + '"'
+              + ' data-id="' + n.id + '">'
+              +   '<span class="noti-dot ' + n.sev + '"></span>'
+              +   '<span class="noti-body">'
+              +     '<span class="noti-title">' + n.title + '</span>'
+              +     '<span class="noti-desc">' + n.desc + '</span>'
+              +   '</span>'
+              +   '<span class="noti-at">' + notiRel(n.time) + '</span>'
+              + '</button>';
+          }).join('')
+        : '<div class="noti-empty">새 알림이 없습니다.</div>';
+    }
+
+    const badge = document.getElementById('umsNotiBadge');
+    if (badge) {
+      const n = unreadCount();
+      badge.textContent = n > 99 ? '99+' : n;
+      badge.hidden = (n === 0);
+    }
+  }
+
   // ---- 크롬(사이드바/헤더/브레드크럼/푸터) 조립 ----
   function buildChrome() {
     const key = currentKey();
@@ -451,7 +566,12 @@
       +   '<div class="header-brand">' + cfg.brand + '</div>'
       +   '<div class="header-right">'
       +     renderRoleSwitch()
-      +     '<span class="header-link">알림</span>'
+      +     '<div class="header-noti-wrap">'
+      +       '<button type="button" class="header-link header-noti" id="umsNotiBtn"'
+      +         ' aria-haspopup="true" aria-expanded="false">알림'
+      +         '<span class="noti-badge" id="umsNotiBadge" hidden>0</span></button>'
+      +       renderNotiPanel()
+      +     '</div>'
       +     '<div class="header-user-wrap">'
       +       '<button type="button" class="header-user" id="umsUserBtn" aria-haspopup="true" aria-expanded="false">'
       +         '<span class="avatar" style="background:' + cfg.avatarBg + '">' + cfg.avatar + '</span>'
@@ -493,17 +613,24 @@
       if (row && row.tagName !== 'A') row.parentElement.classList.toggle('open');
     });
 
-    // 헤더 사용자 메뉴: 아바타 클릭으로 열고 닫기
+    // 헤더 사용자 메뉴 / 알림: 둘은 서로를 닫는다 (동시에 열리지 않게)
     const userBtn  = document.getElementById('umsUserBtn');
     const userMenu = document.getElementById('umsUserMenu');
+    const notiBtn  = document.getElementById('umsNotiBtn');
+    const notiPanel = document.getElementById('umsNotiPanel');
 
     function closeUserMenu() {
       userMenu.classList.remove('show');
       userBtn.setAttribute('aria-expanded', 'false');
     }
+    function closeNoti() {
+      notiPanel.classList.remove('show');
+      notiBtn.setAttribute('aria-expanded', 'false');
+    }
 
     userBtn.addEventListener('click', function (e) {
       e.stopPropagation();
+      closeNoti();
       const open = userMenu.classList.toggle('show');
       userBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
     });
@@ -515,15 +642,51 @@
       userMenuAct(item.dataset.act);
     });
 
+    notiBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      closeUserMenu();
+      const open = notiPanel.classList.toggle('show');
+      notiBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+
+    // 알림 항목: 읽음 처리 후 해당 화면으로 이동
+    document.getElementById('umsNotiList').addEventListener('click', function (e) {
+      const item = e.target.closest('.noti-item');
+      if (!item) return;
+      const n = NOTIS.filter(function (x) { return x.id === Number(item.dataset.id); })[0];
+      if (!n) return;
+      n.unread = false;
+      renderNotiList();
+      closeNoti();
+      if (n.page) location.href = pageHref(n.page);
+    });
+
+    document.getElementById('umsNotiReadAll').addEventListener('click', function (e) {
+      e.stopPropagation();
+      if (!unreadCount()) { window.umsToast('읽지 않은 알림이 없습니다.'); return; }
+      NOTIS.forEach(function (n) { n.unread = false; });
+      renderNotiList();
+      window.umsToast('모든 알림을 읽음 처리했습니다.');
+    });
+
+    document.getElementById('umsNotiMore').addEventListener('click', function () {
+      closeNoti();
+      location.href = pageHref('account/notification');
+    });
+
+    renderNotiList();
+
     // 바깥 클릭 / ESC 로 닫는다. 페이지별 드롭다운과 독립적으로 동작한다.
     document.addEventListener('click', function (e) {
       if (!e.target.closest('.header-user-wrap')) closeUserMenu();
+      if (!e.target.closest('.header-noti-wrap')) closeNoti();
     });
     buildLogoutModal();
 
     document.addEventListener('keydown', function (e) {
       if (e.key !== 'Escape') return;
       closeUserMenu();
+      closeNoti();
       hideLogoutModal();
     });
   }
@@ -533,6 +696,12 @@
   window.umsIsHost = (ROLE === 'host');
   window.umsTenant = CUSTOMER_TENANT;
   window.umsLink = withRole;   // 페이지 안에서 다른 화면으로 링크 만들 때 사용
+
+  // ---- 알림: [알림 보기] 화면(account/notification)이 같은 목록을 쓴다 ----
+  //      화면에서 읽음 처리한 뒤 umsNotiSync() 를 부르면 헤더 배지가 갱신된다.
+  window.umsNotis    = NOTIS;
+  window.umsNotiRel  = notiRel;
+  window.umsNotiSync = renderNotiList;
 
   // ---- 공통 토스트 (window.umsToast('저장되었습니다.')) ----
   window.umsToast = function (msg) {

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>세션 - UMS</title>
+<link rel="stylesheet" href="../../shared/common.css">
+<link rel="stylesheet" href="session.css">
+</head>
+<body data-page="account/session">
+
+<!--
+  화면: (헤더 우측 사용자 메뉴) > 세션
+  설명: 로그인한 사용자 "본인"의 활성 로그인 세션 목록. 개별 종료 / 다른 세션 모두 종료.
+  대응 테이블: AbpSessions
+  ---------------------------------------------------------------------
+  ※ 사이드바 메뉴(MENUS)에는 없는 화면이다. 헤더 사용자 메뉴에서만 진입한다.
+  ※ 현재 세션은 종료할 수 없다 (스스로를 로그아웃시키는 셈이라 [로그아웃]과 구분한다).
+-->
+
+<div id="umsContent">
+  <div class="content">
+
+    <div class="se-note">
+      다른 기기에서 로그인한 세션을 확인하고 종료할 수 있습니다.
+      모르는 기기가 있다면 종료 후 <b>비밀번호를 변경</b>하세요.
+    </div>
+
+    <div class="grid-wrap">
+      <div class="toolbar">
+        <span class="se-count">활성 세션 <b id="seCount">0</b>개</span>
+        <span class="toolbar-spacer"></span>
+        <button class="btn btn-danger" id="seRevokeAll" onclick="askRevokeAll()">다른 세션 모두 종료</button>
+      </div>
+
+      <div class="grid-scroll">
+        <table class="grid-table" id="seTable">
+          <thead>
+            <tr>
+              <th>기기</th>
+              <th style="width:120px;">유형</th>
+              <th style="width:150px;">클라이언트</th>
+              <th style="width:140px;">IP 주소</th>
+              <th style="width:180px;">로그인 시각</th>
+              <th style="width:150px;">마지막 활동</th>
+              <th style="width:90px;">관리</th>
+            </tr>
+          </thead>
+          <tbody id="gridBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 세션 종료 확인 -->
+  <div class="modal-overlay" id="revokeModal">
+    <div class="confirm-modal">
+      <p id="r-msg"></p>
+      <div class="confirm-btns">
+        <button class="btn btn-primary" onclick="revokeConfirm()">종료</button>
+        <button class="btn" onclick="revokeModalClose()">취소</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="../../shared/layout.js"></script>
+<script src="session.js"></script>
+</body>
+</html>

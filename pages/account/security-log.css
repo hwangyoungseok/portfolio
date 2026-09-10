@@ -1,0 +1,24 @@
+/* 보안 로그 전용 스타일 (공통은 shared/common.css)
+   화면: (헤더 사용자 메뉴) > 보안 로그 */
+
+/* 하단 페이징 — admin/job.css 와 같은 규칙 (공통 CSS 에는 없어 페이지마다 정의한다) */
+.pane-paging { display: flex; align-items: center; gap: 8px; padding: 10px 14px; flex-shrink: 0;
+  border-top: 1px solid #eef1f4; font-size: 12px; color: #666; }
+.page-info { color: #98a2b3; margin-left: 8px; }
+
+/* 작업 라벨 옆 도움말 아이콘 */
+.sl-info { margin-left: 3px; color: #98a2b3; cursor: help; font-size: 12px; }
+
+/* 브라우저(User-Agent)는 길어서 한 줄로 자른다. 전체 값은 title 로 본다. */
+.sl-ua { display: block; max-width: 260px; overflow: hidden; text-overflow: ellipsis;
+  white-space: nowrap; color: #555; }
+
+/* 작업 배지 — 실패/보안 관련 이벤트를 눈에 띄게 */
+.sl-act { display: inline-block; padding: 2px 8px; border-radius: 10px;
+  font-size: 11px; font-weight: bold; line-height: 1.6; }
+.sl-act.ok   { background: #e6f4ea; color: #1e7e34; }
+.sl-act.fail { background: #fdecea; color: #c62828; }
+.sl-act.warn { background: #fff4e5; color: #b76e00; }
+.sl-act.neu  { background: #eef1f4; color: #55606b; }
+
+.sl-empty { color: #98a2b3; }
