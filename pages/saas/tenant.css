@@ -51,3 +51,6 @@
 /* 상세 Offcanvas — 라벨이 길어 기본 100px 로는 줄바꿈된다 */
 #tenantDrawer .dv-row { grid-template-columns: 110px 1fr; }
 #tenantDrawer .dv-box .hint { margin-left: 2px; }
+
+/* 관리자 초대 모달의 검증 실패 안내 */
+#inviteModal .hint.err { color: #c62828; font-weight: bold; }
