@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>알람 이력 조회 (호스트) - UMS</title>
+<link rel="stylesheet" href="../../shared/common.css">
+<link rel="stylesheet" href="alarm-history-host.css">
+</head>
+<body data-page="alarm/alarm-history-host">
+
+<!--
+  화면: 알람 > 알람 이력 조회 (호스트 전용)
+  설명: 전 고객사의 발생 알람 이력(Active 포함)을 조건으로 조회. 검색바 + 표(고객사 컬럼) + 페이징 + 행 클릭 상세(read-only).
+-->
+
+<div id="umsContent">
+  <div class="content">
+
+    <div class="search-bar">
+      <div class="search-field"><label>고객사</label><select class="search-select" id="fTenant"></select></div>
+      <div class="search-field"><label>기간</label>
+        <input type="date" class="search-input" id="fFrom" style="min-width:132px;">
+        <span style="color:#999;">~</span>
+        <input type="date" class="search-input" id="fTo" style="min-width:132px;">
+        <button class="btn" type="button" onclick="ahPreset('7d')">7일</button>
+        <button class="btn" type="button" onclick="ahPreset('30d')">30일</button>
+      </div>
+      <div class="search-field"><label>심각도</label>
+        <select class="search-select" id="fSev">
+          <option value="">전체</option><option value="warn">Warning</option><option value="minor">Minor</option>
+          <option value="major">Major</option><option value="crit">Critical</option>
+        </select>
+      </div>
+      <div class="search-field"><label>Source</label>
+        <select class="search-select" id="fSrc">
+          <option value="">전체</option><option value="RULE">RULE</option><option value="DEVICE">DEVICE</option>
+          <option value="SYSTEM">SYSTEM</option><option value="MANUAL">MANUAL</option>
+        </select>
+      </div>
+      <div class="search-field"><label>처리상태</label>
+        <select class="search-select" id="fHs">
+          <option value="">전체</option><option>미확인</option><option>확인</option><option>조치완료</option>
+        </select>
+      </div>
+      <div class="search-field"><label>상태</label>
+        <select class="search-select" id="fState">
+          <option value="">전체</option><option value="active">Active</option><option value="cleared">Cleared</option>
+        </select>
+      </div>
+      <div class="search-field"><label>검색어</label>
+        <input class="search-input" id="q" placeholder="설비 / 알람명" onkeyup="if(event.key==='Enter')ahRender()">
+      </div>
+      <div class="search-actions">
+        <button class="btn btn-primary" onclick="ahRender()">조회</button>
+        <button class="btn" onclick="ahReset()">초기화</button>
+      </div>
+    </div>
+
+    <div class="grid-wrap">
+      <div class="toolbar">
+        <span style="font-size:12px;color:#666;">조회결과 <b id="ahCount">0</b>건</span>
+        <span class="toolbar-spacer"></span>
+        <button class="btn" onclick="umsToast('엑셀 다운로드 (목업)')">엑셀 다운로드</button>
+      </div>
+      <div class="grid-scroll">
+        <table class="grid-table ahh-table">
+          <thead>
+            <tr>
+              <th style="width:50px;">No</th><th style="width:112px;">고객사</th><th style="width:74px;">Source</th>
+              <th style="width:78px;">심각도</th><th style="width:150px;">발생시각</th><th style="width:150px;">해제시각</th>
+              <th style="width:74px;">상태</th><th style="width:120px;">설비</th><th>알람명</th>
+              <th style="width:82px;">처리상태</th><th style="width:80px;">확인자</th>
+            </tr>
+          </thead>
+          <tbody id="ahBody"></tbody>
+        </table>
+      </div>
+      <div class="paging" id="ahPaging"></div>
+    </div>
+
+  </div>
+
+  <div class="drawer-mask" id="ahMask" onclick="ahDetailClose()"></div>
+  <aside class="drawer" id="ahDrawer">
+    <div class="drawer-header">
+      <h3 id="ahdTitle">알람 상세</h3>
+      <button class="modal-close" onclick="ahDetailClose()">&#10005;</button>
+    </div>
+    <div class="drawer-body" id="ahdBody"></div>
+    <div class="drawer-footer" style="justify-content:flex-end;">
+      <button class="btn btn-primary" onclick="ahDetailClose()">닫기</button>
+    </div>
+  </aside>
+</div>
+
+<script src="../../shared/layout.js"></script>
+<script src="alarm-history-host.js"></script>
+</body>
+</html>

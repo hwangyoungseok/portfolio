@@ -1,0 +1,39 @@
+/* 알람 조회 (호스트) 전용 스타일 (공통은 shared/common.css) */
+
+/* ---- 고객사별 summary 카드 ---- */
+.ov-cards-wrap { display: flex; align-items: stretch; gap: 6px; }
+.ov-nav {
+  flex-shrink: 0; width: 26px; border: 1px solid #dde1e7; background: #fff;
+  border-radius: 6px; cursor: pointer; color: #667; font-size: 11px;
+}
+.ov-nav:hover { border-color: #1a6ed8; color: #1a6ed8; }
+.ov-nav:disabled { opacity: 0.35; cursor: default; }
+
+.ov-cards { display: flex; gap: 10px; overflow-x: auto; padding: 2px; flex: 1; scroll-behavior: smooth; }
+.ov-cards::-webkit-scrollbar { height: 6px; }
+.ov-cards::-webkit-scrollbar-thumb { background: #cdd5de; border-radius: 3px; }
+
+.ov-card {
+  flex: 0 0 208px; background: #fff; border: 1px solid #e4e8ee; border-radius: 8px;
+  padding: 12px 14px; cursor: pointer; transition: box-shadow .15s, border-color .15s;
+}
+.ov-card:hover { box-shadow: 0 2px 10px rgba(20,30,50,0.08); border-color: #1a6ed8; }
+.ov-card.sel { border-color: #1a6ed8; box-shadow: 0 0 0 2px rgba(26,110,216,0.18); }
+.ov-card-name { font-size: 13px; font-weight: bold; color: #1a1a2e; display: flex; align-items: center; justify-content: space-between; }
+.ov-card-total { font-size: 12px; color: #98a2b3; font-weight: normal; }
+.ov-card-total b { color: #14213d; font-size: 15px; }
+.ov-sevs { display: flex; gap: 5px; margin-top: 10px; }
+.ov-sev { flex: 1; text-align: center; border-radius: 5px; padding: 5px 0; font-size: 11px; font-weight: bold; }
+.ov-sev .n { display: block; font-size: 15px; }
+.ov-sev.s-crit  { background: #c0392b; color: #fff; box-shadow: 0 1px 6px rgba(192,57,43,0.4); }
+.ov-sev.s-crit .n { font-size: 17px; }
+.ov-sev.s-major { background: #fff1ec; color: #e05a3a; }
+.ov-sev.s-minor { background: #fff4e5; color: #b76e00; }
+.ov-sev.s-warn  { background: #fbf7e3; color: #8a7420; }
+.ov-sev.zero { background: #f4f6f8; color: #b7bec7; }
+
+.ov-cards-empty { flex: 1; text-align: center; color: #98a2b3; font-size: 12px; padding: 20px; background: #fff; border: 1px solid #e4e8ee; border-radius: 8px; }
+
+/* ---- 목록 ---- */
+.ov-table td:nth-child(6) { text-align: left; }
+.ov-filter-tag { font-size: 11px; color: #1a6ed8; background: #eef4fc; border: 1px solid #d6e4f7; border-radius: 10px; padding: 2px 8px; margin-left: 8px; }

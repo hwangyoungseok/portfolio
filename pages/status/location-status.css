@@ -46,6 +46,10 @@
 .loc-row.major .loc-name { color: #d84315; }
 .loc-row.crit  .loc-name { color: #c62828; }
 
+/* ---------- 상세정보 (기본정보/변동정보 좌우 2열) ---------- */
+.loc-info-cols { display: flex; gap: 12px; }
+.loc-info-col { flex: 1; min-width: 0; border: 1px solid #e8ebef; border-radius: 6px; padding: 10px 12px; display: flex; flex-direction: column; gap: 16px; }
+
 /* ---------- 위치정보 (위치 breadcrumb) ---------- */
 .loc-loc-row { margin-bottom: 10px; }
 .loc-loc-row:last-child { margin-bottom: 0; }

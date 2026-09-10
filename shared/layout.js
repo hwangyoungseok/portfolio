@@ -58,10 +58,15 @@
         { label: '에디션',              page: 'saas/edition' },
         { label: '구독 요청 관리',      page: 'saas/subscribe-request' },
       ]},
+      { label: '알람', children: [
+        { label: '알람 조회',            page: 'alarm/alarm-overview-host' },
+        { label: '알람 이력 조회',       page: 'alarm/alarm-history-host' },
+      ]},
       { label: 'GW', children: [
         { label: 'GW 관리',              page: 'gw/gw-list-host' },
         { label: 'GW 상태 모니터링',     page: 'gw/gw-status-host' },
         { label: 'GW 서버 상태 모니터링', page: 'gw/gw-server-host' },
+        { label: 'GW 알림 설정',         page: 'gw/gw-alert-config' },
       ]},
       { label: '관리', children: [
         { label: 'ID 관리', children: [
@@ -99,7 +104,7 @@
         { label: '배터리 실시간 모니터링', page: 'data/battery-realtime' },
       ]},
       { label: '알람', children: [
-        { label: '알람 관리',           page: 'alarm/alarm-manage' },
+        { label: '알람 조회',           page: 'alarm/alarm-manage' },
         { label: '알람 이력 조회',      page: 'alarm/alarm-history' },
         { label: '체크 룰 관리',        page: 'alarm/alarm-rule' },
         { label: '알람 액션 그룹 관리', page: 'alarm/action-group' },
@@ -176,6 +181,9 @@
     'gw/gw-list-host',
     'gw/gw-status-host',
     'gw/gw-server-host',
+    'gw/gw-alert-config',
+    'alarm/alarm-overview-host',
+    'alarm/alarm-history-host',
     'alarm/alarm-rule',
     'alarm/alarm-manage',
     'alarm/alarm-history',

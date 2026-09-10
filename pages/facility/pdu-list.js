@@ -10,9 +10,9 @@
 
   const DATA = [
     { no: 1, name: 'PDU-1F-01', loc: '본사 IDC-1F', vendor: 'APC',    model: 'AP8853',  sn: 'AP8853-2211001', kind: '미터드-아웃렛', phase: '3상', outlet: 24, amp: 32, volt: 380, comm: 'SNMP',   gw: 'GW-IDC-01', link: 'on',  op: 'ok',    src: 'UPS-1F-A', date: '2023-05-10', ip: '10.10.1.31', port: 161, community: 'public', memo: '', last: '2026-09-03 09:41:07', alarms: [] },
-    { no: 2, name: 'PDU-1F-02', loc: '본사 IDC-1F', vendor: 'Vertiv', model: 'MPH2',    sn: 'MPH2-1902204',   kind: '스위치드',       phase: '3상', outlet: 24, amp: 32, volt: 380, comm: 'SNMP',   gw: 'GW-IDC-01', link: 'on',  op: 'warn',  src: 'UPS-1F-B', date: '2023-05-10', ip: '10.10.1.32', port: 161, community: 'public', memo: '', last: '2026-09-03 09:41:02', alarms: ['분기전류 정격 90% 초과 (경고)'] },
+    { no: 2, name: 'PDU-1F-02', loc: '본사 IDC-1F', vendor: 'Vertiv', model: 'MPH2',    sn: 'MPH2-1902204',   kind: '스위치드',       phase: '3상', outlet: 24, amp: 32, volt: 380, comm: 'SNMP',   gw: 'GW-IDC-01', link: 'on',  op: 'warn',  src: 'UPS-1F-B', date: '2023-05-10', ip: '10.10.1.32', port: 161, community: 'public', memo: '', last: '2026-09-03 09:41:02', alarms: [{ time: '2026-09-03 08:55', text: '분기전류 정격 90% 초과 (경고)' }] },
     { no: 3, name: 'PDU-2F-01', loc: '본사 IDC-2F', vendor: 'Raritan', model: 'PX3-5190R', sn: 'PX3-2005511',  kind: '미터드',         phase: '단상', outlet: 20, amp: 16, volt: 220, comm: 'SNMP',   gw: 'GW-IDC-02', link: 'on',  op: 'ok',    src: 'UPS-2F-A', date: '2022-12-01', ip: '10.10.2.31', port: 161, community: 'public', memo: '', last: '2026-09-03 09:40:58', alarms: [] },
-    { no: 4, name: 'PDU-2F-02', loc: '본사 IDC-2F', vendor: 'Raritan', model: 'PX3-5190R', sn: 'PX3-2005512',  kind: '미터드',         phase: '단상', outlet: 20, amp: 16, volt: 220, comm: 'Modbus', gw: 'GW-IDC-02', link: 'off', op: 'major', src: 'UPS-2F-A', date: '2022-12-01', ip: '10.10.2.32', port: 502, community: '-',      memo: '', last: '2026-09-03 08:05:11', alarms: ['통신 두절'] },
+    { no: 4, name: 'PDU-2F-02', loc: '본사 IDC-2F', vendor: 'Raritan', model: 'PX3-5190R', sn: 'PX3-2005512',  kind: '미터드',         phase: '단상', outlet: 20, amp: 16, volt: 220, comm: 'Modbus', gw: 'GW-IDC-02', link: 'off', op: 'major', src: 'UPS-2F-A', date: '2022-12-01', ip: '10.10.2.32', port: 502, community: '-',      memo: '', last: '2026-09-03 08:05:11', alarms: [{ time: '2026-09-03 08:05', text: '통신 두절' }] },
     { no: 5, name: 'PDU-DR-01', loc: '판교 DR센터', vendor: 'APC',    model: 'AP8858',  sn: 'AP8858-2401007', kind: '모니터드',       phase: '3상', outlet: 42, amp: 32, volt: 380, comm: 'SNMP',   gw: 'GW-DR-01',  link: 'on',  op: 'ok',    src: 'UPS-DR-1', date: '2024-02-08', ip: '10.20.1.31', port: 161, community: 'public', memo: '', last: '2026-09-03 09:41:11', alarms: [] },
     { no: 6, name: 'PDU-DR-02', loc: '판교 DR센터', vendor: 'APC',    model: 'AP8858',  sn: 'AP8858-2401008', kind: '미터드-아웃렛', phase: '3상', outlet: 42, amp: 32, volt: 380, comm: 'SNMP',   gw: 'GW-DR-01',  link: 'on',  op: 'ok',    src: 'PDU-DR-01', date: '2024-02-08', ip: '10.20.1.32', port: 161, community: 'public', memo: '2차 분전', last: '2026-09-03 09:41:05', alarms: [] },
   ];
@@ -20,6 +20,11 @@
   const LINK_BADGE = { on: ['badge-on', '온라인'], off: ['badge-off', '오프라인'] };
   const OP_BADGE   = { ok: ['badge-ok', '정상'], warn: ['badge-warn', '경고'], major: ['badge-major', 'Major'], crit: ['badge-crit', 'Critical'] };
   function badge(map, key) { const p = map[key] || ['badge-off', key]; return '<span class="badge ' + p[0] + '">' + p[1] + '</span>'; }
+  function alarmsHtml(alarms) {
+    return (alarms && alarms.length)
+      ? '<ul>' + alarms.map(function (a) { return '<li>' + a.text + ' <span style="color:#98a2b3;font-size:11px;">(' + a.time + ')</span></li>'; }).join('') + '</ul>'
+      : '<span style="color:#8a97a5;">없음</span>';
+  }
 
   function fillSelect(id, arr, withAll) {
     const el = document.getElementById(id);
@@ -108,9 +113,7 @@
           + dvRow('통신상태', badge(LINK_BADGE, r.link)) + dvRow('최근 수신', r.last))
       + dvGroup(
           dvRow('운영상태', badge(OP_BADGE, r.op))
-          + dvRow('활성 알람', r.alarms.length
-              ? '<ul>' + r.alarms.map(function (a) { return '<li>' + a + '</li>'; }).join('') + '</ul>'
-              : '<span style="color:#8a97a5;">없음</span>', true))
+          + dvRow('활성 알람', alarmsHtml(r.alarms), true))
       + dvGroup(dvRow('비고', r.memo || '<span style="color:#8a97a5;">-</span>', true))
       + '</div>';
     document.getElementById('pduMask').classList.add('show');

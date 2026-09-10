@@ -10,6 +10,16 @@
   // 코멘트 작성자 이름은 "지금 이 화면을 보고 있는 사람"이라 모드에 따라 달라진다.
   const ME = IS_CUSTOMER ? '고객사' : '관리자';
 
+  // 티켓 생성 모달의 "대상 설비" select용 — 각 설비관리 페이지(ups-list.js 등)에 등록된
+  // 실제 설비명 그대로. 그쪽 DATA가 바뀌면 여기도 같이 맞출 것.
+  const EQUIPMENT_BY_TYPE = {
+    UPS: ['UPS-1F-A', 'UPS-1F-B', 'UPS-1F-C', 'UPS-2F-A', 'UPS-2F-B', 'UPS-DR-1', 'UPS-DR-2'],
+    PDU: ['PDU-1F-01', 'PDU-1F-02', 'PDU-2F-01', 'PDU-2F-02', 'PDU-DR-01', 'PDU-DR-02'],
+    칠러: ['CH-1F-01', 'CH-1F-02', 'CH-2F-01', 'CH-2F-02', 'CH-DR-01'],
+    배터리: ['BAT-1F-A-1', 'BAT-1F-B-1', 'BAT-1F-B-2', 'BAT-1F-C-1', 'BAT-2F-A-1', 'BAT-2F-B-1', 'BAT-2F-B-2', 'BAT-DR-1-1', 'BAT-DR-2-1'],
+    GW: ['GW-IDC-01', 'GW-IDC-02', 'GW-DR-01', 'GW-DR-02'],
+  };
+
   const DATA = [
     { no: 1, ticketNo: 'TCK-20260901-014', title: 'UPS-1F-B 출력 부하율 85% 초과', target: 'UPS-1F-B', targetType: 'UPS',
       pri: 'minor', status: 'progress', reg: '2026-09-01', due: '2026-09-03', updated: '2026-09-02 10:20',
@@ -146,6 +156,58 @@
     const d = new Date();
     return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
   }
+  function addDays(dateStr, n) {
+    const d = new Date(dateStr + 'T00:00:00');
+    d.setDate(d.getDate() + n);
+    return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+  }
+
+  // ================= 티켓 생성 (고객 전용) =================
+  function tkCreateFillTarget() {
+    const type = document.getElementById('tc-type').value;
+    document.getElementById('tc-target').innerHTML = (EQUIPMENT_BY_TYPE[type] || [])
+      .map(function (name) { return '<option>' + name + '</option>'; }).join('');
+  }
+
+  function tkCreateOpen() {
+    document.getElementById('tc-title').value = '';
+    document.getElementById('tc-type').value = 'UPS';
+    tkCreateFillTarget();
+    document.getElementById('tc-pri').value = 'minor';
+    document.getElementById('tc-desc').value = '';
+    document.getElementById('tkCreateModal').classList.add('show');
+  }
+
+  function tkCreateClose() {
+    document.getElementById('tkCreateModal').classList.remove('show');
+  }
+
+  function tkCreateSubmit() {
+    const title      = document.getElementById('tc-title').value.trim();
+    const targetType = document.getElementById('tc-type').value;
+    const target     = document.getElementById('tc-target').value;
+    const pri        = document.getElementById('tc-pri').value;
+    const desc       = document.getElementById('tc-desc').value.trim();
+    if (!title) { umsToast('제목을 입력하세요.'); return; }
+    if (!desc)  { umsToast('상세 내용을 입력하세요.'); return; }
+
+    const no = Math.max.apply(null, DATA.map(function (r) { return r.no; }).concat([0])) + 1;
+    const now = nowStr();
+    const today = now.slice(0, 10);
+    const ticketNo = 'TCK-' + today.replace(/-/g, '') + '-' + String(no).padStart(3, '0');
+
+    DATA.unshift({
+      no: no, ticketNo: ticketNo, title: title, target: target, targetType: targetType,
+      pri: pri, status: 'pending', reg: today, due: addDays(today, 3), updated: now,
+      assignee: ASSIGNEE, desc: desc,
+      history: [{ time: now, text: ME + '가 티켓을 직접 등록' }],
+      comments: [],
+    });
+
+    document.getElementById('tkCreateModal').classList.remove('show');
+    renderGrid();
+    umsToast('티켓이 등록되었습니다.');
+  }
 
   let detailNo = null;
   let pendingFiles = []; // 코멘트 작성창에서 첨부 대기 중인 파일명 목록
@@ -280,5 +342,9 @@
   window.tkFilePick = tkFilePick;
   window.tkRemoveFile = tkRemoveFile;
   window.tkDetailClose = tkDetailClose;
+  window.tkCreateOpen = tkCreateOpen;
+  window.tkCreateClose = tkCreateClose;
+  window.tkCreateSubmit = tkCreateSubmit;
+  window.tkCreateFillTarget = tkCreateFillTarget;
 
 })();

@@ -10,14 +10,19 @@
   const DATA = [
     { no: 1, name: 'CH-1F-01', loc: '본사 IDC-1F', vendor: 'Carrier', model: '30XA-1002', sn: 'CR30XA-210011', rt: 300, ref: 'R-134a',  comm: 'BACnet', gw: 'GW-IDC-01', link: 'on',  op: 'ok',    date: '2022-08-20', ip: '10.10.1.41', port: 47808, memo: '', last: '2026-09-03 09:41:07', alarms: [] },
     { no: 2, name: 'CH-1F-02', loc: '본사 IDC-1F', vendor: 'Trane',   model: 'RTAC-300',  sn: 'TR-RTAC-200544', rt: 300, ref: 'R-513A',  comm: 'BACnet', gw: 'GW-IDC-01', link: 'on',  op: 'ok',    date: '2022-08-20', ip: '10.10.1.42', port: 47808, memo: '예비기', last: '2026-09-03 09:41:03', alarms: [] },
-    { no: 3, name: 'CH-2F-01', loc: '본사 IDC-2F', vendor: 'York',    model: 'YVAA-0250', sn: 'YK-YVAA-199877', rt: 250, ref: 'R-1234ze', comm: 'Modbus', gw: 'GW-IDC-02', link: 'on',  op: 'warn',  date: '2021-11-05', ip: '10.10.2.41', port: 502,   memo: '', last: '2026-09-03 09:40:58', alarms: ['냉수 출구온도 12℃ 초과 (경고)'] },
-    { no: 4, name: 'CH-2F-02', loc: '본사 IDC-2F', vendor: 'York',    model: 'YVAA-0250', sn: 'YK-YVAA-199878', rt: 250, ref: 'R-1234ze', comm: 'Modbus', gw: 'GW-IDC-02', link: 'off', op: 'major', date: '2021-11-05', ip: '10.10.2.42', port: 502,   memo: '', last: '2026-09-03 07:55:20', alarms: ['통신 두절', '압축기 트립 (Major)'] },
+    { no: 3, name: 'CH-2F-01', loc: '본사 IDC-2F', vendor: 'York',    model: 'YVAA-0250', sn: 'YK-YVAA-199877', rt: 250, ref: 'R-1234ze', comm: 'Modbus', gw: 'GW-IDC-02', link: 'on',  op: 'warn',  date: '2021-11-05', ip: '10.10.2.41', port: 502,   memo: '', last: '2026-09-03 09:40:58', alarms: [{ time: '2026-09-03 06:30', text: '냉수 출구온도 12℃ 초과 (경고)' }] },
+    { no: 4, name: 'CH-2F-02', loc: '본사 IDC-2F', vendor: 'York',    model: 'YVAA-0250', sn: 'YK-YVAA-199878', rt: 250, ref: 'R-1234ze', comm: 'Modbus', gw: 'GW-IDC-02', link: 'off', op: 'major', date: '2021-11-05', ip: '10.10.2.42', port: 502,   memo: '', last: '2026-09-03 07:55:20', alarms: [{ time: '2026-09-03 07:50', text: '통신 두절' }, { time: '2026-09-03 02:15', text: '압축기 트립 (Major)' }] },
     { no: 5, name: 'CH-DR-01', loc: '판교 DR센터', vendor: 'LG',      model: 'RCUW-0200', sn: 'LG-RCUW-240033', rt: 200, ref: 'R-134a',  comm: 'BACnet', gw: 'GW-DR-01',  link: 'on',  op: 'ok',    date: '2024-02-08', ip: '10.20.1.41', port: 47808, memo: '', last: '2026-09-03 09:41:11', alarms: [] },
   ];
 
   const LINK_BADGE = { on: ['badge-on', '온라인'], off: ['badge-off', '오프라인'] };
   const OP_BADGE   = { ok: ['badge-ok', '정상'], warn: ['badge-warn', '경고'], major: ['badge-major', 'Major'], crit: ['badge-crit', 'Critical'] };
   function badge(map, key) { const p = map[key] || ['badge-off', key]; return '<span class="badge ' + p[0] + '">' + p[1] + '</span>'; }
+  function alarmsHtml(alarms) {
+    return (alarms && alarms.length)
+      ? '<ul>' + alarms.map(function (a) { return '<li>' + a.text + ' <span style="color:#98a2b3;font-size:11px;">(' + a.time + ')</span></li>'; }).join('') + '</ul>'
+      : '<span style="color:#8a97a5;">없음</span>';
+  }
 
   function fillSelect(id, arr, withAll) {
     const el = document.getElementById(id);
@@ -99,9 +104,7 @@
           + dvRow('통신상태', badge(LINK_BADGE, r.link)) + dvRow('최근 수신', r.last))
       + dvGroup(
           dvRow('운영상태', badge(OP_BADGE, r.op))
-          + dvRow('활성 알람', r.alarms.length
-              ? '<ul>' + r.alarms.map(function (a) { return '<li>' + a + '</li>'; }).join('') + '</ul>'
-              : '<span style="color:#8a97a5;">없음</span>', true))
+          + dvRow('활성 알람', alarmsHtml(r.alarms), true))
       + dvGroup(dvRow('비고', r.memo || '<span style="color:#8a97a5;">-</span>', true))
       + '</div>';
     document.getElementById('chlMask').classList.add('show');

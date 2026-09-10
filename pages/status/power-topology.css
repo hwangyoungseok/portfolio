@@ -43,6 +43,10 @@
 .topo-row.major .topo-name { color: #d84315; }
 .topo-row.crit  .topo-name { color: #c62828; }
 
+/* ---------- 상세정보 (기본정보/변동정보 좌우 2열) ---------- */
+.topo-info-cols { display: flex; gap: 12px; }
+.topo-info-col { flex: 1; min-width: 0; border: 1px solid #e8ebef; border-radius: 6px; padding: 10px 12px; display: flex; flex-direction: column; gap: 16px; }
+
 /* ---------- 위치정보 (위치 breadcrumb) ---------- */
 .topo-loc-row { margin-bottom: 10px; }
 .topo-loc-row:last-child { margin-bottom: 0; }
