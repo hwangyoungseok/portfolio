@@ -1,0 +1,20 @@
+/* GW 알림 설정 전용 스타일 (공통은 shared/common.css) */
+
+.gac-note {
+  background: #eef4fc; border: 1px solid #d6e4f7; border-radius: 6px;
+  padding: 10px 14px; font-size: 12px; color: #33506e; line-height: 1.6;
+}
+
+.gac-table td { vertical-align: middle; }
+.gac-table td.gac-ev { text-align: left; }
+.gac-ev-name { font-weight: bold; color: #1a2330; }
+.gac-ev-desc { font-size: 11px; color: #8a929c; margin-top: 2px; }
+.gac-th { display: flex; align-items: center; gap: 6px; justify-content: center; }
+.gac-th input { width: 76px; padding: 4px 6px; font-size: 12px; text-align: right; }
+.gac-th .u { font-size: 11px; color: #8a929c; }
+.gac-th.na { color: #c9ced4; font-size: 11px; }
+.gac-grp { width: 100%; padding: 5px 8px; font-size: 12px; }
+.gac-chs { display: flex; gap: 12px; justify-content: center; }
+.gac-chs label { display: flex; align-items: center; gap: 4px; font-size: 12px; color: #444; }
+.gac-table tbody tr.off td { opacity: 0.5; }
+.gac-table tbody tr.off td:first-child { opacity: 1; }

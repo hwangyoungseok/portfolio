@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GW 알림 설정 - UMS</title>
+<link rel="stylesheet" href="../../shared/common.css">
+<link rel="stylesheet" href="gw-alert-config.css">
+</head>
+<body data-page="gw/gw-alert-config">
+
+<!--
+  화면: GW > GW 알림 설정 (호스트 전용)
+  설명: GW/GW서버 이상 시 메일·문자 통지 설정. 이벤트 "종류"는 고정(코드 하드코딩) — 이 화면에선
+        각 이벤트에 대해 사용여부/임계값/대상 그룹/채널만 설정한다 (umsGwAlertRule, TenantId=NULL 전역).
+        판정·발송은 GWM. 실제 발생 이력은 여기 아님(알람/GW 상태 화면).
+  참고: docu/2.design/GW_개발요구사항.txt [12]
+-->
+
+<div id="umsContent">
+  <div class="content">
+
+    <div class="gac-note">
+      <b>호스트 전역 규칙</b> — 어느 고객사의 GW 든 아래 이벤트가 발생하면 지정한 대상에게 통지합니다.
+      (고객사별 개별 규칙은 각 고객사 화면에서 별도 설정)
+    </div>
+
+    <div class="grid-wrap">
+      <div class="toolbar">
+        <span style="font-size:12px;color:#666;">고정 이벤트 <b>5</b>종</span>
+        <span class="toolbar-spacer"></span>
+        <span id="gacSaved" style="font-size:11px;color:#98a2b3;"></span>
+      </div>
+      <div class="grid-scroll">
+        <table class="grid-table gac-table">
+          <thead>
+            <tr>
+              <th style="width:64px;">사용</th><th style="width:200px;">이벤트</th>
+              <th style="width:170px;">임계값</th><th style="width:200px;">대상 그룹</th><th>채널</th>
+            </tr>
+          </thead>
+          <tbody id="gacBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div style="display:flex;justify-content:flex-end;gap:8px;">
+      <button class="btn" onclick="gacReset()">기본값</button>
+      <button class="btn btn-primary" onclick="gacSave()">저장</button>
+    </div>
+
+  </div>
+</div>
+
+<script src="../../shared/layout.js"></script>
+<script src="gw-alert-config.js"></script>
+</body>
+</html>

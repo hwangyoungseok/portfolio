@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>알람 조회 (호스트) - UMS</title>
+<link rel="stylesheet" href="../../shared/common.css">
+<link rel="stylesheet" href="alarm-overview-host.css">
+</head>
+<body data-page="alarm/alarm-overview-host">
+
+<!--
+  화면: 알람 > 알람 조회 (호스트 전용)
+  설명: 전 고객사(테넌트)의 현재 활성 알람 현황.
+        상단 고객사 콤보(기본 전체) + 고객사별 알람 summary 카드(활성 많은 순, 좌우 이동) + 하단 활성 알람 목록.
+        콤보 선택 → 카드·목록 그 고객사만. 전체 상태에서 카드 클릭 → 하단 목록만 그 고객사로 필터.
+-->
+
+<div id="umsContent">
+  <div class="content">
+
+    <div class="search-bar">
+      <div class="search-field"><label>고객사</label><select class="search-select" id="fTenant" onchange="ovComboChange()"></select></div>
+      <span class="toolbar-spacer"></span>
+      <span id="ovSummary" style="font-size:12px;color:#667;"></span>
+    </div>
+
+    <!-- 고객사별 summary 카드 -->
+    <div class="ov-cards-wrap">
+      <button class="ov-nav" id="ovPrev" onclick="ovScroll(-1)">&#9664;</button>
+      <div class="ov-cards" id="ovCards"></div>
+      <button class="ov-nav" id="ovNext" onclick="ovScroll(1)">&#9654;</button>
+    </div>
+
+    <!-- 활성 알람 목록 -->
+    <div class="grid-wrap">
+      <div class="toolbar">
+        <span style="font-size:12px;color:#666;">활성 알람 <b id="ovCount">0</b>건</span>
+        <span id="ovFilterTag" class="ov-filter-tag" hidden></span>
+        <span class="toolbar-spacer"></span>
+        <button class="btn" onclick="umsToast('엑셀 다운로드 (목업)')">엑셀 다운로드</button>
+      </div>
+      <div class="grid-scroll">
+        <table class="grid-table ov-table">
+          <thead>
+            <tr>
+              <th style="width:56px;">No</th><th style="width:120px;">고객사</th><th style="width:82px;">심각도</th>
+              <th style="width:160px;">발생시각</th><th style="width:130px;">설비</th><th>알람명</th><th style="width:88px;">처리상태</th>
+            </tr>
+          </thead>
+          <tbody id="ovBody"></tbody>
+        </table>
+      </div>
+      <div class="paging" id="ovPaging"></div>
+    </div>
+
+  </div>
+</div>
+
+<script src="../../shared/layout.js"></script>
+<script src="alarm-overview-host.js"></script>
+</body>
+</html>
