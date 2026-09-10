@@ -58,6 +58,11 @@
         { label: '에디션',              page: 'saas/edition' },
         { label: '구독 요청 관리',      page: 'saas/subscribe-request' },
       ]},
+      { label: 'GW', children: [
+        { label: 'GW 관리',              page: 'gw/gw-list-host' },
+        { label: 'GW 상태 모니터링',     page: 'gw/gw-status-host' },
+        { label: 'GW 서버 상태 모니터링', page: 'gw/gw-server-host' },
+      ]},
       { label: '관리', children: [
         { label: 'ID 관리', children: [
           { label: '조직',              page: 'admin/id-org' },
@@ -168,6 +173,9 @@
     'data/pdu-trend',
     'data/chiller-data',
     'data/chiller-trend',
+    'gw/gw-list-host',
+    'gw/gw-status-host',
+    'gw/gw-server-host',
     'alarm/alarm-rule',
     'alarm/alarm-manage',
     'alarm/alarm-history',

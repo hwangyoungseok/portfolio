@@ -175,7 +175,7 @@
     const r = (no == null) ? null : DATA.filter(function (x) { return x.no === no; })[0];
     editingNo = no;
     document.getElementById('mTitle').textContent = r ? '배터리 수정' : '배터리 등록';
-    document.getElementById('m-ups').value  = r ? r.ups   : UPS_LIST[0];
+    document.getElementById('m-ups').value  = r ? r.ups   : '';
     document.getElementById('m-id').value   = r ? r.id    : '';
     document.getElementById('m-maker').value = r ? r.maker : '';
     document.getElementById('m-cap').value  = r ? r.cap   : '';
@@ -230,6 +230,7 @@
   fillSelect('fUps', UPS_LIST, true);
   fillSelect('fLoc', LOCATIONS, true);
   fillSelect('m-ups', UPS_LIST, false);
+  document.getElementById('m-ups').insertAdjacentHTML('afterbegin', '<option value=""></option>');
   renderGrid();
 
   window.renderGrid   = renderGrid;

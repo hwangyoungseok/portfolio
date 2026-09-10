@@ -1,0 +1,6 @@
+/* GW 상태 모니터링 (호스트) 전용 스타일 (공통은 shared/common.css) */
+
+.gs-table td:nth-child(2), .gs-table td:nth-child(3) { text-align: left; }
+.gs-table tbody tr.row-off td { background: #fffaf9; }
+.gs-table tbody tr.row-off:hover td { background: #fdecea; }
+.gs-tenant { display: inline-block; font-size: 11px; color: #33506e; background: #eef3fb; border: 1px solid #dbe6f7; border-radius: 3px; padding: 1px 7px; }
