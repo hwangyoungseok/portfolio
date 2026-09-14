@@ -1,6 +1,8 @@
 /* 위치 전용 스타일 (공통은 shared/common.css)
    화면: 설비현황 > 위치 — power-topology.css와 같은 패턴, 클래스만 loc- 접두로 구분 */
 
+.search-nav-btn { padding: 6px 9px; font-size: 10px; line-height: 1; }
+
 .loc-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; background: #ccc; flex-shrink: 0; }
 .loc-dot.ok    { background: #1e7e34; }
 .loc-dot.warn  { background: #b76e00; }
@@ -35,7 +37,7 @@
 .loc-row.static { cursor: default; }
 .loc-row.static:hover { background: transparent; }
 .loc-row.static .loc-name { color: #667085; }
-.loc-caret { width: 14px; text-align: center; color: #8a97a5; font-size: 10px; flex-shrink: 0; cursor: pointer; }
+.loc-caret { width: 20px; text-align: center; color: #8a97a5; font-size: 18px; flex-shrink: 0; cursor: pointer; }
 .loc-caret.leaf { visibility: hidden; }
 .loc-type-icon { font-size: 12px; flex-shrink: 0; }
 

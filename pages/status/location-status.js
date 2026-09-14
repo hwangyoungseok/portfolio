@@ -182,15 +182,17 @@
     return out;
   }
 
-  // 검색: 트리를 걸러내지 않는다. 같은 검색어로 다시 실행하면 직전에 찾은 항목 "다음"으로
-  // 넘어가고(끝까지 가면 맨 위로 순환), 검색어가 바뀌면 다시 맨 위(첫 일치)부터 찾는다.
-  function locSearchGo() {
+  // 검색: 트리를 걸러내지 않는다. 같은 검색어로 다시 실행하면 직전에 찾은 항목 기준
+  // dir 방향(1=다음, -1=이전)으로 넘어가고(끝/처음에서는 반대쪽으로 순환), 검색어가
+  // 바뀌면 dir 과 무관하게 다시 맨 위(첫 일치)부터 찾는다.
+  function locSearchGo(dir) {
+    dir = dir || 1;
     const kw = (document.getElementById('locSearch').value || '').trim().toLowerCase();
     if (!kw) return;
     const matches = findAllMatches(lastTreeRoots, kw, []);
     if (!matches.length) { umsToast('일치하는 항목이 없습니다.'); lastSearchKw = null; lastMatchIndex = -1; return; }
 
-    const idx = (kw === lastSearchKw) ? (lastMatchIndex + 1) % matches.length : 0;
+    const idx = (kw === lastSearchKw) ? (((lastMatchIndex + dir) % matches.length) + matches.length) % matches.length : 0;
     const found = matches[idx];
     lastSearchKw = kw;
     lastMatchIndex = idx;
@@ -200,7 +202,14 @@
     // 위치 노드는 클릭 불가라 선택/상세 표시는 못 하지만, 찾은 위치까지는 펼쳐서 스크롤은 해 준다.
     if (found.node.id.indexOf('loc:') !== 0) selectEntity(found.node.id);
     const row = document.querySelector('.loc-row[data-id="' + found.node.id + '"]');
-    if (row) row.scrollIntoView({ block: 'center' });
+    // scrollIntoView는 상위 스크롤 조상(페이지 전체)까지 건드려 화면이 훅 내려가 버린다.
+    // 트리 패널(locTreeBody) 안에서만 스크롤하도록 container.scrollTop을 직접 계산한다.
+    if (row) {
+      const container = document.getElementById('locTreeBody');
+      const rowRect = row.getBoundingClientRect();
+      const contRect = container.getBoundingClientRect();
+      container.scrollTop += (rowRect.top - contRect.top) - (container.clientHeight - row.offsetHeight) / 2;
+    }
   }
 
   function renderRow(n, depth) {
@@ -485,9 +494,11 @@
       const row = e.target.closest('.loc-row[data-node]');
       if (row) selectEntity(row.getAttribute('data-node'));
     });
-    document.getElementById('locSearchBtn').addEventListener('click', locSearchGo);
+    document.getElementById('locSearchBtn').addEventListener('click', function () { locSearchGo(1); });
+    document.getElementById('locSearchUp').addEventListener('click', function () { locSearchGo(-1); });
+    document.getElementById('locSearchDown').addEventListener('click', function () { locSearchGo(1); });
     document.getElementById('locSearch').addEventListener('keydown', function (e) {
-      if (e.key === 'Enter') locSearchGo();
+      if (e.key === 'Enter') locSearchGo(1);
     });
   }
 
