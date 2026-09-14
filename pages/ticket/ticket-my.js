@@ -71,6 +71,16 @@
         { time: '2026-08-29 13:11', text: '상태 변경: 대기중 → 진행중' },
       ],
       comments: [] },
+    // 고객이 직접 등록한 티켓 예시 — tkCreateSubmit()으로 방금 만든 것처럼 새로고침해도
+    // 남아있도록 처음부터 목업 데이터에 심어 둔다(자동생성 티켓과 달리 attachments 필드가 있음).
+    { no: 6, ticketNo: 'TCK-20260904-011', title: 'PDU-1F-01 전원 표시등 깜빡임', target: 'PDU-1F-01', targetType: 'PDU',
+      pri: 'minor', status: 'pending', reg: '2026-09-04', due: '2026-09-07', updated: '2026-09-04 10:05',
+      assignee: ASSIGNEE, desc: 'PDU-1F-01 전면 전원 표시등이 간헐적으로 깜빡입니다. 확인 부탁드립니다.',
+      attachments: ['pdu_led_photo.jpg'],
+      history: [
+        { time: '2026-09-04 10:05', text: '고객사가 티켓을 직접 등록' },
+      ],
+      comments: [] },
   ];
 
   const PRI_LABEL = { warning: 'Warning', minor: 'Minor', major: 'Major', critical: 'Critical' };
