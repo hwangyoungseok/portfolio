@@ -120,6 +120,11 @@
             <option value="critical">Critical</option>
           </select>
           <div class="form-label req">상세 내용</div><textarea class="form-textarea" id="tc-desc" rows="4" placeholder="어떤 문제인지 자세히 설명해 주세요"></textarea>
+          <div class="form-label">첨부파일</div>
+          <div>
+            <label class="btn tk-attach-btn">&#128206; 첨부파일<input type="file" id="tc-file" multiple hidden onchange="tkCreateFilePick(event)"></label>
+            <div class="tk-attach-chips" id="tcAttachChips"></div>
+          </div>
         </div>
       </div>
       <div class="modal-footer">

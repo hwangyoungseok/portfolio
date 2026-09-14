@@ -183,12 +183,36 @@
       .map(function (name) { return '<option>' + name + '</option>'; }).join('');
   }
 
+  // 티켓 생성 시 첨부하는 파일 목록. 상세 모달의 코멘트 첨부(pendingFiles)와는 별개 —
+  // 코멘트는 티켓이 이미 있는 상태에서 나중에 덧붙이는 것이고, 이건 최초 등록 시점에
+  // 티켓 본문에 딸리는 첨부라 서로 다른 상태로 관리한다.
+  let createPendingFiles = [];
+
+  function renderCreateAttachChips() {
+    document.getElementById('tcAttachChips').innerHTML = createPendingFiles.map(function (name, i) {
+      return '<span class="tk-file-chip">&#128206; ' + name + ' <button type="button" onclick="tkCreateRemoveFile(' + i + ')">&times;</button></span>';
+    }).join('');
+  }
+
+  function tkCreateFilePick(e) {
+    Array.from(e.target.files || []).forEach(function (f) { createPendingFiles.push(f.name); });
+    e.target.value = '';
+    renderCreateAttachChips();
+  }
+
+  function tkCreateRemoveFile(i) {
+    createPendingFiles.splice(i, 1);
+    renderCreateAttachChips();
+  }
+
   function tkCreateOpen() {
     document.getElementById('tc-title').value = '';
     document.getElementById('tc-type').value = 'UPS';
     tkCreateFillTarget();
     document.getElementById('tc-pri').value = 'minor';
     document.getElementById('tc-desc').value = '';
+    createPendingFiles = [];
+    renderCreateAttachChips();
     document.getElementById('tkCreateModal').classList.add('show');
   }
 
@@ -213,12 +237,13 @@
     DATA.unshift({
       no: no, ticketNo: ticketNo, title: title, target: target, targetType: targetType,
       pri: pri, status: 'pending', reg: today, due: addDays(today, 3), updated: now,
-      assignee: ASSIGNEE, desc: desc,
+      assignee: ASSIGNEE, desc: desc, attachments: createPendingFiles.slice(),
       history: [{ time: now, text: ME + '가 티켓을 직접 등록' }],
       comments: [],
     });
 
     document.getElementById('tkCreateModal').classList.remove('show');
+    createPendingFiles = [];
     renderGrid();
     umsToast('티켓이 등록되었습니다.');
   }
@@ -290,7 +315,12 @@
           + dvRow('등록일', r.reg) + dvRow('처리기한', r.due + (isOverdue(r) ? ' <span class="status-badge status-overdue">기한초과</span>' : ''))
           + dvRow('최근 업데이트', r.updated))
       + dvGroup(
-          dvRow('설명', r.desc, true))
+          dvRow('설명', r.desc, true)
+          + (r.attachments !== undefined
+              ? dvRow('첨부파일', r.attachments.length
+                  ? r.attachments.map(function (f) { return '<span class="cmt-file-chip">&#128206; ' + f + '</span>'; }).join('')
+                  : '<span style="color:#8a97a5;">첨부된 파일이 없습니다.</span>', true)
+              : ''))
       + dvGroup(statusRowHtml)
       + dvGroup(
           dvRow('처리이력', historyHtml, true))
@@ -359,6 +389,8 @@
   window.tkCreateOpen = tkCreateOpen;
   window.tkCreateClose = tkCreateClose;
   window.tkCreateSubmit = tkCreateSubmit;
+  window.tkCreateFilePick = tkCreateFilePick;
+  window.tkCreateRemoveFile = tkCreateRemoveFile;
   window.tkCreateFillTarget = tkCreateFillTarget;
 
 })();
