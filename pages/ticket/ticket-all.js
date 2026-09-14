@@ -47,6 +47,16 @@
     { no: 13, ticketNo: 'TCK-20260826-004', title: 'PDU-DR-01 온도 센서 이상', target: 'PDU-DR-01', targetType: 'PDU', loc: '판교 DR센터',
       pri: 'critical', status: 'progress', reg: '2026-08-26', due: '2026-08-29', updated: '2026-08-27 14:30', assignee: '박지훈',
       desc: 'PDU-DR-01의 온도 센서 값이 비정상적으로 튀는 현상이 발생하고 있습니다.', history: [{ time: '2026-08-26 08:11', text: '알람 기반 티켓 자동 생성' }] },
+    // 고객이 직접 등록한 티켓 예시(내 티켓 페이지의 no:6 과 동일 건) — 전체 티켓에도
+    // 이런 유형이 섞여 있어야 자동생성 티켓뿐인 목업이 아니게 된다. attachments 필드로 구분.
+    { no: 14, ticketNo: 'TCK-20260904-011', title: 'PDU-1F-01 전원 표시등 깜빡임', target: 'PDU-1F-01', targetType: 'PDU', loc: '본사 IDC-1F',
+      pri: 'minor', status: 'pending', reg: '2026-09-04', due: '2026-09-07', updated: '2026-09-04 10:10', assignee: '관리자',
+      desc: 'PDU-1F-01 전면 전원 표시등이 간헐적으로 깜빡입니다. 확인 부탁드립니다.',
+      attachments: ['pdu_led_photo.jpg'],
+      history: [
+        { time: '2026-09-04 10:05', text: '고객사가 티켓을 직접 등록' },
+        { time: '2026-09-04 10:10', text: '담당자(관리자)에게 할당' },
+      ] },
   ];
 
   const PRI_LABEL = { warning: 'Warning', minor: 'Minor', major: 'Major', critical: 'Critical' };
@@ -207,7 +217,12 @@
           + dvRow('담당자', r.assignee || '<span style="color:#98a2b3;">미할당</span>')
           + dvRow('등록일', r.reg) + dvRow('처리기한', r.due) + dvRow('최근 업데이트', r.updated))
       + dvGroup(
-          dvRow('설명', r.desc, true))
+          dvRow('설명', r.desc, true)
+          + (r.attachments !== undefined
+              ? dvRow('첨부파일', r.attachments.length
+                  ? r.attachments.map(function (f) { return '<span class="cmt-file-chip">&#128206; ' + f + '</span>'; }).join('')
+                  : '<span style="color:#8a97a5;">첨부된 파일이 없습니다.</span>', true)
+              : ''))
       + dvGroup(
           dvRow('처리이력', historyHtml, true))
       + '</div>';

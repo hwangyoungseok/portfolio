@@ -79,6 +79,7 @@
       attachments: ['pdu_led_photo.jpg'],
       history: [
         { time: '2026-09-04 10:05', text: '고객사가 티켓을 직접 등록' },
+        { time: '2026-09-04 10:10', text: '담당자(관리자)에게 할당' },
       ],
       comments: [] },
   ];
