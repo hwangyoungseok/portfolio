@@ -1,0 +1,12 @@
+/* GW 버전관리 전용 스타일 (공통은 shared/common.css) */
+
+.gv-note {
+  background: #eef4fc; border: 1px solid #d6e4f7; border-radius: 6px;
+  padding: 10px 14px; font-size: 12px; color: #33506e; line-height: 1.6; margin-bottom: 10px;
+}
+
+.gv-table td:nth-child(3) { text-align: left; font-family: monospace; font-size: 11.5px; }
+.gv-table td:nth-child(4) { font-family: monospace; font-size: 11px; color: #98a2b3; }
+.gv-table td:nth-child(5) { text-align: left; color: #667085; }
+.gv-del { border: none; background: none; color: #c0392b; cursor: pointer; font-size: 13px; }
+.gv-del:hover { color: #a93226; }

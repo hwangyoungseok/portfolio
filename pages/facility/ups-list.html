@@ -47,6 +47,7 @@
       <div class="toolbar">
         <span style="font-size:12px;color:#666;">총 <b id="gridCount">0</b>건</span>
         <span class="toolbar-spacer"></span>
+        <button class="btn" onclick="upsImportOpen()">엑셀 임포트</button>
         <button class="btn" onclick="umsToast('엑셀 다운로드 (목업)')">엑셀 다운로드</button>
         <button class="btn btn-primary" onclick="upsOpen(null)">+ UPS 등록</button>
       </div>
@@ -124,6 +125,31 @@
       <button class="btn btn-primary" onclick="upsDetailClose()">닫기</button>
     </div>
   </aside>
+
+  <!-- 엑셀 임포트 -->
+  <div class="modal-overlay" id="upsImportModal">
+    <div class="modal" style="width:380px;">
+      <div class="modal-header">
+        <h3>엑셀 일괄 등록</h3>
+        <button class="modal-close" onclick="upsImportClose()">&#10005;</button>
+      </div>
+      <div class="modal-body">
+        <label class="import-file-row" for="upsImportFile">
+          <span class="btn">파일 선택</span>
+          <span class="import-file-name" id="upsImportFileName">선택된 파일 없음</span>
+        </label>
+        <input type="file" id="upsImportFile" accept=".xlsx,.xls,.csv" style="display:none" onchange="upsImportPick(this)">
+        <div class="import-mode">
+          <label><input type="radio" name="upsImportMode" value="merge" checked> 기존 데이터에 업데이트</label>
+          <label><input type="radio" name="upsImportMode" value="replace"> 전체 삭제 후 신규 등록</label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" onclick="upsImportClose()">취소</button>
+        <button class="btn btn-primary" onclick="upsImportRun()">가져오기</button>
+      </div>
+    </div>
+  </div>
 
   <!-- 삭제 확인 -->
   <div class="modal-overlay" id="delModal">

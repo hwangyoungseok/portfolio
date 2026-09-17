@@ -11,8 +11,10 @@
 
 <!--
   화면: GW > GW 알림 설정 (호스트 전용)
-  설명: GW/GW서버 이상 시 메일·문자 통지 설정. 이벤트 "종류"는 고정(코드 하드코딩) — 이 화면에선
-        각 이벤트에 대해 사용여부/임계값/대상 그룹/채널만 설정한다 (umsGwAlertRule, TenantId=NULL 전역).
+  설명: GW/GW서버 이상 시 메일·문자 통지 설정. 이벤트 "종류"는 고정(코드 하드코딩) — 이벤트마다
+        규칙(임계값/대상 그룹/채널)을 여러 개 추가할 수 있다 (umsGwNotifyRule, TenantId=NULL 전역,
+        (TenantId, EventType)에 UNIQUE 제약 없음 — 같은 이벤트에 행 여러 개 허용하는 구조).
+        규칙별 사용/해제 토글은 값을 지우지 않고 켜고 끄기만 함(삭제와 별개).
         판정·발송은 GWM. 실제 발생 이력은 여기 아님(알람/GW 상태 화면).
   참고: docu/2.design/GW_개발요구사항.txt [12]
 -->
@@ -25,26 +27,11 @@
       (고객사별 개별 규칙은 각 고객사 화면에서 별도 설정)
     </div>
 
-    <div class="grid-wrap">
-      <div class="toolbar">
-        <span style="font-size:12px;color:#666;">고정 이벤트 <b>5</b>종</span>
-        <span class="toolbar-spacer"></span>
-        <span id="gacSaved" style="font-size:11px;color:#98a2b3;"></span>
-      </div>
-      <div class="grid-scroll">
-        <table class="grid-table gac-table">
-          <thead>
-            <tr>
-              <th style="width:64px;">사용</th><th style="width:200px;">이벤트</th>
-              <th style="width:170px;">임계값</th><th style="width:200px;">대상 그룹</th><th>채널</th>
-            </tr>
-          </thead>
-          <tbody id="gacBody"></tbody>
-        </table>
-      </div>
-    </div>
+    <div class="gac-list" id="gacList"></div>
 
-    <div style="display:flex;justify-content:flex-end;gap:8px;">
+    <div class="gac-bottom">
+      <span id="gacSaved" class="gac-saved"></span>
+      <span class="toolbar-spacer"></span>
       <button class="btn" onclick="gacReset()">기본값</button>
       <button class="btn btn-primary" onclick="gacSave()">저장</button>
     </div>

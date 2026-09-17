@@ -164,6 +164,37 @@
   function show(id) { document.getElementById(id).classList.add('show'); }
   function hide(id) { document.getElementById(id).classList.remove('show'); }
 
+  // ---- 엑셀 임포트 (목업 - 실제 파싱/등록 없음) ----
+  function upsImportOpen() {
+    document.getElementById('upsImportFile').value = '';
+    const nm = document.getElementById('upsImportFileName');
+    nm.textContent = '선택된 파일 없음';
+    nm.classList.remove('picked');
+    document.querySelector('input[name="upsImportMode"][value="merge"]').checked = true;
+    show('upsImportModal');
+  }
+  function upsImportClose() { hide('upsImportModal'); }
+  function upsImportPick(el) {
+    const f = el.files && el.files[0];
+    const nm = document.getElementById('upsImportFileName');
+    if (f && !/\.(xlsx|xls|csv)$/i.test(f.name)) {
+      umsToast('지원하지 않는 파일 형식입니다. (.xlsx/.xls/.csv)');
+      el.value = '';
+      nm.textContent = '선택된 파일 없음';
+      nm.classList.remove('picked');
+      return;
+    }
+    nm.textContent = f ? f.name : '선택된 파일 없음';
+    nm.classList.toggle('picked', !!f);
+  }
+  function upsImportRun() {
+    const f = document.getElementById('upsImportFile').files[0];
+    if (!f) { umsToast('파일을 선택하세요.'); return; }
+    const mode = document.querySelector('input[name="upsImportMode"]:checked').value;
+    hide('upsImportModal');
+    umsToast(mode === 'replace' ? '전체 삭제 후 신규 등록했습니다. (목업)' : '기존 데이터에 업데이트했습니다. (목업)');
+  }
+
   // ---- 초기화 ----
   fillSelect('fLoc', LOCATIONS, true);
   fillSelect('fVendor', VENDORS, true);
@@ -186,5 +217,9 @@
   window.delModalClose = function () { hide('delModal'); };
   window.upsDetailClose = upsDetailClose;
   window.upsEditFromDetail = upsEditFromDetail;
+  window.upsImportOpen  = upsImportOpen;
+  window.upsImportClose = upsImportClose;
+  window.upsImportPick  = upsImportPick;
+  window.upsImportRun   = upsImportRun;
 
 })();

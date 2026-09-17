@@ -2,13 +2,17 @@
 
 .gac-note {
   background: #eef4fc; border: 1px solid #d6e4f7; border-radius: 6px;
-  padding: 10px 14px; font-size: 12px; color: #33506e; line-height: 1.6;
+  padding: 10px 14px; font-size: 12px; color: #33506e; line-height: 1.6; margin-bottom: 12px;
 }
 
-.gac-table td { vertical-align: middle; }
-.gac-table td.gac-ev { text-align: left; }
-.gac-ev-name { font-weight: bold; color: #1a2330; }
-.gac-ev-desc { font-size: 11px; color: #8a929c; margin-top: 2px; }
+/* 이벤트 카드 목록 */
+.gac-list { display: flex; flex-direction: column; gap: 12px; }
+.gac-card { background: #fff; border: 1px solid #e4e8ee; border-radius: 8px; padding: 14px 16px; }
+.gac-card-head { margin-bottom: 10px; }
+.gac-card-title { font-size: 13.5px; font-weight: bold; color: #1a2330; }
+
+/* 규칙 표 */
+.gac-rule-table td { vertical-align: middle; }
 .gac-th { display: flex; align-items: center; gap: 6px; justify-content: center; }
 .gac-th input { width: 76px; padding: 4px 6px; font-size: 12px; text-align: right; }
 .gac-th .u { font-size: 11px; color: #8a929c; }
@@ -16,5 +20,13 @@
 .gac-grp { width: 100%; padding: 5px 8px; font-size: 12px; }
 .gac-chs { display: flex; gap: 12px; justify-content: center; }
 .gac-chs label { display: flex; align-items: center; gap: 4px; font-size: 12px; color: #444; }
-.gac-table tbody tr.off td { opacity: 0.5; }
-.gac-table tbody tr.off td:first-child { opacity: 1; }
+.gac-rule-table tbody tr.off td { opacity: 0.5; }
+.gac-rule-table tbody tr.off td:first-child { opacity: 1; }
+.gac-r-del { border: none; background: none; color: #c0392b; cursor: pointer; font-size: 13px; }
+.gac-r-del:hover { color: #a93226; }
+.gac-rule-empty td { text-align: center; color: #98a2b3; padding: 14px; }
+
+.gac-card-foot { display: flex; justify-content: flex-end; margin-top: 8px; }
+
+.gac-bottom { display: flex; align-items: center; gap: 8px; margin-top: 12px; }
+.gac-saved { font-size: 11px; color: #98a2b3; }

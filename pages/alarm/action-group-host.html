@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>알람 알림 그룹 관리 - UMS</title>
+<link rel="stylesheet" href="../../shared/common.css">
+<link rel="stylesheet" href="action-group-host.css">
+</head>
+<body data-page="alarm/action-group-host">
+
+<!--
+  화면: 알람 > 알람 알림 그룹 관리 (호스트 전용)
+  [알람 알림 설정] + GW 메뉴 [GW 알림 설정] 두 곳의 대상 그룹을 공통으로 관리.
+  목록 + 행클릭 우측 상세 + 등록/수정 모달. 멤버 추가는 팝업(호스트 직원 검색/필터 + 연락처 직접입력 → 바구니 담기 → 일괄 추가).
+  구조는 고객 쪽 [알람 액션 그룹 관리]와 동일, 차이는 저장 시 TenantId=NULL(호스트 전역)이고
+  멤버 검색 대상이 고객사 직원이 아니라 호스트(운영사) 직원이라는 점.
+  DB: umsActionGroup(TenantId NULL) / umsActionGroupMember (멤버 = ABP 사용자 또는 생연락처)
+-->
+
+<div id="umsContent">
+  <div class="content">
+
+    <div class="search-bar">
+      <div class="search-field"><label>그룹명</label>
+        <input class="search-input" id="q" placeholder="그룹명 검색" onkeyup="if(event.key==='Enter')agRender()">
+      </div>
+      <div class="search-actions">
+        <button class="btn btn-primary" onclick="agRender()">조회</button>
+        <button class="btn" onclick="agReset()">초기화</button>
+      </div>
+    </div>
+
+    <div class="grid-wrap">
+      <div class="toolbar">
+        <span style="font-size:12px;color:#666;">총 <b id="agCount">0</b>건</span>
+        <span class="toolbar-spacer"></span>
+        <button class="btn btn-primary" onclick="agOpen(null)">+ 그룹 등록</button>
+      </div>
+
+      <div class="grid-scroll">
+        <table class="grid-table ag-table">
+          <thead>
+            <tr>
+              <th style="width:56px;">No</th>
+              <th style="width:200px;">그룹명</th>
+              <th>설명</th>
+              <th style="width:90px;">멤버 수</th>
+              <th style="width:84px;">수정/삭제</th>
+            </tr>
+          </thead>
+          <tbody id="agBody"></tbody>
+        </table>
+      </div>
+
+      <div class="paging">
+        <button class="page-btn">&#9664;</button>
+        <button class="page-btn active">1</button>
+        <button class="page-btn">&#9654;</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 우측 상세 패널 -->
+  <div class="drawer-mask" id="agMask" onclick="agDetailClose()"></div>
+  <aside class="drawer" id="agDrawer">
+    <div class="drawer-header">
+      <h3 id="agdTitle">그룹 상세</h3>
+      <button class="modal-close" onclick="agDetailClose()">&#10005;</button>
+    </div>
+    <div class="drawer-body" id="agdBody"></div>
+    <div class="drawer-footer">
+      <button class="btn" onclick="agEditFromDetail()">수정</button>
+      <button class="btn btn-primary" onclick="agDetailClose()">닫기</button>
+    </div>
+  </aside>
+
+  <!-- 등록/수정 모달 -->
+  <div class="modal-overlay" id="agModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="agmTitle">그룹 등록</h3>
+        <button class="modal-close" onclick="agModalClose()">&#10005;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="form-label req">그룹명</div><input class="form-input" id="m-name">
+          <div class="form-label">설명</div><textarea class="form-textarea" id="m-desc" rows="2"></textarea>
+        </div>
+
+        <div class="ag-mem-head">
+          <span class="ag-mem-title">멤버 <b id="agMemCount">0</b></span>
+          <span class="toolbar-spacer"></span>
+          <button class="btn" type="button" onclick="agMemClearAll()">전체 삭제</button>
+          <button class="btn btn-primary" type="button" onclick="agPickOpen()">+ 멤버 추가</button>
+        </div>
+        <div class="grid-scroll ag-mem-scroll">
+          <table class="grid-table ag-mem-table">
+            <thead>
+              <tr>
+                <th style="width:70px;">구분</th>
+                <th style="width:130px;">이름</th>
+                <th>이메일</th>
+                <th style="width:140px;">연락처</th>
+                <th style="width:40px;"></th>
+              </tr>
+            </thead>
+            <tbody id="agMemBody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" onclick="agModalClose()">취소</button>
+        <button class="btn btn-primary" onclick="agSave()">저장</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 멤버 추가 팝업 (호스트 직원 검색 + 연락처 입력 → 바구니 → 일괄 추가) -->
+  <div class="modal-overlay ag-pick-overlay" id="agPickModal">
+    <div class="modal ag-pick">
+      <div class="modal-header">
+        <h3>멤버 추가</h3>
+        <button class="modal-close" onclick="agPickClose()">&#10005;</button>
+      </div>
+      <div class="modal-body">
+        <div class="ag-tabs">
+          <button class="ag-tab active" id="agTabUser" onclick="agPickTab('user')">직원</button>
+          <button class="ag-tab" id="agTabContact" onclick="agPickTab('contact')">연락처</button>
+        </div>
+
+        <!-- 직원 탭 -->
+        <div id="agPaneUser">
+          <div class="ag-pick-filter">
+            <input class="search-input" id="pk-q" placeholder="이름 / 이메일" oninput="agPickRenderUsers()">
+            <select class="search-select" id="pk-dept" onchange="agPickRenderUsers()"></select>
+            <select class="search-select" id="pk-role" onchange="agPickRenderUsers()"></select>
+          </div>
+          <div class="grid-scroll ag-pick-scroll">
+            <table class="grid-table ag-pick-table">
+              <thead><tr><th style="width:110px;">이름</th><th>이메일</th><th style="width:110px;">부서</th><th style="width:80px;">역할</th><th style="width:60px;"></th></tr></thead>
+              <tbody id="agPickUsers"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 연락처 탭 -->
+        <div id="agPaneContact" hidden>
+          <div class="form-grid">
+            <div class="form-label req">이름</div><input class="form-input" id="ct-name">
+            <div class="form-label">이메일</div><input class="form-input" id="ct-email">
+            <div class="form-label">연락처</div><input class="form-input" id="ct-phone">
+          </div>
+          <div style="text-align:right;margin-top:8px;">
+            <button class="btn" type="button" onclick="agPickAddContact()">담기</button>
+          </div>
+        </div>
+
+        <!-- 바구니 -->
+        <div class="ag-basket">
+          <div class="ag-basket-head"><span>담은 멤버 <b id="agBasketCount">0</b></span></div>
+          <div class="grid-scroll ag-basket-scroll">
+            <table class="grid-table ag-basket-table">
+              <thead><tr><th style="width:70px;">구분</th><th style="width:130px;">이름</th><th>이메일</th><th style="width:130px;">연락처</th><th style="width:40px;"></th></tr></thead>
+              <tbody id="agBasket"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" onclick="agPickClose()">취소</button>
+        <button class="btn btn-primary" onclick="agPickConfirm()">추가</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 삭제 확인 -->
+  <div class="modal-overlay" id="agDelModal">
+    <div class="confirm-modal">
+      <p><span class="confirm-hl" id="agDelName">이 그룹</span> 을<br>삭제하시겠습니까?</p>
+      <div class="confirm-btns">
+        <button class="btn btn-primary" onclick="agDelConfirm()">예</button>
+        <button class="btn btn-danger" onclick="agDelClose()">아니오</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="../../shared/layout.js"></script>
+<script src="action-group-host.js"></script>
+</body>
+</html>

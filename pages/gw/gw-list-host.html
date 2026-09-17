@@ -44,7 +44,8 @@
           <thead>
             <tr>
               <th style="width:50px;">No</th><th style="width:120px;">고객사</th><th>GW명</th>
-              <th>위치</th><th>설치 PC</th><th style="width:80px;">버전</th>
+              <th>위치</th><th>설치 PC</th><th style="width:70px;">버전</th>
+              <th style="width:110px;">업데이트</th>
               <th style="width:90px;">연결 설비</th><th style="width:80px;">사용여부</th>
             </tr>
           </thead>
@@ -58,14 +59,33 @@
 
   </div>
 
-  <!-- 소속 설비 보기 -->
+  <!-- 상세: 버전 관리 + 소속 설비 -->
   <div class="drawer-mask" id="ghMask" onclick="ghDrawerClose()"></div>
   <aside class="drawer" id="ghDrawer">
     <div class="drawer-header">
-      <h3 id="ghdTitle">소속 설비</h3>
+      <h3 id="ghdTitle">GW 상세</h3>
       <button class="modal-close" onclick="ghDrawerClose()">&#10005;</button>
     </div>
-    <div class="drawer-body" id="ghdBody"></div>
+    <div class="drawer-body">
+      <div class="gh-ver-box">
+        <div class="gh-ver-t">버전 관리</div>
+        <div class="form-grid" style="grid-template-columns:80px 1fr;">
+          <div class="form-label">현재버전</div><div id="ghCurVer" class="gh-cur-ver">-</div>
+          <div class="form-label">목표버전</div><select class="form-select" id="ghTargetVer"></select>
+          <div class="form-label">업데이트</div>
+          <div class="radio-group">
+            <label><input type="radio" name="ghMode" value="Manual" checked> Manual (관리자가 [지금 업데이트] 실행)</label>
+            <label><input type="radio" name="ghMode" value="Auto"> Auto (GW가 주기적으로 스스로 확인 후 진행)</label>
+          </div>
+        </div>
+        <div class="gh-upd-status" id="ghUpdStatus"></div>
+        <div class="gh-ver-btns">
+          <button class="btn" onclick="ghVerSave()">저장</button>
+          <button class="btn btn-primary" onclick="ghUpdateNow()">지금 업데이트</button>
+        </div>
+      </div>
+      <div id="ghdBody"></div>
+    </div>
     <div class="drawer-footer" style="justify-content:flex-end;">
       <button class="btn btn-primary" onclick="ghDrawerClose()">닫기</button>
     </div>

@@ -158,6 +158,37 @@
   function show(id) { document.getElementById(id).classList.add('show'); }
   function hide(id) { document.getElementById(id).classList.remove('show'); }
 
+  // ---- 엑셀 임포트 (목업 - 실제 파싱/등록 없음) ----
+  function pduImportOpen() {
+    document.getElementById('pduImportFile').value = '';
+    const nm = document.getElementById('pduImportFileName');
+    nm.textContent = '선택된 파일 없음';
+    nm.classList.remove('picked');
+    document.querySelector('input[name="pduImportMode"][value="merge"]').checked = true;
+    show('pduImportModal');
+  }
+  function pduImportClose() { hide('pduImportModal'); }
+  function pduImportPick(el) {
+    const f = el.files && el.files[0];
+    const nm = document.getElementById('pduImportFileName');
+    if (f && !/\.(xlsx|xls|csv)$/i.test(f.name)) {
+      umsToast('지원하지 않는 파일 형식입니다. (.xlsx/.xls/.csv)');
+      el.value = '';
+      nm.textContent = '선택된 파일 없음';
+      nm.classList.remove('picked');
+      return;
+    }
+    nm.textContent = f ? f.name : '선택된 파일 없음';
+    nm.classList.toggle('picked', !!f);
+  }
+  function pduImportRun() {
+    const f = document.getElementById('pduImportFile').files[0];
+    if (!f) { umsToast('파일을 선택하세요.'); return; }
+    const mode = document.querySelector('input[name="pduImportMode"]:checked').value;
+    hide('pduImportModal');
+    umsToast(mode === 'replace' ? '전체 삭제 후 신규 등록했습니다. (목업)' : '기존 데이터에 업데이트했습니다. (목업)');
+  }
+
   // ---- init ----
   fillSelect('fLoc', LOCATIONS, true);
   fillSelect('fVendor', VENDORS, true);
@@ -180,5 +211,9 @@
   window.delModalClose  = function () { hide('delModal'); };
   window.pduDetailClose = pduDetailClose;
   window.pduEditFromDetail = pduEditFromDetail;
+  window.pduImportOpen  = pduImportOpen;
+  window.pduImportClose = pduImportClose;
+  window.pduImportPick  = pduImportPick;
+  window.pduImportRun   = pduImportRun;
 
 })();

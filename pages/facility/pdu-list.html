@@ -46,6 +46,7 @@
       <div class="toolbar">
         <span style="font-size:12px;color:#666;">총 <b id="pduCount">0</b>건</span>
         <span class="toolbar-spacer"></span>
+        <button class="btn" onclick="pduImportOpen()">엑셀 임포트</button>
         <button class="btn" onclick="umsToast('엑셀 다운로드 (목업)')">엑셀 다운로드</button>
         <button class="btn btn-primary" onclick="pduOpen(null)">+ PDU 등록</button>
       </div>
@@ -129,6 +130,31 @@
       <div class="modal-footer">
         <button class="btn" onclick="pduModalClose()">취소</button>
         <button class="btn btn-primary" onclick="pduSave()">저장</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 엑셀 임포트 -->
+  <div class="modal-overlay" id="pduImportModal">
+    <div class="modal" style="width:380px;">
+      <div class="modal-header">
+        <h3>엑셀 일괄 등록</h3>
+        <button class="modal-close" onclick="pduImportClose()">&#10005;</button>
+      </div>
+      <div class="modal-body">
+        <label class="import-file-row" for="pduImportFile">
+          <span class="btn">파일 선택</span>
+          <span class="import-file-name" id="pduImportFileName">선택된 파일 없음</span>
+        </label>
+        <input type="file" id="pduImportFile" accept=".xlsx,.xls,.csv" style="display:none" onchange="pduImportPick(this)">
+        <div class="import-mode">
+          <label><input type="radio" name="pduImportMode" value="merge" checked> 기존 데이터에 업데이트</label>
+          <label><input type="radio" name="pduImportMode" value="replace"> 전체 삭제 후 신규 등록</label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" onclick="pduImportClose()">취소</button>
+        <button class="btn btn-primary" onclick="pduImportRun()">가져오기</button>
       </div>
     </div>
   </div>

@@ -1,0 +1,41 @@
+/* 알람 알림 그룹 관리 (호스트) 전용 스타일 (공통은 shared/common.css) */
+
+#agModal .modal { max-width: 660px; }
+.ag-table td:nth-child(2), .ag-table td:nth-child(3) { text-align: left; }
+
+/* 상세: 멤버 목록 */
+#agdBody .ag-mem-list { width: 100%; border-collapse: collapse; margin-top: 4px; }
+#agdBody .ag-mem-list th, #agdBody .ag-mem-list td { border: 1px solid #eef1f4; padding: 5px 8px; font-size: 12px; text-align: left; }
+#agdBody .ag-mem-list th { background: #f8f9fa; color: #667; font-weight: normal; }
+.ag-mem-type { display: inline-block; font-size: 10px; padding: 1px 6px; border-radius: 3px; white-space: nowrap; }
+.t-user { background: #e7edf7; color: #33506e; }
+.t-contact { background: #e7f5ec; color: #1e7a4a; }
+
+/* 모달: 멤버 목록 (읽기 전용 + 행 삭제만) */
+.ag-mem-head { display: flex; align-items: center; gap: 6px; margin: 12px 0 6px; }
+.ag-mem-title { font-size: 12px; font-weight: bold; color: #33506e; }
+.ag-mem-scroll { max-height: 220px; border: 1px solid #dde1e7; border-radius: 4px; }
+.ag-mem-table td:nth-child(2), .ag-mem-table td:nth-child(3), .ag-mem-table td:nth-child(4) { text-align: left; }
+.ag-mem-table th { position: sticky; top: 0; z-index: 1; }
+.mem-del { border: none; background: none; color: #c0392b; cursor: pointer; font-size: 13px; }
+.ag-mem-empty td { text-align: center; color: #98a2b3; padding: 18px; }
+
+/* 멤버 추가 팝업 */
+.ag-pick-overlay { z-index: 140; }
+#agPickModal .modal.ag-pick { max-width: 720px; }
+.ag-tabs { display: flex; gap: 4px; border-bottom: 1px solid #dde1e7; margin-bottom: 10px; }
+.ag-tab { border: 1px solid #dde1e7; border-bottom: none; background: #f5f7fa; padding: 7px 16px; font-size: 12px; cursor: pointer; border-radius: 5px 5px 0 0; color: #667; margin-bottom: -1px; }
+.ag-tab.active { background: #fff; color: #1a6ed8; font-weight: bold; border-color: #dde1e7; }
+
+.ag-pick-filter { display: flex; gap: 8px; margin-bottom: 8px; }
+.ag-pick-filter .search-input { flex: 1; }
+.ag-pick-scroll { max-height: 200px; border: 1px solid #dde1e7; border-radius: 4px; }
+.ag-pick-table td:nth-child(1), .ag-pick-table td:nth-child(2), .ag-pick-table td:nth-child(3) { text-align: left; }
+.ag-pick-table .pick-add { font-size: 11px; padding: 3px 10px; }
+.ag-pick-table tr.picked td { background: #f0f6ff; color: #98a2b3; }
+
+.ag-basket { margin-top: 12px; border-top: 1px dashed #cfd6de; padding-top: 10px; }
+.ag-basket-head { font-size: 12px; font-weight: bold; color: #33506e; margin-bottom: 6px; }
+.ag-basket-scroll { max-height: 150px; border: 1px solid #dde1e7; border-radius: 4px; }
+.ag-basket-table td:nth-child(2), .ag-basket-table td:nth-child(3), .ag-basket-table td:nth-child(4) { text-align: left; }
+.ag-basket-empty td { text-align: center; color: #98a2b3; padding: 14px; }
