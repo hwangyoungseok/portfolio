@@ -5,7 +5,7 @@
 
   const ROLE = window.umsRole || 'host';
   const dash = document.getElementById('dash');
-  const LS_KEY = 'ums.dash.v2.' + ROLE;  // 위젯 구성 변경(티켓 KPI 묶음) 시 버전 올려 옛 저장본 폐기
+  const LS_KEY = 'ums.dash.v4.' + ROLE;  // 위젯 구성 변경(4:2 나란히 배치) 시 버전 올려 옛 저장본 폐기
 
   // ===== 유틸 =====
   function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
@@ -106,15 +106,36 @@
   function donutHtml(title, segs, cv, cl, key) {
     return '<div class="d-card-t">' + tLink(title, key) + '</div><div class="d-donut-wrap"><div class="d-donut">' + donut(segs, cv, cl) + '</div>' + legend(segs) + '</div>';
   }
-  // 티켓 KPI 묶음 — 5개 셀을 한 줄에 균등 배치. 카드 하나(=한 dg-item)라 레이아웃에서 통째로 이동.
-  // cells: [{ l:라벨, v:값, p:퍼센트(문자열, 없으면 생략), tone:개념 톤 }]
-  //   tone: open(중심·무겁게) / unassigned(경고성) / assigned(차분·중립) / progress(활기) / done(마무리) / overdue(생뚱맞게 튐)
-  function tkStrip(cells) {
-    return cardEl('col-12 d-tk-card', '<div class="d-tk-strip">' + cells.map(function (c) {
+  // KPI 셀 묶음 — N개 셀을 한 줄에 균등 배치.
+  // cells: [{ l:라벨, v:값, p:퍼센트(문자열, 없으면 생략), tone:개념 톤, key:클릭 이동 }]
+  //   tone: open(중심·무겁게) / unassigned(경고성) / assigned(차분·중립) / progress(활기) / done(마무리) / overdue(생뚱맞게 튐) / gwoff·gwwarn(GW 이상)
+  function tkCellsHtml(cells) {
+    return '<div class="d-tk-strip">' + cells.map(function (c) {
       return '<div class="d-tk-cell tk-' + c.tone + (c.key ? ' d-linkable" onclick="dNav(\'' + c.key + '\')' : '') + '">'
         + '<div class="tv">' + c.v + (c.p != null ? '<span class="tp"> (' + c.p + '%)</span>' : '') + '</div>'
         + '<div class="tl">' + c.l + '</div></div>';
-    }).join('') + '</div>');
+    }).join('') + '</div>';
+  }
+  // 헤딩 없이 셀만 (카드 하나 = 한 dg-item, 레이아웃에서 통째로 이동)
+  function tkStrip(cells) { return cardEl('col-12 d-tk-card', tkCellsHtml(cells)); }
+  // 헤딩 + 셀을 한 위젯으로 묶음 (섹션 제목까지 같이 레이아웃에서 이동)
+  function tkSection(title, titleKey, cells) {
+    const head = '<span class="dash-sec-bar"></span><span class="dash-sec-title' + (titleKey ? ' d-t-lnk' : '') + '"'
+      + (titleKey ? ' onclick="dNav(\'' + titleKey + '\')"' : '') + '>' + title + '</span>';
+    return elx('div', 'col-12 d-tk-card', '<div class="dg-header" style="padding:4px 0 10px;">' + head + '</div>' + tkCellsHtml(cells));
+  }
+  // 헤딩 + 심각도(sev) 카드들을 한 위젯으로 묶음 (알람 현황용). sevs: [{sev,label,val,key}]
+  function sevSection(title, titleKey, sevs) {
+    const head = '<span class="dash-sec-bar"></span><span class="dash-sec-title' + (titleKey ? ' d-t-lnk' : '') + '"'
+      + (titleKey ? ' onclick="dNav(\'' + titleKey + '\')"' : '') + '>' + title + '</span>';
+    const wrap = elx('div', 'col-12 d-tk-card', '<div class="dg-header" style="padding:4px 0 10px;">' + head + '</div><div class="d-sev-row"></div>');
+    const row = wrap.querySelector('.d-sev-row');
+    sevs.forEach(function (s) {
+      const c = sevCard(s.sev, s.label, s.val, s.key);
+      c.classList.remove('col-3');
+      row.appendChild(c);
+    });
+    return wrap;
   }
   function chartHtml(title, svg, key) { return '<div class="d-card-t">' + tLink(title, key) + '</div><div class="d-chart">' + svg + '</div>'; }
   function listHtml(title, rows, key) {
@@ -205,7 +226,7 @@
     al7: [2, 1, 3, 0, 2, 4, 3],
     upsLoad: 62, upsLoad7: [58, 60, 63, 61, 64, 62, 62],
     batMinSoh: 78, batReplace: 1, chwOut: 7.2, chwAbn: false,
-    gwOn: 4, gwOff: 1,
+    gwOn: 4, gwOff: 1, gwResHigh: 1,
   };
   C.facTotal = C.FAC.reduce(function (a, f) { return a + f.ok + f.warn + f.major + f.crit + f.off + f.unk; }, 0);
   C.facOff = C.FAC.reduce(function (a, f) { return a + f.off; }, 0);
@@ -221,17 +242,24 @@
   // 각 위젯: { title, col, el() -> DOM }
   const WIDGETS = {
     // ---------- 호스트 ----------
-    'h-hd-ticket': { host: 1, title: '─ 티켓 현황 (제목)', col: 12, el: function () { return headerEl('티켓 현황', 'ticket/ticket-all'); } },
     'h-tk-kpis': {
-      host: 1, title: '티켓 KPI (오픈·미할당·대기·진행·기한초과)', col: 12, el: function () {
+      host: 1, title: '─ 티켓 현황 + KPI (헤딩+5칸 묶음, 4:2 중 4)', col: 8, el: function () {
         const t = H.TK, base = t.open || 1;
         const pc = function (v) { return (v / base * 100).toFixed(1); };
-        return tkStrip([
+        return tkSection('티켓 현황', 'ticket/ticket-all', [
           { l: '오픈 티켓', v: t.open, p: pc(t.open), tone: 'open', key: 'ticket/ticket-all' },
           { l: '할당되지 않은 티켓', v: t.unassigned, p: pc(t.unassigned), tone: 'unassigned', key: 'ticket/ticket-all' },
           { l: '진행 대기 중 티켓', v: t.pending, p: pc(t.pending), tone: 'assigned', key: 'ticket/ticket-all' },
           { l: '진행 중 티켓', v: t.progress, p: pc(t.progress), tone: 'progress', key: 'ticket/ticket-all' },
           { l: '기한이 지난 티켓', v: t.overdue, tone: 'overdue', key: 'ticket/ticket-all' },
+        ]);
+      }
+    },
+    'h-gw-quick': {
+      host: 1, title: '─ GW 현황 (헤딩+2칸 묶음, 4:2 중 2)', col: 4, el: function () {
+        return tkSection('GW 현황', null, [
+          { l: 'GW 단절', v: H.gwOff, tone: 'gwoff', key: 'gw/gw-status-host' },
+          { l: 'GW 서버 경고', v: H.resHigh.length, tone: 'gwwarn', key: 'gw/gw-server-host' },
         ]);
       }
     },
@@ -284,15 +312,27 @@
         }), 'saas/tenant'));
       }
     },
-    'h-hd-alarm': { host: 1, title: '─ 알람 목록 (제목)', col: 12, el: function () { return headerEl('알람 목록', 'alarm/alarm-overview-host'); } },
-    'h-alarm-table': { host: 1, title: '알람 목록 (페이징 표)', col: 12, el: buildAlarmTable },
+    'h-alarm-table': { host: 1, title: '─ 알람 목록 + 표 (헤딩 묶음)', col: 12, el: buildAlarmTable },
 
     // ---------- 고객 ----------
-    'c-hd-alarm': { cust: 1, title: '─ 알람 현황 (제목)', col: 12, el: function () { return headerEl('알람 현황', 'alarm/alarm-manage'); } },
-    'c-al-crit': { cust: 1, title: 'Critical(색상카드)', col: 3, el: function () { return sevCard('critical', 'Critical', C.AL.critical, 'alarm/alarm-manage'); } },
-    'c-al-major': { cust: 1, title: 'Major(색상카드)', col: 3, el: function () { return sevCard('major', 'Major', C.AL.major, 'alarm/alarm-manage'); } },
-    'c-al-minor': { cust: 1, title: 'Minor(색상카드)', col: 3, el: function () { return sevCard('minor', 'Minor', C.AL.minor, 'alarm/alarm-manage'); } },
-    'c-al-warn': { cust: 1, title: 'Warning(색상카드)', col: 3, el: function () { return sevCard('warning', 'Warning', C.AL.warning, 'alarm/alarm-manage'); } },
+    'c-al-summary': {
+      cust: 1, title: '─ 알람 현황 + 심각도 4칸 (헤딩 묶음, 4:2 중 4)', col: 8, el: function () {
+        return sevSection('알람 현황', 'alarm/alarm-manage', [
+          { sev: 'critical', label: 'Critical', val: C.AL.critical, key: 'alarm/alarm-manage' },
+          { sev: 'major', label: 'Major', val: C.AL.major, key: 'alarm/alarm-manage' },
+          { sev: 'minor', label: 'Minor', val: C.AL.minor, key: 'alarm/alarm-manage' },
+          { sev: 'warning', label: 'Warning', val: C.AL.warning, key: 'alarm/alarm-manage' },
+        ]);
+      }
+    },
+    'c-gw-quick': {
+      cust: 1, title: '─ GW 현황 (헤딩+2칸 묶음, 4:2 중 2)', col: 4, el: function () {
+        return tkSection('GW 현황', null, [
+          { l: 'GW 단절', v: C.gwOff, tone: 'gwoff', key: 'gw/gw-status' },
+          { l: 'GW 서버 경고', v: C.gwResHigh, tone: 'gwwarn', key: 'gw/gw-server' },
+        ]);
+      }
+    },
     'c-al-donut': {
       cust: 1, title: '심각도 분포', col: 4, el: function () {
         return cardEl('col-4', donutHtml('심각도 분포',
@@ -329,12 +369,11 @@
         return cardEl('col-4', '<div class="d-card-t">' + tLink('칠러 냉수 공급온도', 'data/chiller-trend') + '</div><div class="d-big"><span class="d-big-v" style="color:' + (C.chwAbn ? SC.crit : SC.ok) + '">' + C.chwOut + '℃</span><span class="d-big-l">' + (C.chwAbn ? '이상' : '정상 범위') + '</span></div>');
       }
     },
-    'c-hd-ticket': { cust: 1, title: '─ 티켓 현황 (제목)', col: 12, el: function () { return headerEl('티켓 현황', 'ticket/ticket-my'); } },
     'c-tk-kpis': {
-      cust: 1, title: '티켓 KPI (미할당·대기·진행·종료·기한초과)', col: 12, el: function () {
+      cust: 1, title: '─ 티켓 현황 + KPI (헤딩+5칸 묶음)', col: 12, el: function () {
         const t = C.TK, base = (t.unassigned + t.pending + t.progress + t.done) || 1;
         const pc = function (v) { return (v / base * 100).toFixed(1); };
-        return tkStrip([
+        return tkSection('티켓 현황', 'ticket/ticket-my', [
           { l: '할당되지 않은 티켓', v: t.unassigned, p: pc(t.unassigned), tone: 'unassigned', key: 'ticket/ticket-my' },
           { l: '진행 대기 중 티켓', v: t.pending, p: pc(t.pending), tone: 'assigned', key: 'ticket/ticket-my' },
           { l: '진행 중 티켓', v: t.progress, p: pc(t.progress), tone: 'progress', key: 'ticket/ticket-my' },
@@ -374,7 +413,9 @@
   function buildAlarmTable() {
     const SIZE = 8;
     let page = 1;
-    const card = cardEl('col-12', '<div class="d-card-t">발생시각 최신순 · 전체 ' + H.HAL.length + '건</div>'
+    const card = cardEl('col-12', '<div class="dg-header" style="padding:4px 0 10px;"><span class="dash-sec-bar"></span>'
+      + '<span class="dash-sec-title d-t-lnk" onclick="dNav(\'alarm/alarm-overview-host\')">알람 목록</span></div>'
+      + '<div class="d-card-t">발생시각 최신순 · 전체 ' + H.HAL.length + '건</div>'
       + '<div class="grid-scroll"><table class="grid-table"><thead><tr>'
       + '<th style="width:48px">No</th><th style="width:82px">심각도</th><th style="width:110px">고객사</th>'
       + '<th style="width:120px">설비</th><th>알람명</th><th style="width:158px">발생시각</th><th style="width:88px">처리상태</th>'

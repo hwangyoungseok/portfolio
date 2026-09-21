@@ -88,6 +88,20 @@
 .d-tk-cell.tk-overdue        { border-top-color: #c81d8f; background: #fceef6; }
 .d-tk-cell.tk-overdue .tv    { color: #b5179e; font-weight: 800; }
 
+.d-tk-cell.tk-gwoff          { border-top-color: #c0392b; background: #fdecea; }
+.d-tk-cell.tk-gwoff .tv      { color: #c0392b; font-weight: 800; }
+
+.d-tk-cell.tk-gwwarn         { border-top-color: #e08a1e; background: #fff4e5; }
+.d-tk-cell.tk-gwwarn .tv     { color: #b76e00; font-weight: bold; }
+
+/* 알람 현황 심각도 4칸 묶음 (sevSection) */
+.d-sev-row { display: flex; gap: 10px; align-items: stretch; }
+.d-sev-row > .kpi-card { flex: 1 1 0; min-width: 0; }
+@media (max-width: 700px) {
+  .d-sev-row { flex-wrap: wrap; }
+  .d-sev-row > .kpi-card { flex: 1 1 calc(50% - 5px); }
+}
+
 @media (max-width: 920px) {
   .d-tk-strip { flex-wrap: wrap; }
   .d-tk-strip > .d-tk-cell { flex: 1 1 calc(33.333% - 7px); }
