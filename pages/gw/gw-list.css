@@ -7,8 +7,8 @@
 .grid-table td:nth-child(2) { text-align: left; }
 .grid-table th:nth-child(2),
 .grid-table td:nth-child(2) { min-width: 110px; }
-.grid-table th:nth-child(4),
-.grid-table td:nth-child(4) { min-width: 170px; }
+.grid-table th:nth-child(3),
+.grid-table td:nth-child(3) { min-width: 170px; }
 
 /* 발급된 인증키 표시 */
 #m-token.issued { color: #1a6ed8; font-weight: bold; letter-spacing: 0.3px; }
@@ -19,3 +19,25 @@
 .dv-mini-table { width: 100%; border-collapse: collapse; font-size: 12px; }
 .dv-mini-table th { background: #f8f9fa; padding: 6px 8px; text-align: left; border-bottom: 1px solid #dde1e7; color: #555; }
 .dv-mini-table td { padding: 6px 8px; border-bottom: 1px solid #f0f0f0; }
+
+/* 인스턴스 목록 (GW HA) */
+.gh-ver-box { background: #f8f9fb; border: 1px solid #e4e8ee; border-radius: 8px; padding: 14px; margin-bottom: 16px; }
+.gh-ver-t { font-size: 12.5px; font-weight: bold; color: #1a1a2e; margin-bottom: 10px; }
+.gh-ver-btns { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
+.gh-inst-hint { font-size: 11px; font-weight: normal; color: #98a2b3; }
+.gh-inst-table td { vertical-align: middle; }
+.gh-role-badge { display: inline-block; font-size: 10px; font-weight: bold; padding: 2px 7px; border-radius: 10px; white-space: nowrap; }
+.gh-role-badge.active { background: #e3f0ff; color: #1a6ed8; }
+.gh-role-badge.standby { background: #eef1f4; color: #798294; }
+.gh-pri-input { width: 52px; padding: 4px 6px; font-size: 12px; text-align: center; }
+
+.gv-note {
+  background: #eef4fc; border: 1px solid #d6e4f7; border-radius: 6px;
+  padding: 10px 14px; font-size: 12px; color: #33506e; line-height: 1.6; margin-bottom: 10px;
+}
+
+/* 인스턴스 등록 모달은 드로어(z-index:120) 위에서 열리므로 그보다 높게 */
+#instModal { z-index: 130; }
+
+/* 드로어 안 내용(버전관리+인스턴스목록+UPS목록)이 많아 기본 폭이 좁으면 스크롤이 심함 */
+#gwDrawer { width: 50vw; max-width: 760px; }

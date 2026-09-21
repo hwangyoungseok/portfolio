@@ -12,6 +12,9 @@
 <!--
   화면: GW > GW 서버 상태 모니터링 (호스트 전용)
   설명: 전 고객사 GW 설치 서버의 CPU/메모리/디스크 게이지 카드. 고객사 필터. 카드 클릭 시 24h 추이.
+        GW는 HA 구성 시 인스턴스(실제 설치 서버) 여러 대를 가질 수 있어(umsGwInstance),
+        카드는 GW가 아니라 인스턴스 단위로 그리고, 같은 GW 소속끼리 묶어서 표시한다.
+        각 카드에 그 인스턴스의 Role(Active/Standby) 뱃지를 표시.
 -->
 
 <div id="umsContent">
@@ -19,7 +22,6 @@
 
     <div class="search-bar">
       <div class="search-field"><label>고객사</label><select class="search-select" id="fTenant" onchange="gvRefreshGwList()"></select></div>
-      <div class="search-field"><label>위치</label><select class="search-select" id="fLoc"></select></div>
       <div class="search-field"><label>GW</label><select class="search-select" id="fGw"></select></div>
       <div class="search-actions">
         <button class="btn btn-primary" onclick="gvRender()">조회</button>

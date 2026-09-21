@@ -2,7 +2,6 @@
 // 화면: GW > GW 서버 상태 모니터링
 (function () {
 
-  const LOCATIONS = ['본사 IDC-1F', '본사 IDC-2F', '판교 DR센터'];
   const CRIT = 90, WARN = 70;
 
   function genHistory(baseCpu, baseMem, baseDisk) {
@@ -17,9 +16,9 @@
   }
 
   const DATA = [
-    { name: 'GW-IDC-01', loc: '본사 IDC-1F', cpu: 42, mem: 61, disk: 38, os: 'Ubuntu 22.04 LTS', uptime: '128일 4시간' },
-    { name: 'GW-IDC-02', loc: '본사 IDC-2F', cpu: 91, mem: 88, disk: 72, os: 'Ubuntu 22.04 LTS', uptime: '6일 2시간' },
-    { name: 'GW-DR-01',  loc: '판교 DR센터',   cpu: 55, mem: 47, disk: 83, os: 'CentOS 7.9',      uptime: '302일 11시간' },
+    { name: 'GW-IDC-01', cpu: 42, mem: 61, disk: 38, os: 'Ubuntu 22.04 LTS', uptime: '128일 4시간' },
+    { name: 'GW-IDC-02', cpu: 91, mem: 88, disk: 72, os: 'Ubuntu 22.04 LTS', uptime: '6일 2시간' },
+    { name: 'GW-DR-01',  cpu: 55, mem: 47, disk: 83, os: 'CentOS 7.9',      uptime: '302일 11시간' },
   ];
   DATA.forEach(function (r) { r.history = genHistory(r.cpu, r.mem, r.disk); });
 
@@ -42,11 +41,10 @@
   }
 
   function renderCards() {
-    const fLoc = document.getElementById('fLoc').value;
-    const fGw  = document.getElementById('fGw').value;
+    const fGw = document.getElementById('fGw').value;
 
     const rows = DATA.filter(function (r) {
-      return (!fLoc || r.loc === fLoc) && (!fGw || r.name === fGw);
+      return (!fGw || r.name === fGw);
     });
 
     const grid = document.getElementById('gwsrvGrid');
@@ -63,7 +61,6 @@
         +   gaugeRow('CPU', r.cpu) + gaugeRow('메모리', r.mem) + gaugeRow('디스크', r.disk)
         + '</div>'
         + '<div class="gwsrv-meta">'
-        +   '<div><span>위치</span><span>' + r.loc + '</span></div>'
         +   '<div><span>OS 정보</span><span>' + r.os + '</span></div>'
         +   '<div><span>가동시간</span><span>' + r.uptime + '</span></div>'
         + '</div>'
@@ -72,7 +69,6 @@
   }
 
   function resetSearch() {
-    document.getElementById('fLoc').value = '';
     document.getElementById('fGw').value = '';
     renderCards();
   }
@@ -117,7 +113,6 @@
   function trendClose() { document.getElementById('trendModal').classList.remove('show'); }
 
   // ---- 초기화 ----
-  fillSelect('fLoc', LOCATIONS, true);
   fillSelect('fGw', DATA.map(function (r) { return r.name; }), true);
   renderCards();
 

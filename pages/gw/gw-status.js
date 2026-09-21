@@ -2,13 +2,11 @@
 // 화면: GW > GW 상태 모니터링
 (function () {
 
-  const LOCATIONS = ['본사 IDC-1F', '본사 IDC-2F', '판교 DR센터'];
-
   const DATA = [
-    { name: 'GW-IDC-01', loc: '본사 IDC-1F', state: 'on',  last: '2026-09-03 09:41:07', delay: 0, ups: 3 },
-    { name: 'GW-IDC-02', loc: '본사 IDC-2F', state: 'off', last: '2026-09-03 08:12:20', delay: 47, ups: 2 },
-    { name: 'GW-DR-01',  loc: '판교 DR센터',   state: 'on',  last: '2026-09-03 09:41:11', delay: 0, ups: 2 },
-    { name: 'GW-DR-02',  loc: '판교 DR센터',   state: 'off', last: '-',                  delay: 0, ups: 0 },
+    { name: 'GW-IDC-01', state: 'on',  last: '2026-09-03 09:41:07', delay: 0, ups: 3 },
+    { name: 'GW-IDC-02', state: 'off', last: '2026-09-03 08:12:20', delay: 47, ups: 2 },
+    { name: 'GW-DR-01',  state: 'on',  last: '2026-09-03 09:41:11', delay: 0, ups: 2 },
+    { name: 'GW-DR-02',  state: 'off', last: '-',                  delay: 0, ups: 0 },
   ];
 
   const STATE_BADGE = { on: ['badge-on', 'On'], off: ['badge-off', 'Off'] };
@@ -18,33 +16,24 @@
     return '<span class="badge ' + pair[0] + '">' + pair[1] + '</span>';
   }
 
-  function fillSelect(id, arr, withAll) {
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.innerHTML = (withAll ? '<option value="">전체</option>' : '')
-      + arr.map(function (v) { return '<option>' + v + '</option>'; }).join('');
-  }
-
   function renderGrid() {
-    const fLoc   = document.getElementById('fLoc').value;
     const fState = document.getElementById('fState').value;
 
     const rows = DATA.filter(function (r) {
-      return (!fLoc || r.loc === fLoc) && (!fState || r.state === fState);
+      return (!fState || r.state === fState);
     });
 
     document.getElementById('gridBody').innerHTML = rows.length
       ? rows.map(function (r) {
           return '<tr class="' + (r.state === 'off' ? 'row-off' : '') + '" onclick="gwStatusRowClick(\'' + r.name + '\')">'
             + '<td>' + r.name + '</td>'
-            + '<td>' + r.loc + '</td>'
             + '<td>' + badge(STATE_BADGE, r.state) + '</td>'
             + '<td>' + r.last + '</td>'
             + '<td>' + (r.state === 'off' && r.ups === 0 ? '-' : r.delay + '건') + '</td>'
             + '<td>' + r.ups + '</td>'
             + '</tr>';
         }).join('')
-      : '<tr><td colspan="6" style="padding:30px;color:#98a2b3;">조회 결과가 없습니다.</td></tr>';
+      : '<tr><td colspan="5" style="padding:30px;color:#98a2b3;">조회 결과가 없습니다.</td></tr>';
 
     document.getElementById('gridCount').textContent = rows.length;
   }
@@ -95,7 +84,6 @@
   }
 
   // ---- 초기화 ----
-  fillSelect('fLoc', LOCATIONS, true);
   renderGrid();
 
   window.renderGrid         = renderGrid;

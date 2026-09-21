@@ -2,23 +2,52 @@
 // 화면: GW > GW 관리
 (function () {
 
-  const LOCATIONS  = ['본사 IDC-1F', '본사 IDC-2F', '판교 DR센터'];
-  const INSTALL_POS = ['랙 A-01', '랙 A-02', '랙 B-01', '랙 B-02', '서버실 콘솔'];
-
   const DATA = [
-    { no: 1, name: 'GW-IDC-01', loc: '본사 IDC-1F', pos: '랙 A-01', host: 'GWHOST-01 / 10.10.1.5', ver: 'v2.3.1', date: '2023-04-10', use: true,  hasToken: true,
+    { no: 1, name: 'GW-IDC-01',
+      instances: [
+        { id: 101, ip: '10.10.1.5', hcPort: 7801, hostname: 'GWHOST-01', role: 'Active', priority: 1, lastHb: '방금' },
+      ],
+      ver: 'v2.3.1', date: '2023-04-10', use: true,  hasToken: true,
       memo: '', ups: [
         { name: 'UPS-1F-A', link: 'on' }, { name: 'UPS-1F-B', link: 'on' }, { name: 'UPS-1F-C', link: 'on' } ] },
-    { no: 2, name: 'GW-IDC-02', loc: '본사 IDC-2F', pos: '랙 B-01', host: 'GWHOST-02 / 10.10.2.5', ver: 'v2.3.1', date: '2022-11-28', use: true,  hasToken: true,
+    { no: 2, name: 'GW-IDC-02',
+      instances: [
+        { id: 102, ip: '10.10.2.5', hcPort: 7801, hostname: 'GWHOST-02', role: 'Active', priority: 1, lastHb: '방금' },
+        { id: 103, ip: '10.10.2.6', hcPort: 7801, hostname: 'GWHOST-02B', role: 'Standby', priority: 2, lastHb: '방금' },
+      ],
+      ver: 'v2.3.1', date: '2022-11-28', use: true,  hasToken: true,
       memo: '', ups: [
         { name: 'UPS-2F-A', link: 'on' }, { name: 'UPS-2F-B', link: 'off' } ] },
-    { no: 3, name: 'GW-DR-01',  loc: '판교 DR센터',   pos: '서버실 콘솔', host: 'GWHOST-03 / 10.20.1.5', ver: 'v2.2.8', date: '2024-02-05', use: true,  hasToken: true,
+    { no: 3, name: 'GW-DR-01',
+      instances: [
+        { id: 104, ip: '10.20.1.5', hcPort: 7801, hostname: 'GWHOST-03', role: 'Active', priority: 1, lastHb: '1분 전' },
+      ],
+      ver: 'v2.2.8', date: '2024-02-05', use: true,  hasToken: true,
       memo: '2024년 하반기 원격 점검 완료', ups: [
         { name: 'UPS-DR-1', link: 'on' }, { name: 'UPS-DR-2', link: 'on' } ] },
-    { no: 4, name: 'GW-DR-02',  loc: '판교 DR센터',   pos: '랙 B-02', host: '-', ver: '-', date: '2026-08-20', use: false, hasToken: false,
+    { no: 4, name: 'GW-DR-02',
+      instances: [],
+      ver: '-', date: '2026-08-20', use: false, hasToken: false,
       memo: '설치 예정 (인증키 미발급)', ups: [] },
   ];
   let seq = DATA.length;
+  let instSeq = 104;
+
+  function roleBadgeHtml(role) {
+    return role === 'Active' ? '<span class="gh-role-badge active">Active</span>' : '<span class="gh-role-badge standby">Standby · 백업</span>';
+  }
+  function hostDisplay(r) {
+    if (!r.instances.length) return '-';
+    const act = r.instances.filter(function (i) { return i.role === 'Active'; })[0] || r.instances[0];
+    return act.hostname ? (act.hostname + ' / ' + act.ip) : (act.ip + ' (접속 대기중)');
+  }
+  function instCountText(r) {
+    if (!r.instances.length) return '-';
+    return r.instances.length + '대' + (r.instances.length > 1 ? ' (HA)' : '');
+  }
+  function instSearchText(r) {
+    return r.instances.map(function (i) { return i.hostname + ' ' + i.ip; }).join(' ');
+  }
 
   const USE_BADGE = { 1: ['badge-on', '사용'], 0: ['badge-off', '미사용'] };
   const LINK_BADGE = { on: ['badge-on', '온라인'], off: ['badge-off', '오프라인'] };
@@ -28,21 +57,12 @@
     return '<span class="badge ' + pair[0] + '">' + pair[1] + '</span>';
   }
 
-  function fillSelect(id, arr, withAll) {
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.innerHTML = (withAll ? '<option value="">전체</option>' : '')
-      + arr.map(function (v) { return '<option>' + v + '</option>'; }).join('');
-  }
-
   function renderGrid() {
     const kw    = (document.getElementById('q').value || '').trim();
-    const fLoc  = document.getElementById('fLoc').value;
     const fUse  = document.getElementById('fUse').value;
 
     const rows = DATA.filter(function (r) {
-      return (!kw || r.name.indexOf(kw) >= 0 || r.host.indexOf(kw) >= 0)
-        && (!fLoc || r.loc === fLoc)
+      return (!kw || r.name.indexOf(kw) >= 0 || instSearchText(r).indexOf(kw) >= 0)
         && (fUse === '' || String(r.use ? 1 : 0) === fUse);
     });
 
@@ -51,8 +71,8 @@
           return '<tr data-no="' + r.no + '" onclick="gwRowClick(' + r.no + ')">'
             + '<td>' + r.no + '</td>'
             + '<td>' + r.name + '</td>'
-            + '<td>' + r.loc + '</td>'
-            + '<td>' + r.host + '</td>'
+            + '<td>' + hostDisplay(r) + '</td>'
+            + '<td>' + instCountText(r) + '</td>'
             + '<td>' + r.ver + '</td>'
             + '<td>' + r.date + '</td>'
             + '<td>' + r.ups.length + '</td>'
@@ -69,7 +89,6 @@
   }
 
   function resetSearch() {
-    document.getElementById('fLoc').value = '';
     document.getElementById('fUse').value = '';
     document.getElementById('q').value = '';
     renderGrid();
@@ -91,6 +110,79 @@
   }
   function dvGroup(rows) { return '<div class="dv-group">' + rows + '</div>'; }
 
+  function gwInstRender(r) {
+    const body = document.getElementById('gwInstBody');
+    body.innerHTML = r.instances.length ? r.instances.map(function (ins, i) {
+      return '<tr onclick="gwInstEditOpen(' + i + ')">'
+        + '<td>' + ins.id + '</td>'
+        + '<td>' + ins.ip + '</td>'
+        + '<td>' + ins.hcPort + '</td>'
+        + '<td style="text-align:left;">' + (ins.hostname || '<span style="color:#98a2b3;">접속 대기중</span>') + '</td>'
+        + '<td>' + roleBadgeHtml(ins.role) + '</td>'
+        + '<td><input type="number" class="gh-pri-input" min="1" data-idx="' + i + '" value="' + ins.priority + '" onclick="event.stopPropagation()"></td>'
+        + '<td>' + (ins.lastHb || '-') + '</td>'
+        + '</tr>';
+    }).join('') : '<tr><td colspan="7" style="padding:16px;color:#98a2b3;">등록된 인스턴스가 없습니다.</td></tr>';
+  }
+  function gwInstApply() {
+    const r = DATA.filter(function (x) { return x.no === detailNo; })[0];
+    if (!r || !r.instances.length) return;
+    document.querySelectorAll('#gwInstBody .gh-pri-input').forEach(function (inp) {
+      const i = Number(inp.dataset.idx), v = Number(inp.value);
+      if (r.instances[i] && v > 0) r.instances[i].priority = v;
+    });
+    umsToast('인스턴스 설정을 즉시 반영했습니다. (각 인스턴스가 새 상위목록을 받으면 Role을 다시 판단해요)');
+  }
+
+  let editingInstIdx = null;
+
+  function gwInstOpen() {
+    editingInstIdx = null;
+    document.getElementById('instModalTitle').textContent = '인스턴스 등록';
+    document.getElementById('im-ip').value = '';
+    document.getElementById('im-priority').value = '';
+    document.getElementById('im-port').value = '';
+    show('instModal');
+  }
+  function gwInstEditOpen(idx) {
+    const r = DATA.filter(function (x) { return x.no === detailNo; })[0];
+    if (!r || !r.instances[idx]) return;
+    editingInstIdx = idx;
+    const ins = r.instances[idx];
+    document.getElementById('instModalTitle').textContent = '인스턴스 수정 (번호 ' + ins.id + ')';
+    document.getElementById('im-ip').value = ins.ip;
+    document.getElementById('im-priority').value = ins.priority;
+    document.getElementById('im-port').value = ins.hcPort;
+    show('instModal');
+  }
+  function gwInstModalClose() { hide('instModal'); }
+  function gwInstSave() {
+    const r = DATA.filter(function (x) { return x.no === detailNo; })[0];
+    if (!r) return;
+    const ip = document.getElementById('im-ip').value.trim();
+    const priority = Number(document.getElementById('im-priority').value);
+    const port = Number(document.getElementById('im-port').value);
+    if (!ip) { umsToast('IP를 입력하세요.'); return; }
+    if (!priority || priority < 1) { umsToast('Priority를 입력하세요.'); return; }
+    if (!port || port < 1) { umsToast('HealthCheckPort를 입력하세요.'); return; }
+
+    if (editingInstIdx != null) {
+      const ins = r.instances[editingInstIdx];
+      ins.ip = ip; ins.priority = priority; ins.hcPort = port;
+      hide('instModal');
+      gwInstRender(r);
+      renderGrid();
+      umsToast('인스턴스 ' + ins.id + '번 정보를 수정했습니다.');
+    } else {
+      instSeq += 1;
+      r.instances.push({ id: instSeq, ip: ip, hcPort: port, hostname: '', role: 'Standby', priority: priority, lastHb: '' });
+      hide('instModal');
+      gwInstRender(r);
+      renderGrid();
+      umsToast('인스턴스 ' + instSeq + '번이 등록되었습니다. 이 번호를 Token과 함께 GW 로컬 설정에 입력하세요.');
+    }
+  }
+
   function gwDetailOpen(no) {
     const r = DATA.filter(function (x) { return x.no === no; })[0];
     if (!r) return;
@@ -103,11 +195,12 @@
         + '</tbody></table>'
       : '<span style="color:#8a97a5;">소속된 UPS가 없습니다.</span>';
 
+    gwInstRender(r);
+
     document.getElementById('dBody').innerHTML =
       '<div class="dv">'
       + dvGroup(
-          dvRow('위치', r.loc) + dvRow('설치위치', r.pos) + dvRow('설치 PC 정보', r.host)
-          + dvRow('버전', r.ver) + dvRow('등록일', r.date) + dvRow('사용여부', badge(USE_BADGE, r.use ? 1 : 0)))
+          dvRow('버전', r.ver) + dvRow('등록일', r.date) + dvRow('사용여부', badge(USE_BADGE, r.use ? 1 : 0)))
       + dvGroup(
           dvRow('소속 UPS 목록 (' + r.ups.length + '대)', upsTable, true))
       + dvGroup(
@@ -135,8 +228,6 @@
     editingNo = no;
     document.getElementById('mTitle').textContent = r ? 'GW 수정' : 'GW 등록';
     document.getElementById('m-name').value = r ? r.name : '';
-    document.getElementById('m-loc').value  = r ? r.loc  : LOCATIONS[0];
-    document.getElementById('m-pos').value  = r ? r.pos  : INSTALL_POS[0];
     document.getElementById('m-memo').value = r ? r.memo : '';
 
     const tokenEl = document.getElementById('m-token');
@@ -186,16 +277,14 @@
     const tokenEl = document.getElementById('m-token');
     if (tokenEl.dataset.hasToken !== '1') { umsToast('인증키/토큰을 발급받으세요.'); return; }
 
-    const loc  = document.getElementById('m-loc').value;
-    const pos  = document.getElementById('m-pos').value;
     const memo = document.getElementById('m-memo').value.trim();
 
     if (editingNo == null) {
       seq += 1;
-      DATA.unshift({ no: seq, name: name, loc: loc, pos: pos, host: '-', ver: '-', date: new Date().toISOString().slice(0, 10), use: true, hasToken: true, memo: memo, ups: [] });
+      DATA.unshift({ no: seq, name: name, instances: [], ver: '-', date: new Date().toISOString().slice(0, 10), use: true, hasToken: true, memo: memo, ups: [] });
     } else {
       const r = DATA.filter(function (x) { return x.no === editingNo; })[0];
-      if (r) { r.name = name; r.loc = loc; r.pos = pos; r.memo = memo; r.hasToken = true; }
+      if (r) { r.name = name; r.memo = memo; r.hasToken = true; }
     }
 
     hide('gwModal');
@@ -220,9 +309,6 @@
   function hide(id) { document.getElementById(id).classList.remove('show'); }
 
   // ---- 초기화 ----
-  fillSelect('fLoc', LOCATIONS, true);
-  fillSelect('m-loc', LOCATIONS, false);
-  fillSelect('m-pos', INSTALL_POS, false);
   renderGrid();
 
   // 인라인 onclick 에서 호출되므로 전역 노출
@@ -240,5 +326,10 @@
   window.delModalClose = function () { hide('delModal'); };
   window.gwDetailClose = gwDetailClose;
   window.gwEditFromDetail = gwEditFromDetail;
+  window.gwInstApply   = gwInstApply;
+  window.gwInstOpen    = gwInstOpen;
+  window.gwInstEditOpen = gwInstEditOpen;
+  window.gwInstModalClose = gwInstModalClose;
+  window.gwInstSave    = gwInstSave;
 
 })();
