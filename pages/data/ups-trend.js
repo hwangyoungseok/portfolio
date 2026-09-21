@@ -21,7 +21,11 @@
   function jitter(range) { return (Math.random() - 0.5) * 2 * range; }
   function round(v, digits) { const p = Math.pow(10, digits); return Math.round(v * p) / p; }
 
-  // ---- 목업 데이터 생성: 최근 30일, UPS별 2시간 간격 (시간 오름차순) ----
+  // ---- 목업 데이터 생성: 최근 30일, UPS별 2시간 간격 ----
+  // UPS 계측값은 실제로 거의 평평하다가 아주 서서히만 흔들리는 값이라(정전 같은 이벤트가 아닌 한),
+  // 매 시점 독립적인 난수(white noise)를 쓰면 들쭉날쭉한 낙서처럼 보인다.
+  // 그래서 직전 값에서 아주 조금씩만 움직이고 기준선으로 서서히 복귀하는 랜덤워크(평균회귀)로 생성한다.
+  // 생성은 과거 -> 현재 순서로 진행해야 연속성이 생기므로, i(now로부터 몇 스텝 전인지)를 큰 값부터 줄여나간다.
   const DATA = [];
   (function gen() {
     const now = new Date();
@@ -31,16 +35,33 @@
       const baseIn = 220 + (idx % 3) * 2;
       const baseLoad = 20 + (idx * 7) % 50;
       const baseTemp = 24 + (idx % 4) * 2;
-      for (let i = 0; i < totalPoints; i++) {
+
+      let inV = baseIn, load = baseLoad, temp = baseTemp, freq = 60;
+      for (let i = totalPoints - 1; i >= 0; i--) {
         const t = new Date(now.getTime() - i * INTERVAL_HOURS * 60 * 60 * 1000);
-        const inV = round(baseIn + jitter(3), 1);
+
+        // 입력전압: 상용전원이라 거의 고정 — 미세하게만 흔들리고 기준선으로 서서히 복귀
+        inV += jitter(0.5) - (inV - baseIn) * 0.06;
+        if (Math.random() < 0.004) inV += jitter(8);   // 아주 가끔(순간전압강하 등) 크게 튐
+
+        // 부하율: 업무시간대에 완만히 높아지는 하루 주기 + 작은 랜덤워크
+        const dayPattern = Math.sin((t.getHours() / 24) * Math.PI * 2 - Math.PI / 2) * 6;
+        load += jitter(1) - (load - (baseLoad + dayPattern)) * 0.12;
+        load = Math.max(5, Math.min(95, load));
+
+        // 온도: 실내온도라 하루 단위로만 아주 천천히 변함
+        temp += jitter(0.12) - (temp - baseTemp) * 0.04;
+
+        // 주파수: 계통 주파수라 60Hz 근방에서 거의 안 움직임 — 다른 지표와 마찬가지로 랜덤워크 처리
+        freq += jitter(0.015) - (freq - 60) * 0.08;
+
         DATA.push({
           time: fmt(t), date: dateOnly(t), ups: name,
-          inV: inV,
-          outV: round(inV - 1 + jitter(1), 1),
-          load: Math.max(1, Math.min(99, round(baseLoad + jitter(8), 1))),
-          freq: round(60 + jitter(0.2), 2),
-          temp: round(baseTemp + jitter(2.5), 1),
+          inV: round(inV, 1),
+          outV: round(inV - 1 + jitter(0.2), 1),
+          load: round(load, 1),
+          freq: round(freq, 2),
+          temp: round(temp, 1),
         });
       }
     });
