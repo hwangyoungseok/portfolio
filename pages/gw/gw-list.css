@@ -36,8 +36,10 @@
   padding: 10px 14px; font-size: 12px; color: #33506e; line-height: 1.6; margin-bottom: 10px;
 }
 
-/* 인스턴스 등록 모달은 드로어(z-index:120) 위에서 열리므로 그보다 높게 */
-#instModal { z-index: 130; }
+/* 인스턴스 등록/삭제 모달은 드로어(z-index:120) 위에서 열리므로 그보다 높게 */
+#instModal, #instDelModal { z-index: 130; }
+/* 필드가 3개뿐이라 공통 .modal 폭(640px)은 과함 - 약 2/3 수준으로 축소 (다른 모달엔 영향 없음) */
+#instModal .modal { max-width: 420px; }
 
 /* 드로어 안 내용(버전관리+인스턴스목록+UPS목록)이 많아 기본 폭이 좁으면 스크롤이 심함 */
 #gwDrawer { width: 50vw; max-width: 760px; }

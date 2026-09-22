@@ -140,8 +140,9 @@
         + '<td>' + roleBadgeHtml(ins.role) + '</td>'
         + '<td><input type="number" class="gh-pri-input" min="1" data-idx="' + i + '" value="' + ins.priority + '" onclick="event.stopPropagation()"></td>'
         + '<td>' + (ins.lastHb || '-') + '</td>'
+        + '<td><button class="icon-btn del" title="삭제" onclick="event.stopPropagation();ghInstAskDelete(' + i + ')">&#10005;</button></td>'
         + '</tr>';
-    }).join('') : '<tr><td colspan="7" style="padding:16px;color:#98a2b3;">등록된 인스턴스가 없습니다.</td></tr>';
+    }).join('') : '<tr><td colspan="8" style="padding:16px;color:#98a2b3;">등록된 인스턴스가 없습니다.</td></tr>';
   }
   function ghInstApply() {
     const r = DATA.filter(function (x) { return x.no === curNo; })[0];
@@ -151,6 +152,20 @@
       if (r.instances[i] && v > 0) r.instances[i].priority = v;
     });
     umsToast('인스턴스 설정을 즉시 반영했습니다. (각 인스턴스가 새 상위목록을 받으면 Role을 다시 판단해요)');
+  }
+
+  let delInstIdx = null;
+  function ghInstAskDelete(idx) { delInstIdx = idx; show('instDelModal'); }
+  function ghInstDelModalClose() { hide('instDelModal'); }
+  function ghInstDelete() {
+    const r = DATA.filter(function (x) { return x.no === curNo; })[0];
+    if (!r || delInstIdx == null) return;
+    const removed = r.instances.splice(delInstIdx, 1)[0];
+    delInstIdx = null;
+    hide('instDelModal');
+    ghInstRender(r);
+    ghRender();
+    umsToast('인스턴스 ' + removed.id + '번을 삭제했습니다.');
   }
 
   let editingInstIdx = null;
@@ -277,5 +292,8 @@
   window.ghInstOpen = ghInstOpen;
   window.ghInstModalClose = ghInstModalClose;
   window.ghInstSave = ghInstSave;
+  window.ghInstAskDelete = ghInstAskDelete;
+  window.ghInstDelModalClose = ghInstDelModalClose;
+  window.ghInstDelete = ghInstDelete;
 
 })();

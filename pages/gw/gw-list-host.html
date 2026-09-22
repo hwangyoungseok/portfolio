@@ -87,7 +87,7 @@
       <div class="gh-ver-box">
         <div class="gh-ver-t">인스턴스 목록 <span class="gh-inst-hint">(사전등록 후 발급되는 번호를 Token과 함께 그 GW 설치본에 입력 — Role은 인스턴스끼리 자율 판단, 여기선 Priority만 조정)</span></div>
         <table class="grid-table gh-inst-table">
-          <thead><tr><th style="width:50px;">번호</th><th style="width:110px;">IP</th><th style="width:70px;">HB Port</th><th>Hostname</th><th style="width:110px;">Role</th><th style="width:76px;">Priority</th><th style="width:80px;">최근 HB</th></tr></thead>
+          <thead><tr><th style="width:50px;">번호</th><th style="width:110px;">IP</th><th style="width:70px;">HB Port</th><th>Hostname</th><th style="width:110px;">Role</th><th style="width:76px;">Priority</th><th style="width:80px;">최근 HB</th><th style="width:40px;">삭제</th></tr></thead>
           <tbody id="ghInstBody"></tbody>
         </table>
         <div class="gh-ver-btns">
@@ -121,6 +121,17 @@
       <div class="modal-footer">
         <button class="btn" onclick="ghInstModalClose()">취소</button>
         <button class="btn btn-primary" onclick="ghInstSave()">저장</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 인스턴스 삭제 확인 -->
+  <div class="modal-overlay" id="instDelModal">
+    <div class="confirm-modal">
+      <p><span class="confirm-hl">인스턴스를 삭제</span>하시겠습니까?</p>
+      <div class="confirm-btns">
+        <button class="btn btn-primary" onclick="ghInstDelete()">예</button>
+        <button class="btn btn-danger" onclick="ghInstDelModalClose()">아니오</button>
       </div>
     </div>
   </div>
