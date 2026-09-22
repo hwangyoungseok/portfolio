@@ -574,7 +574,7 @@
       +     renderRoleSwitch()
       +     '<div class="header-noti-wrap">'
       +       '<button type="button" class="header-link header-noti" id="umsNotiBtn"'
-      +         ' aria-haspopup="true" aria-expanded="false">알림'
+      +         ' aria-label="알림" aria-haspopup="true" aria-expanded="false">' + icon('bell')
       +         '<span class="noti-badge" id="umsNotiBadge" hidden>0</span></button>'
       +       renderNotiPanel()
       +     '</div>'
@@ -586,7 +586,6 @@
       +       '</button>'
       +       renderUserMenu()
       +     '</div>'
-      +     '<a class="header-link" href="' + withRole(ROOT + 'index.html') + '">홈</a>'
       +   '</div>'
       + '</div>'
       + '<div id="content">'

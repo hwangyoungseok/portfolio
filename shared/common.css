@@ -57,14 +57,17 @@ a { color: inherit; text-decoration: none; }
 
 /* ---------- 헤더 알림 ---------- */
 .header-noti-wrap { position: relative; }
-.header-noti { position: relative; display: flex; align-items: center; gap: 5px;
-  background: none; border: 0; padding: 2px 4px; font: inherit; font-size: 12px;
+.header-noti { position: relative; display: flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; background: none; border: 0; padding: 0; font: inherit;
   color: #cfd3e0; cursor: pointer; border-radius: 4px; }
+.header-noti .um-ico { width: 20px; height: 20px; fill: currentColor; }
 .header-noti:hover { color: #fff; background: rgba(255,255,255,0.08); }
 .header-noti[aria-expanded="true"] { color: #fff; background: rgba(255,255,255,0.12); }
-.noti-badge { min-width: 16px; height: 16px; padding: 0 4px; border-radius: 8px;
+.noti-badge { position: absolute; top: -4px; right: -6px;
+  min-width: 16px; height: 16px; padding: 0 4px; border-radius: 8px;
   background: #e53935; color: #fff; font-size: 10px; font-weight: bold;
   display: flex; align-items: center; justify-content: center; }
+.noti-badge[hidden] { display: none; }
 
 .noti-panel { display: none; position: absolute; top: calc(100% + 6px); right: 0; z-index: 160;
   width: 340px; background: #fff; border: 1px solid #dde1e7; border-radius: 6px;
