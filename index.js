@@ -472,7 +472,7 @@
       (editing ? '<button class="btn btn-primary" id="dbSave">저장</button>'
         + '<button class="btn" id="dbReset">초기화</button>'
         + '<button class="btn btn-danger" id="dbClear">전체 빼기</button>' : '')
-      + '<label class="dash-edit-toggle"><input type="checkbox" id="dbToggle"' + (editing ? ' checked' : '') + '> 레이아웃 변경</label>';
+      + '<div class="switch-field dash-edit-toggle"><span>레이아웃 변경</span><label class="switch"><input type="checkbox" id="dbToggle"' + (editing ? ' checked' : '') + '><span class="switch-track"></span></label></div>';
     dash.appendChild(top);
 
     // 위젯 그리드
